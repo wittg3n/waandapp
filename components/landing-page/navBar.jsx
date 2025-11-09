@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import Logo from "../Logo";
+
 export default function NavBar() {
   const [open, setOpen] = useState(false);
 
@@ -16,13 +17,16 @@ export default function NavBar() {
   ];
 
   return (
-    <nav className="w-full flex items-center p-4 text-sm font-medium relative flex-row-reverse">
-      {/* Logo on the right */}
-      <Logo size={30} className="ml-2" />
-      <h2 className="font-black ml-20 text-[20px]">وآند</h2>
+    <nav className="w-full flex items-center justify-between p-4 text-sm font-medium relative flex-row-reverse">
+      {/* Right side: logo and title */}
+      <div className="flex items-center shrink-0">
+        <h2 className="font-black text-[22px]">وآند</h2>
+
+        <Logo size={40} className="ml-2 shrink-0" />
+      </div>
 
       {/* Desktop menu */}
-      <ul className="hidden md:flex gap-20   ">
+      <ul className="hidden md:flex gap-16">
         {navItems.map((item) => (
           <li key={item.label}>
             <a href={item.href} className="hover:underline">
@@ -31,10 +35,13 @@ export default function NavBar() {
           </li>
         ))}
       </ul>
-      <Button className={"bg-gray-100 mr-20 rounded-4xl text-black"}>
+
+      {/* Login button */}
+      <Button className="bg-gray-100 rounded-full text-black px-6 py-2 ml-6">
         ورود
       </Button>
-      {/* Mobile button */}
+
+      {/* Mobile menu toggle */}
       <Button
         variant="ghost"
         size="icon"
@@ -44,7 +51,7 @@ export default function NavBar() {
         {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </Button>
 
-      {/* Mobile menu */}
+      {/* Mobile dropdown */}
       <AnimatePresence>
         {open && (
           <motion.ul
@@ -52,7 +59,7 @@ export default function NavBar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-14 right-4 bg-transparent backdrop-blur-md border border-white/10 rounded-xl shadow-lg flex flex-col items-end gap-3 p-4 text-sm font-medium md:hidden"
+            className="absolute top-14 right-4 bg-white/70 backdrop-blur-md border border-gray-200 rounded-xl shadow-lg flex flex-col items-end gap-3 p-4 text-sm font-medium md:hidden"
           >
             {navItems.map((item) => (
               <li key={item.label}>
