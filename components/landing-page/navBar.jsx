@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import Logo from "../Logo";
@@ -21,7 +20,6 @@ export default function NavBar() {
       {/* Right side: logo and title */}
       <div className="flex items-center shrink-0">
         <h2 className="font-black text-[22px]">وآند</h2>
-
         <Logo size={40} className="ml-2 shrink-0" />
       </div>
 
@@ -36,20 +34,25 @@ export default function NavBar() {
         ))}
       </ul>
 
-      {/* Login button */}
-      <Button className="bg-gray-100 rounded-full text-black px-6 py-2 ml-6">
+      {/* Login button with Framer Motion animation */}
+      <motion.button
+        whileHover={{ scale: 1.05, backgroundColor: "#e5e5e5" }}
+        whileTap={{ scale: 0.95 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        className="bg-gray-100 rounded-full text-black px-6 py-2 ml-6"
+      >
         ورود
-      </Button>
+      </motion.button>
 
       {/* Mobile menu toggle */}
-      <Button
+      <motion.button
         variant="ghost"
         size="icon"
         className="md:hidden"
         onClick={() => setOpen(!open)}
       >
         {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </Button>
+      </motion.button>
 
       {/* Mobile dropdown */}
       <AnimatePresence>
