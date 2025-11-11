@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import Logo from "../Logo";
+import Logo from "../../Logo";
 
 export default function NavBar() {
   const [open, setOpen] = useState(false);
@@ -20,7 +20,7 @@ export default function NavBar() {
       {/* Right side: logo + title (hidden on mobile) */}
       <div className="hidden md:flex items-center shrink-0">
         <h2 className="font-black text-[22px]">وآند</h2>
-        <Logo size={40} className="ml-2 shrink-0" />
+        <Logo size={30} className="ml-2 shrink-0" />
       </div>
 
       {/* Center title (visible only on mobile) */}
@@ -45,10 +45,10 @@ export default function NavBar() {
 
       {/* Desktop login button */}
       <motion.button
-        whileHover={{ scale: 1.05, backgroundColor: "#e5e5e5" }}
+        whileHover={{ scale: 1.0, backgroundColor: "#e5e5e5" }}
         whileTap={{ scale: 0.95 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        className="hidden md:inline bg-gray-100 rounded-full text-black px-6 py-2 ml-6"
+        className="hidden md:inline bg-gray-100 rounded-full text-black px-6 py-2 ml-6 cursor-pointer"
       >
         ورود
       </motion.button>

@@ -43,11 +43,11 @@
   --radius-xl: calc(var(--radius) + 4px);
   --animate-line-shadow: line-shadow 15s linear infinite;
   @keyframes line-shadow {
-  0% {
-    background-position: 0 0;
+    0% {
+      background-position: 0 0;
     }
-  100% {
-    background-position: 100% -100%;
+    100% {
+      background-position: 100% -100%;
     }
   }
 }
@@ -136,7 +136,15 @@ body {
   font-style: normal;
   font-display: swap;
 }
+.scroll-container {
+  position: relative;
+  width: 100%;
+  overflow: visible;
+}
 
+button {
+  cursor: pointer;
+}
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
