@@ -7,18 +7,14 @@ export function LineShadowText({
   children,
   shadowColor = "black",
   className,
-  as: Component = "span",
   ...props
 }) {
-  const MotionComponent = motion.create(Component);
-  const content = typeof children === "string" ? children : null;
-
-  if (!content) {
+  if (typeof children !== "string") {
     throw new Error("LineShadowText only accepts string content");
   }
 
   return (
-    <MotionComponent
+    <motion.span
       style={{
         "--shadow-color": shadowColor,
       }}
@@ -30,10 +26,10 @@ export function LineShadowText({
         "after:animate-line-shadow",
         className
       )}
-      data-text={content}
+      data-text={children}
       {...props}
     >
-      {content}
-    </MotionComponent>
+      {children}
+    </motion.span>
   );
 }
