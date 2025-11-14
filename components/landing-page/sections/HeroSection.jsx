@@ -11,7 +11,7 @@ function HeroSection() {
       dir="ltr"
     >
       <div
-        className="hidden md:flex w-full md:w-1/2 h-[300px] md:h-[740px] bg-cover bg-center rounded-[20px]  items-end justify-end"
+        className="hidden md:flex w-full md:w-1/2 h-[300px] md:h-[760px] bg-cover bg-center rounded-[20px]  items-end justify-end"
         style={{ backgroundImage: "url('/hero-image.png')" }}
       >
         <div className=" md:w-[300px] backdrop-blur-2xl  md:h-20 bg-white/80 rounded-full m-6 md:m-[50px] md:mb-20 p-4">
@@ -37,7 +37,7 @@ function HeroSection() {
           </div>
         </div>
       </div>
-      <div className="w-full md:w-1/2 h-full flex flex-col justify-start p-3 md:p-4">
+      <div className="w-full md:w-1/2 h-full flex flex-col justify-start ">
         <NavBar />
 
         <div
@@ -53,12 +53,12 @@ function HeroSection() {
             ✨ تمام با هوش مصنوعی
           </p>
 
-          <h1 className="text-[clamp(2rem,4vw,4.5rem)] leading-[1.4] mb-4 font-black">
+          <h1 className="text-[clamp(2rem,4vw,4.5rem)] leading-[1.4] mb-4 font-bold">
             تا اینجا تلاش کردی
             <br />
             بقیه‌شو بسپر به
             <br />
-            <span className="text-blue-600 inline-block">
+            <span className="text-blue-600 inline-block font-black">
               <LineShadowText>هوش</LineShadowText>{" "}
               <LineShadowText>مصنوعی</LineShadowText>
             </span>
