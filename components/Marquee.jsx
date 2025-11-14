@@ -67,10 +67,6 @@ function Marquee({ speed = 40, children }) {
           flex-shrink: 0;
         }
 
-        :global(.marquee-group > *:first-child) {
-          margin-left: 0 !important;
-        }
-
         @keyframes marquee {
           from {
             transform: translateX(0);
