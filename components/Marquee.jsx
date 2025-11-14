@@ -36,6 +36,7 @@ function Marquee({ speed = 40, children }) {
           animation: contentWidth
             ? `marquee ${duration}s linear infinite`
             : "none",
+          "--marquee-distance": `${contentWidth}px`,
         }}
       >
         {/* original */}
@@ -53,13 +54,17 @@ function Marquee({ speed = 40, children }) {
         }
 
         .marquee-track {
-          display: inline-flex;
+          display: flex;
+          align-items: center;
+          width: max-content;
           white-space: nowrap;
+          will-change: transform;
         }
 
         .marquee-group {
           display: inline-flex;
           align-items: center;
+          flex-shrink: 0;
         }
 
         @keyframes marquee {
@@ -67,7 +72,7 @@ function Marquee({ speed = 40, children }) {
             transform: translateX(0);
           }
           to {
-            transform: translateX(-50%);
+            transform: translateX(calc(var(--marquee-distance) * -1));
           }
         }
       `}</style>
