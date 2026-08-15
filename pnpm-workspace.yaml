@@ -1,0 +1,13 @@
+packages:
+  - apps/*
+  - packages/*
+
+injectWorkspacePackages: true
+
+engineStrict: true
+strictPeerDependencies: true
+
+allowBuilds:
+  argon2: true
+  esbuild: true
+  unrs-resolver: true

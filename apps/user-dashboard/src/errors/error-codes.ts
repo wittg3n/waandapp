@@ -1,0 +1,26 @@
+export const ERROR_CODES = {
+  UNKNOWN_ERROR: 'UNKNOWN_ERROR',
+  NETWORK_ERROR: 'NETWORK_ERROR',
+  NETWORK_TIMEOUT: 'NETWORK_TIMEOUT',
+  REQUEST_ABORTED: 'REQUEST_ABORTED',
+  BAD_REQUEST: 'BAD_REQUEST',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  SESSION_EXPIRED: 'SESSION_EXPIRED',
+  FORBIDDEN: 'FORBIDDEN',
+  NOT_FOUND: 'NOT_FOUND',
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  CONFLICT: 'CONFLICT',
+  RATE_LIMITED: 'RATE_LIMITED',
+  SERVER_ERROR: 'SERVER_ERROR',
+  SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
+  ROUTE_ERROR: 'ROUTE_ERROR',
+  CLIENT_ERROR: 'CLIENT_ERROR',
+} as const;
+
+export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
+
+const errorCodeValues = new Set<string>(Object.values(ERROR_CODES));
+
+export function isErrorCode(value: unknown): value is ErrorCode {
+  return typeof value === 'string' && errorCodeValues.has(value);
+}

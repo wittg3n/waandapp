@@ -1,0 +1,227 @@
+@import '@fontsource-variable/vazirmatn';
+@import 'tailwindcss';
+
+:root {
+  --background: #fefefe;
+  --foreground: #171717;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --primary: #143cfb;
+  --primary-foreground: #ffffff;
+  --muted: #f3f4f6;
+  --muted-foreground: #6d727d;
+  --border: #e2e5eb;
+  --input: #dce1e9;
+  --ring: #143cfb;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --radius: 0.875rem;
+  color: var(--foreground);
+  background: #f6f7f9;
+  font-family: 'Vazirmatn Variable', Tahoma, Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+* {
+  box-sizing: border-box;
+  border-color: var(--border);
+}
+
+html,
+body,
+#root {
+  min-width: 320px;
+  min-height: 100dvh;
+}
+
+html,
+body {
+  margin: 0;
+  overflow-x: clip;
+  background: #f6f7f9;
+  color: var(--foreground);
+  font-family: inherit;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+button,
+a,
+label {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  text-decoration: none;
+}
+
+@layer base {
+  a {
+    color: inherit;
+  }
+}
+
+::selection {
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+@keyframes waand-sheet-overlay {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes waand-sheet-panel {
+  from {
+    translate: 24px 0;
+  }
+}
+
+@keyframes waand-tooltip {
+  from {
+    opacity: 0;
+    scale: 0.97;
+  }
+}
+
+@media (min-width: 1024px) {
+  html,
+  body,
+  #root {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .auth-shell-grid {
+    grid-template-columns: minmax(0, 1.16fr) minmax(460px, 0.94fr);
+  }
+
+  .auth-form-content {
+    translate: 0 -16px;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 800px) {
+  .auth-main {
+    padding: 12px 16px;
+  }
+
+  .auth-form-content {
+    translate: 0 -8px;
+  }
+
+  .auth-logo {
+    height: 30px;
+  }
+
+  .auth-logo-mark {
+    width: 36px;
+    height: 28px;
+  }
+
+  .auth-logo-word {
+    font-size: 25px;
+  }
+
+  .auth-login-header,
+  .auth-signup-header {
+    margin-top: 30px;
+  }
+
+  .auth-login-title,
+  .auth-signup-title {
+    font-size: 32px;
+  }
+
+  .auth-signup-secondary {
+    font-size: 22px;
+  }
+
+  .auth-field-control {
+    height: 50px;
+  }
+
+  .auth-signup-fields {
+    margin-top: 20px;
+    gap: 9px;
+  }
+
+  .auth-signup-terms {
+    margin-top: 12px;
+  }
+
+  .auth-submit-button {
+    height: 52px;
+  }
+
+  .auth-signup-submit {
+    margin-top: 16px;
+  }
+
+  .auth-signup-footer {
+    margin-top: 18px;
+  }
+}
+
+@supports not (overflow: clip) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+}
+
+.waand-scrollbar {
+  scrollbar-color: #cdd3dd transparent;
+  scrollbar-width: thin;
+}
+
+.waand-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.waand-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.waand-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #cdd3dd;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

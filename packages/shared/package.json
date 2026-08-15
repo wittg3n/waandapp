@@ -1,0 +1,23 @@
+{
+  "name": "@waandapp/shared",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsc --watch --preserveWatchOutput",
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src --max-warnings=0",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\""
+  },
+  "devDependencies": {
+    "@waandapp/eslint-config": "workspace:*",
+    "@waandapp/typescript-config": "workspace:*",
+    "eslint": "^9.39.5",
+    "typescript": "6.0.3"
+  }
+}

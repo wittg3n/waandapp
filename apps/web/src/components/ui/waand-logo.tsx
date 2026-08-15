@@ -1,0 +1,96 @@
+import type { ComponentPropsWithoutRef } from 'react';
+import { useId } from 'react';
+
+import { cn } from '@/lib/utils';
+
+type WaandLogoProps = ComponentPropsWithoutRef<'span'> & {
+  markClassName?: string;
+  showWordmark?: boolean;
+  wordmarkClassName?: string;
+};
+
+export function WaandLogo({
+  'aria-label': ariaLabel = 'وآند',
+  className,
+  markClassName,
+  showWordmark = true,
+  wordmarkClassName,
+  ...props
+}: WaandLogoProps) {
+  const id = useId().replaceAll(':', '');
+  const backgroundId = `${id}-waand-background`;
+  const glowId = `${id}-waand-glow`;
+  const markId = `${id}-waand-mark`;
+  const edgeId = `${id}-waand-edge`;
+
+  return (
+    <span
+      aria-label={ariaLabel}
+      className={cn('inline-flex items-center gap-2.5', className)}
+      role="img"
+      {...props}
+    >
+      <svg
+        aria-hidden="true"
+        className={cn('size-8 shrink-0 overflow-hidden rounded-[22%]', markClassName)}
+        focusable="false"
+        viewBox="0 0 1212 1212"
+      >
+        <defs>
+          <linearGradient id={backgroundId} x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stopColor="#2658FC" />
+            <stop offset="0.5" stopColor="#2556FC" />
+            <stop offset="1" stopColor="#2454FB" />
+          </linearGradient>
+          <radialGradient cx="50%" cy="44%" id={glowId} r="75%">
+            <stop offset="0" stopColor="#2C5DFF" stopOpacity="0.16" />
+            <stop offset="1" stopColor="#1B4CF7" stopOpacity="0" />
+          </radialGradient>
+          <linearGradient id={markId} x1="0.12" x2="0.9" y1="0.02" y2="0.98">
+            <stop offset="0" stopColor="#FFFFFF" />
+            <stop offset="0.58" stopColor="#FEFEFE" />
+            <stop offset="1" stopColor="#FCFCFC" />
+          </linearGradient>
+          <filter
+            colorInterpolationFilters="sRGB"
+            height="108%"
+            id={edgeId}
+            width="108%"
+            x="-4%"
+            y="-4%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="1"
+              floodColor="#1639DC"
+              floodOpacity="0.42"
+              stdDeviation="1.15"
+            />
+          </filter>
+        </defs>
+        <rect fill={`url(#${backgroundId})`} height="1212" width="1212" />
+        <rect fill={`url(#${glowId})`} height="1212" width="1212" />
+        <path
+          d="M 276 230 L 273 233 L 269 242 L 270 253 L 356 395 L 356 401 L 352 405 L 183 405 L 176 408 L 173 411 L 170 418 L 170 510 L 173 516 L 178 520 L 183 522 L 350 522 L 355 527 L 355 531 L 345 547 L 317 597 L 269 678 L 266 686 L 266 691 L 269 699 L 279 707 L 286 710 L 293 715 L 309 723 L 343 743 L 354 744 L 361 741 L 366 736 L 459 577 L 463 573 L 470 574 L 519 654 L 521 659 L 576 750 L 657 889 L 677 921 L 689 943 L 849 1211 L 986 1211 L 957 1161 L 885 1044 L 874 1024 L 870 1019 L 768 848 L 764 843 L 759 833 L 755 828 L 750 818 L 732 790 L 727 780 L 723 775 L 689 717 L 674 694 L 663 674 L 659 669 L 576 531 L 576 525 L 581 521 L 753 521 L 758 519 L 765 511 L 765 416 L 761 409 L 754 405 L 582 405 L 577 401 L 577 394 L 581 389 L 660 253 L 661 239 L 658 233 L 651 227 L 594 196 L 585 190 L 571 189 L 562 195 L 474 348 L 470 353 L 466 354 L 463 353 L 459 348 L 456 341 L 371 198 L 365 192 L 356 189 L 349 190 Z"
+          fill={`url(#${markId})`}
+          filter={`url(#${edgeId})`}
+          stroke="#1A46EA"
+          strokeLinejoin="round"
+          strokeOpacity="0.32"
+          strokeWidth="0.75"
+        />
+      </svg>
+      {showWordmark && (
+        <strong
+          aria-hidden="true"
+          className={cn(
+            'text-[25px] font-black tracking-[-0.05em] text-[#121212]',
+            wordmarkClassName,
+          )}
+        >
+          وآند
+        </strong>
+      )}
+    </span>
+  );
+}
