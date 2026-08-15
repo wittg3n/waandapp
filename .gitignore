@@ -8,7 +8,7 @@ dist/
 coverage/
 .turbo/
 *.tsbuildinfo
-
+.tmp-onboarding-data/
 # Environment files
 .env
 .env.*
