@@ -29,6 +29,9 @@ import {
 import { LandingNavbar } from '@/components/landing/landing-navbar';
 import { LineShadowText } from '@/components/ui/line-shadow-text';
 import {
+  AppPromoCopy,
+  AppPromoScene,
+  AppPromoVisual,
   HeroAnalysisSignal,
   HeroLayer,
   HeroReveal,
@@ -391,15 +394,36 @@ function DashboardPreview() {
   return (
     <div
       aria-label="پیش‌نمایش داشبورد تحت وب واآند برای مدیریت اپلای دانشگاه"
-      className="app-visual-bg relative min-h-[430px] overflow-hidden sm:min-h-[500px] lg:min-h-0"
+      className="app-visual-bg relative h-full min-h-[430px] overflow-hidden sm:min-h-[500px] lg:min-h-[620px]"
       role="img"
     >
       <span className="absolute left-8 top-8 h-20 w-44 opacity-45 [background-image:radial-gradient(circle,#c9cff8_1.2px,transparent_1.2px)] [background-size:14px_14px]" />
       <span className="absolute -bottom-[270px] -left-[190px] h-[520px] w-[760px] rotate-[-10deg] rounded-[50%] border border-white/75" />
       <span className="absolute -bottom-[305px] -left-[150px] h-[520px] w-[760px] rotate-[-10deg] rounded-[50%] border border-white/65" />
 
-      <div className="absolute left-[30%] top-10 z-10 h-[360px] w-[540px] -translate-x-1/2 sm:left-1/2 sm:top-12 sm:h-[410px] sm:w-[620px] lg:left-[22%] lg:top-[11%] lg:h-[78%] lg:w-[80%] lg:translate-x-0">
-        <Reveal className="h-full w-full" amount={0.15} y={20}>
+      <div
+        className="
+    absolute
+    left-[30%]
+    top-10
+    z-10
+    h-[360px]
+    w-[540px]
+    -translate-x-1/2
+
+    sm:left-1/2
+    sm:top-12
+    sm:h-[410px]
+    sm:w-[620px]
+
+    lg:left-[7%]
+    lg:top-[9%]
+    lg:h-[82%]
+    lg:w-[92%]
+    lg:translate-x-0
+  "
+      >
+        <div className="h-full w-full">
           <div className="h-full overflow-hidden rounded-[16px] border border-white/90 bg-white shadow-[0_24px_55px_rgba(42,50,96,0.13)]">
             <div
               className="relative flex h-9 items-center border-b border-[#eceef4] bg-white px-4"
@@ -559,15 +583,11 @@ function DashboardPreview() {
               </div>
             </div>
           </div>
-        </Reveal>
+        </div>
       </div>
 
-      <RevealGroup
-        className="pointer-events-none absolute inset-0 z-20"
-        delay={0.08}
-        stagger={0.12}
-      >
-        <RevealItem className="absolute left-3 top-5 w-[172px] rounded-[14px] border border-white/90 bg-white/95 p-4 shadow-[0_15px_34px_rgba(49,55,94,0.11)] sm:left-5 sm:top-12 lg:left-2 lg:top-[14%] lg:w-[188px]">
+      <div className="pointer-events-none absolute inset-0 z-20">
+        <div className="absolute left-3 top-5 w-[172px] rounded-[14px] border border-white/90 bg-white/95 p-4 shadow-[0_15px_34px_rgba(49,55,94,0.11)] sm:left-5 sm:top-12 lg:left-2 lg:top-[14%] lg:w-[188px]">
           <span className="flex items-center gap-3">
             <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#43bf7b] text-white">
               <Check aria-hidden="true" className="size-5" strokeWidth={2.5} />
@@ -579,9 +599,9 @@ function DashboardPreview() {
               </small>
             </span>
           </span>
-        </RevealItem>
+        </div>
 
-        <RevealItem className="absolute bottom-[22%] left-3 hidden w-[150px] rounded-[14px] border border-white/90 bg-white/95 p-4 shadow-[0_15px_34px_rgba(49,55,94,0.10)] sm:block lg:top-[42%] lg:bottom-auto lg:left-2 lg:w-[160px]">
+        <div className="absolute bottom-[22%] left-3 hidden w-[150px] rounded-[14px] border border-white/90 bg-white/95 p-4 shadow-[0_15px_34px_rgba(49,55,94,0.10)] sm:block lg:top-[42%] lg:bottom-auto lg:left-2 lg:w-[160px]">
           <span className="flex items-center justify-between gap-3">
             <span>
               <strong className="block text-[10px] font-extrabold">ددلاین بعدی</strong>
@@ -594,9 +614,9 @@ function DashboardPreview() {
               strokeWidth={1.7}
             />
           </span>
-        </RevealItem>
+        </div>
 
-        <RevealItem className="absolute bottom-5 left-1/2 w-[190px] -translate-x-1/2 rounded-[14px] border border-white/90 bg-white/95 p-4 shadow-[0_15px_34px_rgba(49,55,94,0.11)] lg:bottom-6 lg:left-[52%]">
+        <div className="absolute bottom-5 left-1/2 w-[190px] -translate-x-1/2 rounded-[14px] border border-white/90 bg-white/95 p-4 shadow-[0_15px_34px_rgba(49,55,94,0.11)] lg:bottom-6 lg:left-[52%]">
           <span className="flex items-center gap-3">
             <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#596ff1,#7348e9)] text-white">
               <Sparkles aria-hidden="true" className="size-4" />
@@ -611,8 +631,8 @@ function DashboardPreview() {
               </small>
             </span>
           </span>
-        </RevealItem>
-      </RevealGroup>
+        </div>
+      </div>
     </div>
   );
 }
@@ -880,37 +900,88 @@ function AppPromo() {
       className="section-shell landing-section landing-section--compact scroll-mt-24"
       id="app"
     >
-      <Reveal>
-        <div className="app-promo-grid grid overflow-hidden rounded-[30px] lg:min-h-[620px] lg:grid-cols-[.82fr_1.18fr]">
-          <div className="relative z-30 flex flex-col justify-center px-7 py-12 text-center sm:px-10 lg:px-10 lg:text-right xl:px-12">
+      <AppPromoScene
+        className="
+          app-promo-grid
+          grid
+          overflow-hidden
+          rounded-[30px]
+          lg:min-h-[620px]
+          lg:grid-cols-[.82fr_1.18fr]
+        "
+      >
+        {/* -------------------------------------------------------------- */}
+        {/* Copy                                                           */}
+        {/* -------------------------------------------------------------- */}
+
+        <div className="relative z-30 flex flex-col justify-center px-7 py-12 text-center sm:px-10 lg:px-10 lg:text-right xl:px-12">
+          <AppPromoCopy stage="title">
             <h2 className="section-title lg:text-[38px] lg:leading-[1.65]" id="app-title">
               با <span className="font-black text-[#143CFB]">وآند</span>
               <br />
               همه چیز در دستان شما
             </h2>
+          </AppPromoCopy>
+
+          <AppPromoCopy stage="body">
             <p className="mx-auto mt-5 max-w-[520px] text-[15px] leading-8 text-[#65656b] lg:mx-0 lg:text-[16px] lg:leading-[2.15]">
               مدارک خود را مدیریت کنید، پیشرفت اپلای‌ها را پیگیری کنید، ددلاین‌ها را زیر نظر داشته
               باشید و پیشنهادهای هوشمند هوش مصنوعی را همه از یک داشبورد دنبال کنید.
             </p>
-            <RevealGroup className="mt-8 grid grid-cols-2 gap-3" delay={0.08} stagger={0.07}>
+          </AppPromoCopy>
+
+          <AppPromoCopy stage="features">
+            <div className="mt-8 grid grid-cols-2 gap-3">
               {features.map(({ icon: Icon, label }) => (
-                <RevealItem
-                  className="group flex min-h-[64px] items-center justify-between gap-3 rounded-[13px] border border-[#e4e6f0] bg-white/55 px-4 text-right text-[12px] font-bold text-[#454851] transition-[border-color,background-color,transform] duration-200 hover:-translate-y-0.5 hover:border-[#ccd4ff] hover:bg-white lg:text-[13px]"
+                <div
+                  className="
+                    group
+                    flex
+                    min-h-[64px]
+                    items-center
+                    justify-between
+                    gap-3
+                    rounded-[13px]
+                    border
+                    border-[#e4e6f0]
+                    bg-white/55
+                    px-4
+                    text-right
+                    text-[12px]
+                    font-bold
+                    text-[#454851]
+                    transition-[border-color,background-color,transform]
+                    duration-200
+                    hover:-translate-y-0.5
+                    hover:border-[#ccd4ff]
+                    hover:bg-white
+                    lg:text-[13px]
+                  "
                   key={label}
                 >
                   <span>{label}</span>
+
                   <Icon
                     aria-hidden="true"
                     className="size-5 shrink-0 text-[#4264ed] lg:size-6"
                     strokeWidth={1.7}
                   />
-                </RevealItem>
+                </div>
               ))}
-            </RevealGroup>
-          </div>
-          <DashboardPreview />
+            </div>
+          </AppPromoCopy>
         </div>
-      </Reveal>
+
+        {/* -------------------------------------------------------------- */}
+        {/* Dashboard visual                                               */}
+        {/* -------------------------------------------------------------- */}
+
+        <div className="relative h-full min-h-[430px] overflow-hidden sm:min-h-[500px] lg:min-h-[620px]">
+          <AppPromoVisual className="h-full">
+            <DashboardPreview />
+          </AppPromoVisual>
+        </div>
+      </AppPromoScene>
     </section>
   );
 }

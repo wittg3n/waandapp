@@ -672,10 +672,10 @@ type ProcessStepMotionPreset = {
  */
 const processStepMotionPresets: Record<ProcessStepMotion, ProcessStepMotionPreset> = {
   lead: {
-    x: [-60, 0],
-    y: [-76, 0],
-    rotate: [-5.2, 0],
-    origin: '82% 88%',
+    x: [60, 0],
+    y: [76, 0],
+    rotate: [5.2, 0],
+    origin: '100% 100%',
   },
 
   middle: {
@@ -686,10 +686,10 @@ const processStepMotionPresets: Record<ProcessStepMotion, ProcessStepMotionPrese
   },
 
   tilted: {
-    x: [28, 0],
+    x: [-28, 0],
     y: [0, 0],
-    rotate: [5, 0],
-    origin: '18% 86%',
+    rotate: [-20, 0],
+    origin: '2% 86%',
   },
 };
 
@@ -739,6 +739,187 @@ export function ProcessStep({
         {children}
       </motion.div>
     </div>
+  );
+}
+/* -------------------------------------------------------------------------- */
+/*                              App Promo Scene                               */
+/* -------------------------------------------------------------------------- */
+
+type AppPromoSceneValues = {
+  progress: MotionValue<number>;
+  reducedMotion: boolean;
+};
+
+const AppPromoSceneContext = createContext<AppPromoSceneValues | null>(null);
+
+export function AppPromoScene({ children, className }: StaticDivProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+
+  const { scrollYProgress } = useScroll({
+    target: ref,
+
+    /*
+     * Reference behaviour:
+     *
+     * 0:
+     * promo card has just started entering from the bottom
+     *
+     * 1:
+     * promo is almost centered in the viewport and
+     * all internal transforms have settled.
+     */
+    offset: ['start 96%', 'start 43%'],
+  });
+
+  /*
+   * Only subtle wheel/trackpad smoothing.
+   * This is still a scrubbed animation.
+   */
+  const progress = useSpring(scrollYProgress, {
+    stiffness: 165,
+    damping: 30,
+    mass: 0.3,
+    restDelta: 0.001,
+  });
+
+  const value = useMemo(
+    () => ({
+      progress,
+      reducedMotion: Boolean(reducedMotion),
+    }),
+    [progress, reducedMotion],
+  );
+
+  return (
+    <div ref={ref} className={className}>
+      <AppPromoSceneContext.Provider value={value}>{children}</AppPromoSceneContext.Provider>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                             App Promo Visual                               */
+/* -------------------------------------------------------------------------- */
+
+export function AppPromoVisual({ children, className }: StaticDivProps) {
+  const scene = useContext(AppPromoSceneContext);
+  const localReducedMotion = useReducedMotion();
+
+  const fallbackProgress = useMotionValue(1);
+  const progress = scene?.progress ?? fallbackProgress;
+
+  const reducedMotion = scene?.reducedMotion ?? Boolean(localReducedMotion);
+
+  /*
+   * Equivalent of the oversized phone entering from the
+   * lower edge in the reference.
+   *
+   * Because Waand is a web app, the complete browser/dashboard
+   * composition behaves like the phone object.
+   */
+  const x = useTransform(progress, [0, 0.18, 0.72, 1], [58, 42, 6, 0], { clamp: true });
+
+  const y = useTransform(progress, [0, 0.18, 0.72, 1], [108, 88, 12, 0], { clamp: true });
+
+  const scale = useTransform(progress, [0, 0.18, 0.72, 1], [1.24, 1.2, 1.025, 1], { clamp: true });
+
+  const rotate = useTransform(progress, [0, 0.22, 0.75, 1], [3.6, 3.1, 0.4, 0], { clamp: true });
+
+  if (reducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={cn('h-full w-full will-change-transform', className)}
+      style={{
+        x,
+        y,
+        scale,
+        rotate,
+        transformOrigin: '52% 88%',
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              App Promo Copy                                */
+/* -------------------------------------------------------------------------- */
+
+type AppPromoCopyStage = 'title' | 'body' | 'features';
+
+export function AppPromoCopy({
+  children,
+  className,
+  stage,
+}: StaticDivProps & {
+  stage: AppPromoCopyStage;
+}) {
+  const scene = useContext(AppPromoSceneContext);
+  const localReducedMotion = useReducedMotion();
+
+  const fallbackProgress = useMotionValue(1);
+  const progress = scene?.progress ?? fallbackProgress;
+
+  const reducedMotion = scene?.reducedMotion ?? Boolean(localReducedMotion);
+
+  /*
+   * The title exists very early in the reference but starts
+   * with extremely low contrast.
+   *
+   * Body and secondary content enter progressively later.
+   */
+  const ranges: Record<
+    AppPromoCopyStage,
+    {
+      input: number[];
+      opacity: number[];
+      y: number[];
+    }
+  > = {
+    title: {
+      input: [0, 0.12, 0.52, 0.82],
+      opacity: [0.08, 0.18, 0.82, 1],
+      y: [24, 20, 4, 0],
+    },
+
+    body: {
+      input: [0, 0.34, 0.68, 0.9],
+      opacity: [0, 0, 0.72, 1],
+      y: [18, 18, 5, 0],
+    },
+
+    features: {
+      input: [0, 0.48, 0.77, 1],
+      opacity: [0, 0, 0.68, 1],
+      y: [22, 22, 7, 0],
+    },
+  };
+
+  const range = ranges[stage];
+
+  const opacity = useTransform(progress, range.input, range.opacity, { clamp: true });
+
+  const y = useTransform(progress, range.input, range.y, { clamp: true });
+
+  if (reducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={className}
+      style={{
+        opacity,
+        y,
+      }}
+    >
+      {children}
+    </motion.div>
   );
 }
 /* -------------------------------------------------------------------------- */
