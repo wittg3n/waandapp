@@ -59,7 +59,7 @@ const [
   { AUTH_INDEX_NAMES },
   { createAuthIndexes, verifyAuthIndexes },
   { verifyAuthenticationCode },
-  { DeliveryUnavailableError },
+  { createDeliverySenders, DeliveryUnavailableError },
   { LegalAcceptance },
   { User },
   { config },
@@ -85,11 +85,14 @@ const [
 ]);
 
 const codes = new Map();
+const deliveryAttempts = [];
 const failedDeliveries = new Set();
 const notifications = [];
 const validComparisonGates = new Map();
 const sender = {
-  async sendAuthenticationCode({ destination, code }) {
+  async sendAuthenticationCode(delivery) {
+    const { destination, code } = delivery;
+    deliveryAttempts.push({ ...delivery });
     if (failedDeliveries.delete(destination)) throw new DeliveryUnavailableError();
     codes.set(destination, code);
   },
@@ -152,6 +155,10 @@ class ApiClient {
   cookie = '';
   csrfToken = '';
 
+  constructor(origin = baseUrl) {
+    this.origin = origin;
+  }
+
   async request(path, options = {}) {
     const method = options.method ?? 'GET';
     const headers = { ...options.headers };
@@ -173,7 +180,7 @@ class ApiClient {
       headers['content-type'] = 'application/json';
     }
 
-    const response = await fetch(`${baseUrl}${path}`, { method, headers, body });
+    const response = await fetch(`${this.origin}${path}`, { method, headers, body });
     const setCookie = response.headers.getSetCookie?.()[0] ?? response.headers.get('set-cookie');
     if (setCookie) {
       const value = setCookie.split(';', 1)[0];
@@ -432,6 +439,126 @@ test('signup is pending, password-backed, email-before-SMS, race-safe, and creat
   assert.equal(authenticated.payload.data.user.username, account.username);
   assert.equal(authenticated.payload.data.preauth, null);
   assert.equal(authenticated.payload.data.user.passwordHash, undefined);
+});
+
+test('registration reports delivery failure and succeeds only after a later delivered retry', async () => {
+  const client = new ApiClient();
+  const account = identity('registrationdelivery');
+  await registerPending(client, account);
+
+  failedDeliveries.add(account.email);
+  const failed = await client.request('/api/v1/auth/register/email/request', {
+    method: 'POST',
+    body: {},
+  });
+  assert.equal(failed.response.status, 503);
+  assert.equal(failed.payload.error.code, 'AUTH_DELIVERY_UNAVAILABLE');
+  assert.equal(JSON.stringify(failed.payload).includes('CODE_SENT'), false);
+  assert.equal(codes.has(account.email), false);
+
+  let attempts = deliveryAttempts.filter(({ destination }) => destination === account.email);
+  assert.equal(attempts.length, 1);
+  assert.equal(attempts[0].destination, account.email);
+  assert.match(attempts[0].code, /^\d{6}$/);
+  assert.equal(attempts[0].expiresInSeconds, Math.ceil(testSettings.authCodeTtlMs / 1_000));
+  assert.equal(
+    await AuthChallenge.countDocuments({
+      purpose: 'signup_verify_email',
+      channel: 'email',
+      destinationSnapshot: account.email,
+    }),
+    0,
+  );
+
+  await waitForCooldown();
+  const delivered = await client.request('/api/v1/auth/register/email/request', {
+    method: 'POST',
+    body: {},
+  });
+  assert.equal(delivered.response.status, 200);
+  assert.equal(delivered.payload.data.status, 'CODE_SENT');
+
+  attempts = deliveryAttempts.filter(({ destination }) => destination === account.email);
+  assert.equal(attempts.length, 2);
+  assert.equal(attempts[1].destination, account.email);
+  assert.match(attempts[1].code, /^\d{6}$/);
+  assert.equal(attempts[1].expiresInSeconds, Math.ceil(testSettings.authCodeTtlMs / 1_000));
+  assert.equal(
+    await AuthChallenge.countDocuments({
+      purpose: 'signup_verify_email',
+      channel: 'email',
+      destinationSnapshot: account.email,
+      status: 'pending',
+    }),
+    1,
+  );
+
+  const verified = await client.request('/api/v1/auth/register/email/verify', {
+    method: 'POST',
+    body: { code: codes.get(account.email) },
+  });
+  assert.equal(verified.response.status, 200);
+  assert.equal(verified.payload.data.status, 'VERIFICATION_REQUIRED');
+});
+
+test('development delivery makes the fixed bound code visible through its injected log', async () => {
+  const developmentSettings = {
+    ...testSettings,
+    nodeEnvironment: 'development',
+    authDeliveryMode: 'development',
+    authRateLimitPrefix: `${testSettings.authRateLimitPrefix}development:`,
+    globalRateLimitPrefix: `${testSettings.globalRateLimitPrefix}development:`,
+  };
+  const logCalls = [];
+  const developmentServer = createServer(
+    createApp(redis, {
+      settings: developmentSettings,
+      senders: createDeliverySenders(developmentSettings, undefined, (...arguments_) =>
+        logCalls.push(arguments_),
+      ),
+    }),
+  );
+  const address = await listen(developmentServer);
+  const client = new ApiClient(`http://127.0.0.1:${address.port}`);
+
+  try {
+    const account = identity('development');
+    await registerPending(client, account);
+    const emailRequest = await client.request('/api/v1/auth/register/email/request', {
+      method: 'POST',
+      body: {},
+    });
+    assert.equal(emailRequest.response.status, 200);
+    const developmentOutput = JSON.stringify(logCalls);
+    assert.equal(developmentOutput.includes(account.email), true);
+    assert.match(developmentOutput, /000000/);
+
+    const wrong = await client.request('/api/v1/auth/register/email/verify', {
+      method: 'POST',
+      body: { code: '111111' },
+    });
+    assert.equal(wrong.response.status, 400);
+    assert.equal(wrong.payload.error.code, 'AUTH_INVALID_CODE');
+
+    const email = await client.request('/api/v1/auth/register/email/verify', {
+      method: 'POST',
+      body: { code: '000000' },
+    });
+    assert.equal(email.payload.data.status, 'VERIFICATION_REQUIRED');
+
+    const phoneRequest = await client.request('/api/v1/auth/register/phone/request', {
+      method: 'POST',
+      body: {},
+    });
+    assert.equal(phoneRequest.response.status, 200);
+    const phone = await client.request('/api/v1/auth/register/phone/verify', {
+      method: 'POST',
+      body: { code: '000000' },
+    });
+    assert.equal(phone.payload.data.status, 'AUTHENTICATED');
+  } finally {
+    await close(developmentServer);
+  }
 });
 
 test('pending credentials resume verification and concurrent duplicate registration creates one applicant only', async () => {

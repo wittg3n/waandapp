@@ -16,6 +16,21 @@ function disabledSender() {
   };
 }
 
+function developmentSender(channel, write) {
+  const label = channel.toUpperCase();
+
+  return {
+    async sendAuthenticationCode({ destination, code, expiresInSeconds }) {
+      write(
+        `[DEV AUTH ${label}] destination=${destination} code=${code} expires=${expiresInSeconds}s`,
+      );
+    },
+    async sendSecurityNotification({ destination, event }) {
+      write(`[DEV AUTH ${label}] destination=${destination} event=${event}`);
+    },
+  };
+}
+
 export function createWebhookSender({ url, token, fetchImpl = fetch }) {
   async function deliver(body) {
     try {
@@ -46,21 +61,39 @@ export function createWebhookSender({ url, token, fetchImpl = fetch }) {
   };
 }
 
-export function createDeliverySenders(settings, fetchImpl = fetch) {
+export function createDeliverySenders(settings, fetchImpl = fetch, write = console.info) {
   if (settings.authDeliveryMode === 'disabled') {
     return { emailSender: disabledSender(), smsSender: disabledSender() };
   }
 
+  if (settings.authDeliveryMode === 'development') {
+    if (settings.nodeEnvironment !== 'development') {
+      throw new Error('Development authentication delivery is only available in development.');
+    }
+    return {
+      emailSender: developmentSender('email', write),
+      smsSender: developmentSender('sms', write),
+    };
+  }
+
+  if (settings.authDeliveryMode !== 'webhook') {
+    throw new Error('Unsupported authentication delivery mode.');
+  }
+
   return {
-    emailSender: createWebhookSender({
-      url: settings.authEmailWebhookUrl,
-      token: settings.authEmailWebhookToken,
-      fetchImpl,
-    }),
-    smsSender: createWebhookSender({
-      url: settings.authSmsWebhookUrl,
-      token: settings.authSmsWebhookToken,
-      fetchImpl,
-    }),
+    emailSender: settings.authEmailWebhookUrl
+      ? createWebhookSender({
+          url: settings.authEmailWebhookUrl,
+          token: settings.authEmailWebhookToken,
+          fetchImpl,
+        })
+      : disabledSender(),
+    smsSender: settings.authSmsWebhookUrl
+      ? createWebhookSender({
+          url: settings.authSmsWebhookUrl,
+          token: settings.authSmsWebhookToken,
+          fetchImpl,
+        })
+      : disabledSender(),
   };
 }

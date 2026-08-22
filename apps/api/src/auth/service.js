@@ -225,13 +225,21 @@ function responseWithPreauth(status, transaction) {
   return { status, preauth: serializePreauth(transaction) };
 }
 
-export function createAuthService({ redis, settings, emailSender, smsSender, codeVerifier }) {
+export function createAuthService({
+  redis,
+  settings,
+  emailSender,
+  smsSender,
+  codeVerifier,
+  codeGenerator,
+}) {
   const challenges = createChallengeService({
     redis,
     settings,
     emailSender,
     smsSender,
     codeVerifier,
+    codeGenerator,
   });
   const dummyHashPromise = hashPassword('Waand timing-only password value 2026', settings);
 

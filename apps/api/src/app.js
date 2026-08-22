@@ -23,7 +23,13 @@ export function createApp(redis, options = {}) {
   const sessionMiddleware = options.sessionMiddleware ?? createSessionMiddleware(settings);
   const authService =
     options.authService ??
-    createAuthService({ redis, settings, ...senders, codeVerifier: options.codeVerifier });
+    createAuthService({
+      redis,
+      settings,
+      ...senders,
+      codeVerifier: options.codeVerifier,
+      codeGenerator: options.codeGenerator,
+    });
   const app = express();
 
   app.disable('x-powered-by');

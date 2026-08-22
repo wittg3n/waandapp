@@ -75,7 +75,7 @@ test('Argon2id hashing uses the configured floor and library verification', asyn
   assert.equal(await verifyPassword('legacy-plaintext', password), false);
 });
 
-test('password validation allows spaces and 128 Unicode code points but blocks common values', () => {
+test('password validation accepts 8–128 Unicode code points without composition rules', () => {
   const schema = createRegisterSchema('2026-08');
   const base = {
     firstName: 'سارا',
@@ -86,7 +86,22 @@ test('password validation allows spaces and 128 Unicode code points but blocks c
     termsAccepted: true,
     termsVersion: '2026-08',
   };
+  const minimumLength = 'abcdefgh';
   const unicode = '🔐'.repeat(128);
+  assert.equal(Array.from(minimumLength).length, 8);
+  assert.equal(
+    schema.safeParse({
+      ...base,
+      password: minimumLength,
+      passwordConfirmation: minimumLength,
+    }).success,
+    true,
+  );
+  assert.equal(
+    schema.safeParse({ ...base, password: 'x'.repeat(7), passwordConfirmation: 'x'.repeat(7) })
+      .success,
+    false,
+  );
   const parsed = schema.parse({ ...base, password: unicode, passwordConfirmation: unicode });
   assert.equal(Array.from(parsed.password).length, 128);
   assert.equal(parsed.username, 'sara.user');
@@ -97,7 +112,7 @@ test('password validation allows spaces and 128 Unicode code points but blocks c
   );
   assert.equal(isCommonPassword(' QWERTY123456 '), true);
   assert.equal(
-    schema.safeParse({ ...base, password: ' '.repeat(12), passwordConfirmation: ' '.repeat(12) })
+    schema.safeParse({ ...base, password: ' '.repeat(8), passwordConfirmation: ' '.repeat(8) })
       .success,
     false,
   );
@@ -227,8 +242,14 @@ test('preauth serialization exposes only state, masks, and purpose', () => {
   assert.equal(JSON.stringify(descriptor).includes('new@example.com'), false);
 });
 
-test('delivery webhooks reject redirects and distinguish codes from security notifications', async () => {
+test('delivery webhooks send authenticated JSON with redirects and a timeout signal', async (context) => {
   const calls = [];
+  const timeoutSignal = new AbortController().signal;
+  const timeouts = [];
+  context.mock.method(AbortSignal, 'timeout', (milliseconds) => {
+    timeouts.push(milliseconds);
+    return timeoutSignal;
+  });
   const sender = createWebhookSender({
     url: 'https://delivery.example.com/auth',
     token: 'provider-token',
@@ -246,7 +267,13 @@ test('delivery webhooks reject redirects and distinguish codes from security not
     destination: 'user@example.com',
     event: 'password_changed',
   });
+  assert.equal(calls[0].url, 'https://delivery.example.com/auth');
+  assert.equal(calls[0].options.method, 'POST');
+  assert.equal(calls[0].options.headers.authorization, 'Bearer provider-token');
+  assert.equal(calls[0].options.headers['content-type'], 'application/json');
   assert.equal(calls[0].options.redirect, 'error');
+  assert.equal(calls[0].options.signal, timeoutSignal);
+  assert.deepEqual(timeouts, [5_000, 5_000]);
   assert.deepEqual(JSON.parse(calls[0].options.body), {
     type: 'authentication_code',
     destination: 'user@example.com',
@@ -258,20 +285,102 @@ test('delivery webhooks reject redirects and distinguish codes from security not
     destination: 'user@example.com',
     event: 'password_changed',
   });
+});
 
-  const failing = createWebhookSender({
+test('delivery webhooks map provider, network, and abort failures to a stable error', async () => {
+  const nonSuccessful = createWebhookSender({
     url: 'https://delivery.example.com/auth',
     token: 'provider-token',
     fetchImpl: async () => ({ ok: false, status: 503 }),
   });
   await assert.rejects(
-    failing.sendAuthenticationCode({ destination: 'x@y.test', code: '123456' }),
+    nonSuccessful.sendAuthenticationCode({ destination: 'x@y.test', code: '123456' }),
     DeliveryUnavailableError,
   );
+
+  for (const cause of [
+    new TypeError('network unavailable'),
+    new DOMException('request aborted', 'AbortError'),
+  ]) {
+    const failing = createWebhookSender({
+      url: 'https://delivery.example.com/auth',
+      token: 'provider-token',
+      fetchImpl: async () => {
+        throw cause;
+      },
+    });
+    await assert.rejects(
+      failing.sendAuthenticationCode({ destination: 'x@y.test', code: '123456' }),
+      (error) => {
+        assert.ok(error instanceof DeliveryUnavailableError);
+        assert.equal(error.cause, cause);
+        return true;
+      },
+    );
+  }
+});
+
+test('delivery mode selection fails closed and development delivery is explicit', async () => {
   const disabled = createDeliverySenders({ authDeliveryMode: 'disabled' });
   await assert.rejects(
-    disabled.emailSender.sendSecurityNotification({ destination: 'x@y.test', event: 'test' }),
+    disabled.emailSender.sendAuthenticationCode({ destination: 'x@y.test', code: '123456' }),
     DeliveryUnavailableError,
+  );
+
+  const selectedCalls = [];
+  const emailOnly = createDeliverySenders(
+    {
+      authDeliveryMode: 'webhook',
+      authEmailWebhookUrl: 'https://email.example.com/auth',
+      authEmailWebhookToken: 'email-provider-token',
+      authSmsWebhookUrl: null,
+      authSmsWebhookToken: null,
+    },
+    async (url) => {
+      selectedCalls.push(url);
+      return { ok: true, status: 204 };
+    },
+  );
+  await emailOnly.emailSender.sendAuthenticationCode({
+    destination: 'user@example.com',
+    code: '123456',
+    expiresInSeconds: 300,
+  });
+  assert.deepEqual(selectedCalls, ['https://email.example.com/auth']);
+  await assert.rejects(
+    emailOnly.smsSender.sendAuthenticationCode({
+      destination: '+989121234567',
+      code: '123456',
+      expiresInSeconds: 300,
+    }),
+    DeliveryUnavailableError,
+  );
+
+  const logCalls = [];
+  const development = createDeliverySenders(
+    {
+      authDeliveryMode: 'development',
+      nodeEnvironment: 'development',
+    },
+    undefined,
+    (...arguments_) => logCalls.push(arguments_),
+  );
+  await development.emailSender.sendAuthenticationCode({
+    destination: 'user@example.com',
+    code: '654321',
+    expiresInSeconds: 300,
+  });
+  const visibleDevelopmentOutput = JSON.stringify(logCalls);
+  assert.match(visibleDevelopmentOutput, /user@example\.com/);
+  assert.match(visibleDevelopmentOutput, /654321/);
+  assert.match(visibleDevelopmentOutput, /300/);
+  assert.throws(
+    () =>
+      createDeliverySenders({
+        authDeliveryMode: 'development',
+        nodeEnvironment: 'production',
+      }),
+    /only available in development/,
   );
 });
 

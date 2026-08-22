@@ -15,6 +15,14 @@ import { AuthTransaction } from './models/auth-transaction.js';
 import { maskDestination } from './normalization.js';
 import { enforceDestinationLimit, enforceResendCooldown } from './rate-limit.js';
 
+export const DEVELOPMENT_AUTHENTICATION_CODE = '000000';
+
+export function generateChallengeCode(settings) {
+  return settings.authDeliveryMode === 'development'
+    ? DEVELOPMENT_AUTHENTICATION_CODE
+    : generateAuthenticationCode();
+}
+
 function seconds(milliseconds) {
   return Math.ceil(milliseconds / 1_000);
 }
@@ -68,7 +76,9 @@ export function createChallengeService({
   emailSender,
   smsSender,
   codeVerifier = verifyAuthenticationCode,
+  codeGenerator,
 }) {
+  const generateCode = codeGenerator ?? (() => generateChallengeCode(settings));
   async function enforceSharedLimits({
     namespace,
     destination,
@@ -153,7 +163,7 @@ export function createChallengeService({
     const reserved = await reserveSend(transaction, channel, settings);
     const resendSequence = channel === 'email' ? reserved.sendCountEmail : reserved.sendCountSms;
     const challengeId = randomUUID();
-    const code = generateAuthenticationCode();
+    const code = generateCode();
     const expiresAt = new Date(Date.now() + settings.authCodeTtlMs);
     const codeDigest = hashAuthenticationCode({
       pepper: settings.authCodePepper,

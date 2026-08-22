@@ -57,7 +57,7 @@ export function LoginPage() {
       noValidate
       onSubmit={handleSubmit(submit)}
     >
-      <AuthMotionItem className="flex justify-center lg:justify-start">
+      <AuthMotionItem className="flex justify-start lg:justify-start">
         <AuthLogo />
       </AuthMotionItem>
 

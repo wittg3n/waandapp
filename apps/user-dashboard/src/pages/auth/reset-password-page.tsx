@@ -49,13 +49,13 @@ export function ResetPasswordPage() {
 
   return (
     <AuthFormMotion className="max-w-[500px]" noValidate onSubmit={handleSubmit(submit)}>
-      <AuthMotionItem className="flex justify-center lg:justify-start">
+      <AuthMotionItem className="flex justify-start lg:justify-start">
         <AuthLogo />
       </AuthMotionItem>
       <AuthMotionItem>
         <AuthHeader
           className="mt-7 lg:mt-10"
-          subtitle="رمز جدید باید بین ۱۲ تا ۱۲۸ نویسه باشد."
+          subtitle="رمز جدید باید بین ۸ تا ۱۲۸ نویسه باشد."
           title="انتخاب رمز عبور جدید"
           titleClassName="text-[30px] sm:text-[34px] lg:text-[38px]"
         />

@@ -51,6 +51,15 @@ export const authPhoneSchema = z
     z.string().regex(/^\+[1-9]\d{6,14}$/, 'شماره را با کد کشور، مانند ‎+989121234567‎، وارد کنید.'),
   );
 
+export const signupPhoneSchema = z
+  .string()
+  .trim()
+  .transform((phone) => normalizeLocalizedDigits(phone))
+  .pipe(
+    z.string().regex(/^09\d{9}$/, 'شماره موبایل را بدون کد کشور، مانند 09121234567، وارد کنید.'),
+  )
+  .transform((phone) => `+98${phone.slice(1)}`);
+
 const usernameLookupSchema = z
   .string()
   .trim()
@@ -87,7 +96,7 @@ const authIdentifierSchema = z
 
 export const passwordSchema = z
   .string()
-  .refine((password) => Array.from(password).length >= 12, 'رمز عبور باید حداقل ۱۲ نویسه باشد.')
+  .refine((password) => Array.from(password).length >= 8, 'رمز عبور باید حداقل ۸ نویسه باشد.')
   .refine((password) => Array.from(password).length <= 128, 'رمز عبور باید حداکثر ۱۲۸ نویسه باشد.')
   .refine((password) => /\S/u.test(password), 'رمز عبور نمی‌تواند فقط فاصله باشد.')
   .refine(
@@ -105,17 +114,27 @@ export const loginSchema = z.object({
   password: currentPasswordSchema,
 });
 
+const signupAccountShape = {
+  firstName: personNameSchema('نام', 80),
+  lastName: personNameSchema('نام خانوادگی', 120),
+  username: usernameSchema,
+  email: authEmailSchema,
+  password: passwordSchema,
+  passwordConfirmation: passwordConfirmationSchema,
+  termsAccepted: z.boolean().refine(Boolean, 'پذیرش قوانین و شرایط الزامی است.'),
+};
+
+export const signupAccountSchema = z
+  .object(signupAccountShape)
+  .refine(({ password, passwordConfirmation }) => password === passwordConfirmation, {
+    message: 'تکرار رمز عبور با رمز عبور مطابقت ندارد.',
+    path: ['passwordConfirmation'],
+  });
+
+export const signupPhoneFormSchema = z.object({ phone: signupPhoneSchema });
+
 export const signupSchema = z
-  .object({
-    firstName: personNameSchema('نام', 80),
-    lastName: personNameSchema('نام خانوادگی', 120),
-    username: usernameSchema,
-    email: authEmailSchema,
-    phone: authPhoneSchema,
-    password: passwordSchema,
-    passwordConfirmation: passwordConfirmationSchema,
-    termsAccepted: z.boolean().refine(Boolean, 'پذیرش قوانین و شرایط الزامی است.'),
-  })
+  .object({ ...signupAccountShape, phone: signupPhoneSchema })
   .refine(({ password, passwordConfirmation }) => password === passwordConfirmation, {
     message: 'تکرار رمز عبور با رمز عبور مطابقت ندارد.',
     path: ['passwordConfirmation'],
@@ -143,6 +162,10 @@ export const emailChangeSchema = z.object({ email: authEmailSchema });
 export const phoneChangeSchema = z.object({ phone: authPhoneSchema });
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
+export type SignupAccountFormValues = z.input<typeof signupAccountSchema>;
+export type SignupAccountPayload = z.output<typeof signupAccountSchema>;
+export type SignupPhoneFormValues = z.input<typeof signupPhoneFormSchema>;
+export type SignupPhonePayload = z.output<typeof signupPhoneFormSchema>;
 export type SignupFormValues = z.input<typeof signupSchema>;
 export type SignupPayload = z.output<typeof signupSchema>;
 export type RecoveryRequestValues = z.infer<typeof recoveryRequestSchema>;

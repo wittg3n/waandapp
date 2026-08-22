@@ -54,8 +54,8 @@ const code = z
 const password = z
   .string()
   .refine(
-    (value) => Array.from(value).length >= 12,
-    'Password must contain at least 12 characters.',
+    (value) => Array.from(value).length >= 8,
+    'Password must contain at least 8 characters.',
   )
   .refine(
     (value) => Array.from(value).length <= 128,

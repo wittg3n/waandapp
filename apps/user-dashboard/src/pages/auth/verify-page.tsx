@@ -41,7 +41,7 @@ export function VerifyPage() {
 
   return (
     <div className="w-full max-w-[500px]">
-      <AuthMotionItem className="flex justify-center lg:justify-start">
+      <AuthMotionItem className="flex justify-start lg:justify-start">
         <AuthLogo />
       </AuthMotionItem>
       <AuthMotionItem>

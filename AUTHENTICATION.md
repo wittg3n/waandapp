@@ -7,6 +7,7 @@ The API base is `/api/v1`. All browser requests use `credentials: include`; no b
 ## Account and transaction states
 
 - A new user starts as `pending_verification`. Signup verifies email first and phone second. Only the second successful proof activates the user and creates a full session.
+- The dashboard collects account details first, then fades to a local Iranian mobile input such as `09121234567`. It keeps the unfinished values only in memory, converts the phone to canonical E.164, and submits one atomic registration request after the phone step.
 - An active login starts a `login` transaction in `second_step`. Either already verified channel may complete it.
 - Recovery starts a non-enumerating `password_reset` transaction. Both verified channels are required, in email-then-SMS order. Resetting the password invalidates every session and does not log the user in.
 - A sensitive account change starts a purpose-bound `step_up` transaction only after checking the current password. An existing verified factor authorizes a ten-minute, one-use grant. A new email or phone must then prove the new destination too.
@@ -113,7 +114,7 @@ An authenticated `AuthUser` contains the public identity/profile projection only
 
 ## Credentials and verification codes
 
-- Passwords are 12–128 Unicode code points, preserve spaces, may not be all whitespace, and are checked against a bundled common-password denylist. Confirmation must match exactly.
+- Passwords are 8–128 Unicode code points, preserve spaces, have no composition rules, may not be all whitespace, and are checked against a bundled common-password denylist. Confirmation must match exactly.
 - Passwords are hashed with Argon2id. The checked-in development policy is 65,536 KiB, three iterations, and parallelism one; tune only after benchmarking representative production hardware and never below the validator floors.
 - Login performs a dummy Argon2 verification when the identity is absent. Invalid credentials, suspended/deleted accounts, legacy passwordless records, and locked accounts use the same public credential error.
 - Codes use cryptographic randomness and are stored only as HMAC-SHA-256 digests. The digest binds transaction ID, challenge ID, purpose, user ID, channel, destination snapshot, and code with a server-only pepper.
@@ -158,7 +159,7 @@ Important codes include `VALIDATION_ERROR`, `INVALID_JSON`, `PAYLOAD_TOO_LARGE`,
 
 ## Delivery gateway
 
-`AUTH_DELIVERY_MODE=disabled` never logs or sends a code. It is safe for startup but cannot complete a real browser authentication flow. Tests inject in-memory senders. Production requires `webhook` mode and both HTTPS providers.
+`AUTH_DELIVERY_MODE=development` uses the fixed code `000000` for any valid email or phone destination and prints the destination, code, and expiry to the API terminal. The normal challenge digest, transaction binding, attempt limits, expiry, and one-time consumption still apply. This mode is accepted only when `NODE_ENV=development`. `disabled` fails delivery closed. Tests inject in-memory senders. In non-production `webhook` mode, each configured URL/token pair is usable independently and an unconfigured channel fails closed; production requires both HTTPS providers.
 
 The API POSTs one of these payloads to the channel-specific webhook with its bearer token, JSON content type, a five-second timeout, and redirects disabled:
 

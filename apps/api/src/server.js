@@ -84,7 +84,15 @@ export async function start() {
 
     await listen(server);
     registerShutdown(server, redis);
-    logger.info({ port: config.port }, 'Waandapp API listening');
+    logger.info(
+      {
+        port: config.port,
+        nodeEnvironment: config.nodeEnvironment,
+        authDeliveryMode: config.authDeliveryMode,
+        authEmailWebhookUrl: config.authEmailWebhookUrl,
+      },
+      'Waandapp API listening',
+    );
   } catch (error) {
     await Promise.allSettled([disconnectRedis(redis), disconnectMongoDb()]);
     logger.fatal({ err: error }, 'API failed to start');

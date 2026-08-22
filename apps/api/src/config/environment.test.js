@@ -66,6 +66,46 @@ test('validates and transforms the complete authentication environment', () => {
   assert.ok(Object.isFrozen(result));
   assert.ok(Object.isFrozen(result.corsOrigins));
   assert.ok(Object.isFrozen(result.authMutationOrigins));
+
+  const development = validateEnvironment({
+    ...validEnvironment,
+    NODE_ENV: 'development',
+    AUTH_DELIVERY_MODE: 'development',
+  });
+  assert.equal(development.authDeliveryMode, 'development');
+  assert.equal(development.authSmsWebhookUrl, null);
+  assert.throws(
+    () => validateEnvironment({ ...validEnvironment, AUTH_DELIVERY_MODE: 'development' }),
+    /requires NODE_ENV=development/,
+  );
+});
+
+test('non-production webhook delivery accepts complete channels and rejects partial channels', () => {
+  const emailOnly = {
+    ...validEnvironment,
+    NODE_ENV: 'development',
+    AUTH_DELIVERY_MODE: 'webhook',
+    AUTH_EMAIL_WEBHOOK_URL: 'http://127.0.0.1:4100/email',
+    AUTH_EMAIL_WEBHOOK_TOKEN: `email-${'x'.repeat(32)}`,
+  };
+  const result = validateEnvironment(emailOnly);
+
+  assert.equal(result.authEmailWebhookUrl, emailOnly.AUTH_EMAIL_WEBHOOK_URL);
+  assert.equal(result.authEmailWebhookToken, emailOnly.AUTH_EMAIL_WEBHOOK_TOKEN);
+  assert.equal(result.authSmsWebhookUrl, null);
+  assert.equal(result.authSmsWebhookToken, null);
+
+  for (const partial of [
+    { AUTH_EMAIL_WEBHOOK_URL: 'http://127.0.0.1:4100/email' },
+    { AUTH_EMAIL_WEBHOOK_TOKEN: `email-${'x'.repeat(32)}` },
+    { AUTH_SMS_WEBHOOK_URL: 'http://127.0.0.1:4100/sms' },
+    { AUTH_SMS_WEBHOOK_TOKEN: `sms-${'x'.repeat(32)}` },
+  ]) {
+    assert.throws(
+      () => validateEnvironment({ ...validEnvironment, ...partial, AUTH_DELIVERY_MODE: 'webhook' }),
+      /AUTH_(?:EMAIL|SMS)_WEBHOOK/,
+    );
+  }
 });
 
 test('rejects invalid base service settings', () => {
@@ -229,12 +269,25 @@ test('production requires a host cookie and fully configured HTTPS delivery webh
   };
 
   assert.equal(validateEnvironment(production).authDeliveryMode, 'webhook');
+  for (const missingChannel of [
+    { AUTH_EMAIL_WEBHOOK_URL: undefined, AUTH_EMAIL_WEBHOOK_TOKEN: undefined },
+    { AUTH_SMS_WEBHOOK_URL: undefined, AUTH_SMS_WEBHOOK_TOKEN: undefined },
+  ]) {
+    assert.throws(
+      () => validateEnvironment({ ...production, ...missingChannel }),
+      /AUTH_(?:EMAIL|SMS)_WEBHOOK/,
+    );
+  }
   assert.throws(
     () => validateEnvironment({ ...production, SESSION_COOKIE_NAME: 'waand.sid' }),
     /must use the __Host- prefix/,
   );
   assert.throws(
     () => validateEnvironment({ ...production, AUTH_DELIVERY_MODE: 'disabled' }),
+    /must be webhook in production/,
+  );
+  assert.throws(
+    () => validateEnvironment({ ...production, AUTH_DELIVERY_MODE: 'development' }),
     /must be webhook in production/,
   );
   assert.throws(

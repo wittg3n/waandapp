@@ -5,12 +5,15 @@ import {
   passwordResetSchema,
   passwordSchema,
   reauthSchema,
+  signupPhoneSchema,
   signupSchema,
   usernameSchema,
 } from '@/schemas/auth.schema';
 
 describe('auth form schemas', () => {
   it('accepts long Unicode passwords and spaces without composition rules', () => {
+    expect(Array.from('abcdefgh')).toHaveLength(8);
+    expect(passwordSchema.parse('abcdefgh')).toBe('abcdefgh');
     expect(passwordSchema.parse('یک رمز عبور طولانی و امن')).toBe('یک رمز عبور طولانی و امن');
     expect(passwordSchema.parse('correct horse battery staple')).toBe(
       'correct horse battery staple',
@@ -29,7 +32,7 @@ describe('auth form schemas', () => {
   });
 
   it('rejects short, obvious, and overlong passwords', () => {
-    expect(passwordSchema.safeParse('کوتاه').success).toBe(false);
+    expect(passwordSchema.safeParse('x'.repeat(7)).success).toBe(false);
     expect(passwordSchema.safeParse('password1234').success).toBe(false);
     expect(passwordSchema.safeParse('x'.repeat(129)).success).toBe(false);
     expect(loginSchema.safeParse({ identifier: 'sara', password: '😀'.repeat(129) }).success).toBe(
@@ -44,13 +47,21 @@ describe('auth form schemas', () => {
     expect(usernameSchema.safeParse('نام‌کاربری').success).toBe(false);
   });
 
+  it('accepts Iranian local signup mobiles and normalizes localized digits to E.164', () => {
+    expect(signupPhoneSchema.parse('۰۹۱۲۱۲۳۴۵۶۷')).toBe('+989121234567');
+    expect(signupPhoneSchema.parse('٠٩٩٩٩٩٩٩٩٩٩')).toBe('+989999999999');
+    expect(signupPhoneSchema.safeParse('+989121234567').success).toBe(false);
+    expect(signupPhoneSchema.safeParse('0912123456').success).toBe(false);
+    expect(signupPhoneSchema.safeParse('08121234567').success).toBe(false);
+  });
+
   it('requires explicit legal acceptance and matching passwords', () => {
     const base = {
       firstName: 'سارا',
       lastName: 'احمدی',
       username: 'sara',
       email: 'sara@example.com',
-      phone: '+989121234567',
+      phone: '09121234567',
       password: 'correct horse battery staple',
       passwordConfirmation: 'correct horse battery staple',
       termsAccepted: false,
@@ -60,7 +71,7 @@ describe('auth form schemas', () => {
       signupSchema.safeParse({ ...base, termsAccepted: true, passwordConfirmation: 'different' })
         .success,
     ).toBe(false);
-    expect(signupSchema.safeParse({ ...base, termsAccepted: true }).success).toBe(true);
+    expect(signupSchema.parse({ ...base, termsAccepted: true }).phone).toBe('+989121234567');
     expect(
       signupSchema.safeParse({
         ...base,

@@ -69,6 +69,21 @@ function webhookUrl(environment, key, protocols) {
   return value;
 }
 
+function webhookChannel(environment, urlKey, tokenKey, nodeEnvironment, protocols, required) {
+  const hasUrl = Boolean(environment[urlKey]?.trim());
+  const hasToken = Boolean(environment[tokenKey]?.trim());
+
+  if (!hasUrl && !hasToken && !required) return { url: null, token: null };
+  if (hasUrl !== hasToken) {
+    throw new Error(`${urlKey} and ${tokenKey} must be configured together.`);
+  }
+
+  return {
+    url: webhookUrl(environment, urlKey, protocols),
+    token: secret(environment, tokenKey, nodeEnvironment),
+  };
+}
+
 function exactOrigin(value, key, nodeEnvironment) {
   let parsed;
 
@@ -137,15 +152,19 @@ function validateProductionDatastoreTransport(mongodbUri, redisUrl, nodeEnvironm
 function deliveryConfig(environment, nodeEnvironment) {
   const mode = requiredString(environment, 'AUTH_DELIVERY_MODE');
 
-  if (!['disabled', 'webhook'].includes(mode)) {
-    throw new Error('AUTH_DELIVERY_MODE must be disabled or webhook.');
+  if (!['disabled', 'development', 'webhook'].includes(mode)) {
+    throw new Error('AUTH_DELIVERY_MODE must be disabled, development, or webhook.');
   }
 
   if (nodeEnvironment === 'production' && mode !== 'webhook') {
     throw new Error('AUTH_DELIVERY_MODE must be webhook in production.');
   }
 
-  if (mode === 'disabled') {
+  if (mode === 'development' && nodeEnvironment !== 'development') {
+    throw new Error('AUTH_DELIVERY_MODE=development requires NODE_ENV=development.');
+  }
+
+  if (mode !== 'webhook') {
     return {
       authDeliveryMode: mode,
       authEmailWebhookUrl: null,
@@ -155,16 +174,35 @@ function deliveryConfig(environment, nodeEnvironment) {
     };
   }
 
-  const protocols = nodeEnvironment === 'production' ? ['https:'] : ['http:', 'https:'];
-  const emailToken = secret(environment, 'AUTH_EMAIL_WEBHOOK_TOKEN', nodeEnvironment);
-  const smsToken = secret(environment, 'AUTH_SMS_WEBHOOK_TOKEN', nodeEnvironment);
+  const production = nodeEnvironment === 'production';
+  const protocols = production ? ['https:'] : ['http:', 'https:'];
+  const email = webhookChannel(
+    environment,
+    'AUTH_EMAIL_WEBHOOK_URL',
+    'AUTH_EMAIL_WEBHOOK_TOKEN',
+    nodeEnvironment,
+    protocols,
+    production,
+  );
+  const sms = webhookChannel(
+    environment,
+    'AUTH_SMS_WEBHOOK_URL',
+    'AUTH_SMS_WEBHOOK_TOKEN',
+    nodeEnvironment,
+    protocols,
+    production,
+  );
+
+  if (!email.url && !sms.url) {
+    throw new Error('AUTH_DELIVERY_MODE=webhook requires at least one configured provider.');
+  }
 
   return {
     authDeliveryMode: mode,
-    authEmailWebhookUrl: webhookUrl(environment, 'AUTH_EMAIL_WEBHOOK_URL', protocols),
-    authEmailWebhookToken: emailToken,
-    authSmsWebhookUrl: webhookUrl(environment, 'AUTH_SMS_WEBHOOK_URL', protocols),
-    authSmsWebhookToken: smsToken,
+    authEmailWebhookUrl: email.url,
+    authEmailWebhookToken: email.token,
+    authSmsWebhookUrl: sms.url,
+    authSmsWebhookToken: sms.token,
   };
 }
 

@@ -215,6 +215,34 @@ describe('auth API client', () => {
     expect(getRetryAfterSeconds(error)).toBe(17);
   });
 
+  it('maps delivery failures to safe Persian copy', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse(anonymousBootstrap))
+        .mockResolvedValueOnce(
+          jsonResponse(
+            {
+              error: {
+                code: 'AUTH_DELIVERY_UNAVAILABLE',
+                message: 'provider detail must stay hidden',
+              },
+            },
+            { status: 503 },
+          ),
+        ),
+    );
+    const api = createAuthApi('/api/v1');
+
+    await api.getMe();
+    await expect(api.requestRegistrationCode('email')).rejects.toMatchObject({
+      code: 'AUTH_DELIVERY_UNAVAILABLE',
+      statusCode: 503,
+      userMessage: 'ارسال کد فعلاً ممکن نیست؛ کمی بعد دوباره تلاش کنید.',
+    });
+  });
+
   it('rejects malformed success envelopes instead of trusting server data', async () => {
     vi.stubGlobal(
       'fetch',

@@ -131,7 +131,7 @@ function PasswordChangeForm({ onDone }: { onDone: () => void }) {
         error={errors.password?.message}
         id="settings-new-password"
         label="رمز عبور جدید"
-        placeholder="حداقل ۱۲ نویسه"
+        placeholder="حداقل ۸ نویسه"
         {...register('password')}
       />
       <PasswordField
