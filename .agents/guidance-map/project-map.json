@@ -1,0 +1,1568 @@
+{
+  "schema_version": 1,
+  "generator": "code-project-guidance-map",
+  "generator_version": "0.4.0",
+  "generated_at": "2026-08-21T23:08:31Z",
+  "repo_root": "F:\\waandapp",
+  "git_available": true,
+  "current_head": "98418e0",
+  "file_count": 196,
+  "scanned_file_count": 196,
+  "truncated": false,
+  "language_file_counts": {
+    "typescript": 111,
+    "javascript": 35,
+    "yaml": 3
+  },
+  "language_loc": {
+    "typescript": 10869,
+    "yaml": 7492,
+    "javascript": 3404
+  },
+  "manifests": [
+    "apps/api/package.json",
+    "apps/user-dashboard/package.json",
+    "apps/web/package.json",
+    "package.json",
+    "packages/eslint-config/package.json",
+    "packages/shared/package.json",
+    "packages/typescript-config/package.json",
+    "pnpm-workspace.yaml"
+  ],
+  "top_level": [
+    {
+      "path": "apps",
+      "file_count": 168,
+      "source_file_count": 142,
+      "languages": {
+        "javascript": 32,
+        "typescript": 110
+      }
+    },
+    {
+      "path": ".",
+      "file_count": 12,
+      "source_file_count": 3,
+      "languages": {
+        "yaml": 3
+      }
+    },
+    {
+      "path": "packages",
+      "file_count": 12,
+      "source_file_count": 4,
+      "languages": {
+        "javascript": 3,
+        "typescript": 1
+      }
+    },
+    {
+      "path": "infrastructure",
+      "file_count": 4,
+      "source_file_count": 0,
+      "languages": {}
+    }
+  ],
+  "module_candidates": [
+    {
+      "path": "apps/user-dashboard",
+      "file_count": 95,
+      "source_file_count": 95,
+      "languages": {
+        "javascript": 1,
+        "typescript": 94
+      },
+      "manifests": []
+    },
+    {
+      "path": "apps/api",
+      "file_count": 31,
+      "source_file_count": 31,
+      "languages": {
+        "javascript": 31
+      },
+      "manifests": []
+    },
+    {
+      "path": "apps/web",
+      "file_count": 16,
+      "source_file_count": 16,
+      "languages": {
+        "typescript": 16
+      },
+      "manifests": []
+    },
+    {
+      "path": "packages/eslint-config",
+      "file_count": 3,
+      "source_file_count": 3,
+      "languages": {
+        "javascript": 3
+      },
+      "manifests": []
+    },
+    {
+      "path": "docker-compose.yml",
+      "file_count": 1,
+      "source_file_count": 1,
+      "languages": {
+        "yaml": 1
+      },
+      "manifests": []
+    },
+    {
+      "path": "packages/shared",
+      "file_count": 1,
+      "source_file_count": 1,
+      "languages": {
+        "typescript": 1
+      },
+      "manifests": []
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "file_count": 1,
+      "source_file_count": 1,
+      "languages": {
+        "yaml": 1
+      },
+      "manifests": []
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "file_count": 1,
+      "source_file_count": 1,
+      "languages": {
+        "yaml": 1
+      },
+      "manifests": [
+        "pnpm-workspace.yaml"
+      ]
+    }
+  ],
+  "imports": [
+    {
+      "file": "apps/api/eslint.config.js",
+      "language": "javascript",
+      "imports": [
+        "@waandapp/eslint-config/node"
+      ]
+    },
+    {
+      "file": "apps/api/src/app.js",
+      "language": "javascript",
+      "imports": [
+        "node:crypto",
+        "cors",
+        "express",
+        "express-rate-limit",
+        "helmet",
+        "pino-http",
+        "rate-limit-redis",
+        "./auth/router.js",
+        "./auth/service.js",
+        "./auth/delivery.js",
+        "./config/index.js",
+        "./config/session.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/config/environment.test.js",
+      "language": "javascript",
+      "imports": [
+        "node:assert/strict",
+        "node:test",
+        "./environment.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/config/index.js",
+      "language": "javascript",
+      "imports": [
+        "node:fs",
+        "node:url",
+        "node:process",
+        "./environment.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/config/session.js",
+      "language": "javascript",
+      "imports": [
+        "express-session",
+        "connect-mongo",
+        "mongoose",
+        "./index.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/infrastructure/mongodb.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose"
+      ]
+    },
+    {
+      "file": "apps/api/src/infrastructure/redis.js",
+      "language": "javascript",
+      "imports": [
+        "redis"
+      ]
+    },
+    {
+      "file": "apps/api/src/logger.js",
+      "language": "javascript",
+      "imports": [
+        "pino",
+        "./config/index.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/middleware/errors.js",
+      "language": "javascript",
+      "imports": [
+        "zod",
+        "../logger.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/server.js",
+      "language": "javascript",
+      "imports": [
+        "node:http",
+        "node:path",
+        "node:url",
+        "./app.js",
+        "./auth/indexes.js",
+        "./config/index.js",
+        "./infrastructure/mongodb.js",
+        "./infrastructure/redis.js",
+        "./logger.js"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/eslint.config.js",
+      "language": "javascript",
+      "imports": [
+        "@eslint/js",
+        "globals",
+        "typescript-eslint"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/app/app.tsx",
+      "language": "typescript",
+      "imports": [
+        "react-router-dom",
+        "@/app/providers",
+        "@/app/router",
+        "@/components/errors/app-error-boundary",
+        "@/features/auth/auth-context"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/app/providers.tsx",
+      "language": "typescript",
+      "imports": [
+        "framer-motion",
+        "react",
+        "sonner",
+        "@/components/ui/tooltip"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/app/router.tsx",
+      "language": "typescript",
+      "imports": [
+        "react-router-dom",
+        "@/components/auth/auth-layout",
+        "@/components/errors/route-error-page",
+        "@/components/layout/dashboard-shell",
+        "@/features/auth/auth-guard",
+        "@/features/dashboard/pages/dashboard-page",
+        "@/features/dashboard/pages/feature-placeholder-page",
+        "@/features/onboarding/pages/onboarding-page",
+        "@/pages/auth/login-page",
+        "@/pages/auth/signup-page",
+        "@/pages/errors/not-found-page"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/auth/auth-field.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react",
+        "@/components/ui/input",
+        "@/components/ui/label",
+        "@/components/errors/inline-error",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/auth/auth-form-motion.tsx",
+      "language": "typescript",
+      "imports": [
+        "framer-motion",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/auth/auth-header.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/auth/auth-illustration.tsx",
+      "language": "typescript",
+      "imports": [
+        "framer-motion",
+        "@/assets/auth/login-illustration.png",
+        "@/assets/auth/signup-illustration.png"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/auth/auth-layout.tsx",
+      "language": "typescript",
+      "imports": [
+        "framer-motion",
+        "react",
+        "react-router-dom",
+        "@/components/auth/auth-illustration"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/auth/auth-logo.tsx",
+      "language": "typescript",
+      "imports": [
+        "../ui/waand-logo"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/errors/app-error-boundary.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/components/errors/error-state",
+        "@/errors/app-error",
+        "@/errors/error-catalog",
+        "@/errors/error-codes",
+        "@/errors/error-reporter",
+        "@/errors/normalize-error"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/errors/error-state.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react",
+        "@/components/ui/button",
+        "@/components/ui/separator",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/errors/form-error.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react",
+        "@/components/ui/alert",
+        "@/errors/app-error"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/errors/index.ts",
+      "language": "typescript",
+      "imports": [
+        "@/components/errors/app-error-boundary",
+        "@/components/errors/error-state",
+        "@/components/errors/form-error",
+        "@/components/errors/inline-error",
+        "@/components/errors/route-error-page"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/errors/inline-error.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/errors/route-error-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "react-router-dom",
+        "@/components/errors/error-state",
+        "@/errors/error-catalog",
+        "@/errors/error-codes",
+        "@/errors/error-reporter",
+        "@/errors/normalize-error"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/layout/dashboard-mobile-nav.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react",
+        "@/components/auth/auth-logo",
+        "@/components/layout/dashboard-navigation",
+        "@/components/ui/button",
+        "@/components/ui/sheet",
+        "@/features/auth/auth-context"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/layout/dashboard-navigation.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react",
+        "react-router-dom",
+        "sonner",
+        "@/errors/normalize-error",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/layout/dashboard-shell.tsx",
+      "language": "typescript",
+      "imports": [
+        "react-router-dom",
+        "@/components/layout/dashboard-sidebar",
+        "@/components/layout/topbar"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/layout/dashboard-sidebar.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/auth/auth-logo",
+        "@/components/layout/dashboard-navigation",
+        "@/features/auth/auth-context"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/layout/topbar.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react",
+        "sonner",
+        "@/components/auth/auth-logo",
+        "@/components/layout/dashboard-mobile-nav",
+        "@/components/ui/avatar",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/components/ui/tooltip",
+        "@/features/auth/auth-context",
+        "@/data/iran"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/ui/alert.tsx",
+      "language": "typescript",
+      "imports": [
+        "class-variance-authority",
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/ui/avatar.tsx",
+      "language": "typescript",
+      "imports": [
+        "@radix-ui/react-avatar",
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/ui/badge.tsx",
+      "language": "typescript",
+      "imports": [
+        "class-variance-authority",
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/ui/button.tsx",
+      "language": "typescript",
+      "imports": [
+        "class-variance-authority",
+        "framer-motion",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/ui/card.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/ui/checkbox.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/ui/input.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/ui/label.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/ui/progress.tsx",
+      "language": "typescript",
+      "imports": [
+        "@radix-ui/react-progress",
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/ui/select.tsx",
+      "language": "typescript",
+      "imports": [
+        "@radix-ui/react-select",
+        "lucide-react",
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/ui/separator.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/ui/sheet.tsx",
+      "language": "typescript",
+      "imports": [
+        "@radix-ui/react-dialog",
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/ui/skeleton.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/ui/tooltip.tsx",
+      "language": "typescript",
+      "imports": [
+        "@radix-ui/react-tooltip",
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/ui/waand-logo.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/errors/app-error.ts",
+      "language": "typescript",
+      "imports": [
+        "@/errors/error-catalog",
+        "@/errors/error-codes"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/errors/error-catalog.ts",
+      "language": "typescript",
+      "imports": [
+        "@/errors/error-codes",
+        "@/errors/app-error"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/errors/error-reporter.ts",
+      "language": "typescript",
+      "imports": [
+        "@/errors/app-error"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/errors/index.ts",
+      "language": "typescript",
+      "imports": [
+        "@/errors/app-error",
+        "@/errors/error-catalog",
+        "@/errors/error-codes",
+        "@/errors/error-reporter",
+        "@/errors/normalize-error"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/errors/normalize-error.ts",
+      "language": "typescript",
+      "imports": [
+        "@/errors/app-error",
+        "@/errors/error-codes"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-context.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/errors/app-error",
+        "@/errors/error-codes",
+        "@/errors/normalize-error",
+        "@/features/auth/auth-api",
+        "@/features/auth/auth-recovery",
+        "@/features/auth/auth-state",
+        "@/features/auth/types",
+        "@/features/onboarding/onboarding-draft-storage"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-guard.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react-router-dom",
+        "@/features/auth/auth-context",
+        "@/features/auth/auth-routing"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/profile-completion.ts",
+      "language": "typescript",
+      "imports": [
+        "@/features/auth/types"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/types.ts",
+      "language": "typescript",
+      "imports": [
+        "@/errors/app-error"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/dashboard/components/ai-insight-card.tsx",
+      "language": "typescript",
+      "imports": [
+        "framer-motion",
+        "lucide-react",
+        "react-router-dom",
+        "@/features/dashboard/types",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/dashboard/components/application-journey.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react-router-dom",
+        "@/features/dashboard/types",
+        "@/lib/format",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/dashboard/components/dashboard-header.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/features/dashboard/types",
+        "@/lib/format",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/dashboard/components/deadline-preview.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/badge",
+        "@/features/dashboard/types",
+        "@/lib/format",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/dashboard/components/document-health.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react",
+        "react-router-dom",
+        "@/features/dashboard/types",
+        "@/lib/format"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/dashboard/components/next-actions.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react-router-dom",
+        "@/components/ui/badge",
+        "@/features/dashboard/types",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/dashboard/components/recent-activity.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react",
+        "react-router-dom",
+        "@/features/dashboard/types",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/dashboard/components/university-recommendations.tsx",
+      "language": "typescript",
+      "imports": [
+        "framer-motion",
+        "lucide-react",
+        "react-router-dom",
+        "@/features/dashboard/types",
+        "@/lib/format"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/dashboard/pages/dashboard-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "framer-motion",
+        "@/features/auth/auth-context",
+        "@/features/dashboard/components/ai-insight-card",
+        "@/features/dashboard/components/application-journey",
+        "@/features/dashboard/components/dashboard-header",
+        "@/features/dashboard/components/deadline-preview",
+        "@/features/dashboard/components/document-health",
+        "@/features/dashboard/components/next-actions",
+        "@/features/dashboard/components/recent-activity",
+        "@/features/dashboard/components/university-recommendations",
+        "@/features/dashboard/data/application-dashboard"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/dashboard/pages/feature-placeholder-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/components/onboarding-choice-group.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "@/components/errors/inline-error",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/components/onboarding-field.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/components/errors/inline-error",
+        "@/components/ui/input",
+        "@/components/ui/label",
+        "@/components/ui/select",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/components/onboarding-options.ts",
+      "language": "typescript",
+      "imports": [
+        "@/data/iran",
+        "@/features/auth/types",
+        "./onboarding-field"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/components/onboarding-progress.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/ui/progress",
+        "@/lib/format",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/components/onboarding-step-heading.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/components/onboarding-steps.tsx",
+      "language": "typescript",
+      "imports": [
+        "./steps/application-goal-step",
+        "./steps/completion-step",
+        "./steps/education-step",
+        "./steps/language-step",
+        "./steps/preferences-step",
+        "./steps/welcome-step"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/components/steps/application-goal-step.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react-hook-form",
+        "@/components/errors/inline-error",
+        "@/lib/utils",
+        "../onboarding-field",
+        "../onboarding-options",
+        "../onboarding-step-heading",
+        "../../schemas/onboarding-schema"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/components/steps/completion-step.tsx",
+      "language": "typescript",
+      "imports": [
+        "framer-motion",
+        "lucide-react",
+        "@/lib/format"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/components/steps/education-step.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react-hook-form",
+        "../onboarding-field",
+        "../onboarding-options",
+        "../onboarding-step-heading",
+        "../../schemas/onboarding-schema"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/components/steps/language-step.tsx",
+      "language": "typescript",
+      "imports": [
+        "framer-motion",
+        "lucide-react",
+        "react-hook-form",
+        "../onboarding-choice-group",
+        "../onboarding-field",
+        "../onboarding-options",
+        "../onboarding-step-heading",
+        "../../schemas/onboarding-schema"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/components/steps/preferences-step.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react-hook-form",
+        "../onboarding-choice-group",
+        "../onboarding-field",
+        "../onboarding-options",
+        "../onboarding-step-heading",
+        "../../schemas/onboarding-schema"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/components/steps/welcome-step.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/index.ts",
+      "language": "typescript",
+      "imports": [
+        "./pages/onboarding-page",
+        "./schemas/onboarding-schema"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/pages/onboarding-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@hookform/resolvers/zod",
+        "framer-motion",
+        "lucide-react",
+        "react",
+        "react-hook-form",
+        "react-router-dom",
+        "@/components/auth/auth-logo",
+        "@/components/errors/form-error",
+        "@/components/ui/button",
+        "@/features/auth/auth-context",
+        "@/features/auth/profile-completion",
+        "@/features/onboarding/onboarding-draft-storage"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/schemas/onboarding-schema.ts",
+      "language": "typescript",
+      "imports": [
+        "zod",
+        "@/data/iran",
+        "@/features/auth/types"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/hooks/use-app-error.ts",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "sonner",
+        "@/errors/app-error",
+        "@/errors/error-reporter",
+        "@/errors/normalize-error"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/lib/utils.ts",
+      "language": "typescript",
+      "imports": [
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/main.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "react-dom/client",
+        "@/app/app",
+        "@/styles/globals.css"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/pages/auth/login-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/pages/auth/passwordless-auth-page"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/pages/auth/signup-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/pages/auth/passwordless-auth-page"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/pages/errors/not-found-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "react-router-dom",
+        "@/components/errors/error-state",
+        "@/errors/error-catalog",
+        "@/errors/error-codes"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/schemas/auth.schema.ts",
+      "language": "typescript",
+      "imports": [
+        "zod",
+        "@/features/auth/auth-flow"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/vite.config.ts",
+      "language": "typescript",
+      "imports": [
+        "node:url",
+        "@tailwindcss/vite",
+        "@vitejs/plugin-react",
+        "vite"
+      ]
+    },
+    {
+      "file": "apps/web/next-env.d.ts",
+      "language": "typescript",
+      "imports": [
+        "./.next/dev/types/routes.d.ts",
+        "./.next/dev/types/root-params.d.ts"
+      ]
+    },
+    {
+      "file": "apps/web/next.config.ts",
+      "language": "typescript",
+      "imports": [
+        "@next/env",
+        "next",
+        "node:path",
+        "node:url"
+      ]
+    },
+    {
+      "file": "apps/web/src/app/layout.tsx",
+      "language": "typescript",
+      "imports": [
+        "next",
+        "react",
+        "@/lib/site",
+        "@/styles/globals.css"
+      ]
+    },
+    {
+      "file": "apps/web/src/app/page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/landing/landing-page",
+        "@/lib/site"
+      ]
+    },
+    {
+      "file": "apps/web/src/app/robots.ts",
+      "language": "typescript",
+      "imports": [
+        "next",
+        "@/lib/site"
+      ]
+    },
+    {
+      "file": "apps/web/src/app/sitemap.ts",
+      "language": "typescript",
+      "imports": [
+        "next",
+        "@/lib/site"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/landing/landing-navbar.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/components/ui/resizable-navbar",
+        "@/components/ui/waand-logo"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/landing/landing-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "next/image",
+        "lucide-react",
+        "@/components/landing/landing-navbar",
+        "@/components/ui/line-shadow-text",
+        "@/components/landing/motion",
+        "@/components/landing/testimonials",
+        "@/components/ui/button",
+        "@/lib/utils",
+        "@/components/ui/waand-logo"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/landing/motion.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "framer-motion",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/landing/testimonials.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "framer-motion",
+        "lucide-react",
+        "@/components/ui/button",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/ui/button.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/ui/line-shadow-text.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "motion/react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/ui/resizable-navbar.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "motion/react",
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/ui/waand-logo.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/web/src/lib/utils.ts",
+      "language": "typescript",
+      "imports": [
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "file": "packages/eslint-config/base.js",
+      "language": "javascript",
+      "imports": [
+        "@eslint/js",
+        "eslint-config-prettier",
+        "typescript-eslint"
+      ]
+    },
+    {
+      "file": "packages/eslint-config/next.js",
+      "language": "javascript",
+      "imports": [
+        "eslint-config-next/core-web-vitals",
+        "eslint-config-next/typescript",
+        "./base.js"
+      ]
+    },
+    {
+      "file": "packages/eslint-config/node.js",
+      "language": "javascript",
+      "imports": [
+        "globals",
+        "./base.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/audit.js",
+      "language": "javascript",
+      "imports": [
+        "../logger.js",
+        "./code.js",
+        "./models/auth-event.js",
+        "./normalization.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/auth.integration.js",
+      "language": "javascript",
+      "imports": [
+        "node:assert/strict",
+        "node:http",
+        "node:crypto",
+        "node:test"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/auth.test.js",
+      "language": "javascript",
+      "imports": [
+        "node:assert/strict",
+        "node:test",
+        "./code.js",
+        "./delivery.js",
+        "./normalization.js",
+        "./schemas.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/authorization.js",
+      "language": "javascript",
+      "imports": [
+        "../middleware/errors.js",
+        "../middleware/session.js",
+        "./models/user.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/code.js",
+      "language": "javascript",
+      "imports": [
+        "node:crypto"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/indexes.js",
+      "language": "javascript",
+      "imports": [
+        "node:util",
+        "./index-names.js",
+        "./models/auth-challenge.js",
+        "./models/auth-event.js",
+        "./models/user.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/models/auth-challenge.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "../index-names.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/models/auth-event.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "../index-names.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/models/user.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "../index-names.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/normalization.js",
+      "language": "javascript",
+      "imports": [
+        "libphonenumber-js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/rate-limit.js",
+      "language": "javascript",
+      "imports": [
+        "express-rate-limit",
+        "rate-limit-redis",
+        "../middleware/errors.js",
+        "./code.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/router.js",
+      "language": "javascript",
+      "imports": [
+        "express",
+        "../middleware/errors.js",
+        "../middleware/session.js",
+        "./audit.js",
+        "./authorization.js",
+        "./models/user.js",
+        "./rate-limit.js",
+        "./schemas.js",
+        "./serialization.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/schemas.js",
+      "language": "javascript",
+      "imports": [
+        "zod",
+        "./normalization.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/service.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "../middleware/errors.js",
+        "../middleware/session.js",
+        "./audit.js",
+        "./code.js",
+        "./delivery.js",
+        "./models/auth-challenge.js",
+        "./models/user.js",
+        "./rate-limit.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/health/router.js",
+      "language": "javascript",
+      "imports": [
+        "express",
+        "../infrastructure/mongodb.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/middleware/security.test.js",
+      "language": "javascript",
+      "imports": [
+        "node:assert/strict",
+        "node:test"
+      ]
+    },
+    {
+      "file": "apps/api/src/middleware/session.js",
+      "language": "javascript",
+      "imports": [
+        "node:crypto",
+        "../config/session.js",
+        "./errors.js"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-api.test.ts",
+      "language": "typescript",
+      "imports": [
+        "vitest",
+        "@/features/auth/auth-api"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-api.ts",
+      "language": "typescript",
+      "imports": [
+        "zod",
+        "@/errors/app-error",
+        "@/errors/error-codes",
+        "@/errors/normalize-error",
+        "@/features/auth/types"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-flow.test.ts",
+      "language": "typescript",
+      "imports": [
+        "vitest",
+        "@/features/auth/auth-flow",
+        "@/schemas/auth.schema"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-flow.ts",
+      "language": "typescript",
+      "imports": [
+        "@/features/auth/types"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-recovery.test.ts",
+      "language": "typescript",
+      "imports": [
+        "vitest",
+        "@/errors/app-error",
+        "@/errors/error-codes",
+        "@/features/auth/auth-recovery"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-recovery.ts",
+      "language": "typescript",
+      "imports": [
+        "@/errors/app-error",
+        "@/errors/error-codes"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-routing.test.ts",
+      "language": "typescript",
+      "imports": [
+        "vitest",
+        "@/features/auth/auth-state",
+        "@/features/auth/auth-routing",
+        "@/features/auth/types"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-routing.ts",
+      "language": "typescript",
+      "imports": [
+        "@/features/auth/types"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-state.ts",
+      "language": "typescript",
+      "imports": [
+        "@/errors/app-error",
+        "@/errors/error-codes",
+        "@/features/auth/profile-completion",
+        "@/features/auth/types"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/onboarding/onboarding-draft-storage.test.ts",
+      "language": "typescript",
+      "imports": [
+        "vitest",
+        "@/features/onboarding/onboarding-draft-storage"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/pages/auth/passwordless-auth-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react",
+        "react-router-dom",
+        "@/components/auth/auth-field",
+        "@/components/auth/auth-form-motion",
+        "@/components/auth/auth-header",
+        "@/components/auth/auth-logo",
+        "@/components/errors/form-error",
+        "@/components/ui/button",
+        "@/features/auth/auth-api",
+        "@/features/auth/auth-context",
+        "@/features/auth/auth-flow"
+      ]
+    }
+  ],
+  "changed_files": [
+    ".env.example",
+    "README.md",
+    "apps/api/package.json",
+    "apps/api/src/app.js",
+    "apps/api/src/config/environment.js",
+    "apps/api/src/config/environment.test.js",
+    "apps/api/src/config/session.js",
+    "apps/api/src/logger.js",
+    "apps/api/src/middleware/errors.js",
+    "apps/api/src/server.js",
+    "apps/user-dashboard/eslint.config.js",
+    "apps/user-dashboard/package.json",
+    "apps/user-dashboard/src/app/router.tsx",
+    "apps/user-dashboard/src/components/auth/password-field.tsx",
+    "apps/user-dashboard/src/components/layout/dashboard-mobile-nav.tsx",
+    "apps/user-dashboard/src/components/layout/dashboard-navigation.tsx",
+    "apps/user-dashboard/src/errors/error-catalog.ts",
+    "apps/user-dashboard/src/errors/error-codes.ts",
+    "apps/user-dashboard/src/features/auth/auth-context.tsx",
+    "apps/user-dashboard/src/features/auth/auth-guard.tsx",
+    "apps/user-dashboard/src/features/auth/auth-storage.ts",
+    "apps/user-dashboard/src/features/auth/types.ts",
+    "apps/user-dashboard/src/features/onboarding/pages/onboarding-page.tsx",
+    "apps/user-dashboard/src/pages/auth/login-page.tsx",
+    "apps/user-dashboard/src/pages/auth/signup-page.tsx",
+    "apps/user-dashboard/src/schemas/auth.schema.ts",
+    "apps/user-dashboard/vite.config.ts",
+    "apps/web/next.config.ts",
+    "apps/web/src/components/landing/landing-navbar.tsx",
+    "apps/web/src/components/landing/landing-page.tsx",
+    "apps/web/src/components/landing/motion.tsx",
+    "docker-compose.yml",
+    "infrastructure/docker/user-dashboard.Dockerfile",
+    "infrastructure/docker/web.Dockerfile",
+    "pnpm-lock.yaml",
+    "turbo.json",
+    ".agents/guidance-map/guides/api/service.md",
+    ".agents/guidance-map/guides/user-dashboard/identity.md",
+    ".agents/guidance-map/guides/user-dashboard/product.md",
+    ".agents/guidance-map/guides/user-dashboard/shell.md",
+    ".agents/guidance-map/guides/web/marketing.md",
+    ".agents/guidance-map/guides/workspace/tooling.md",
+    ".agents/guidance-map/manifest.json",
+    ".agents/guidance-map/project-map.json",
+    "AGENTS.md",
+    "AUTHENTICATION.md",
+    "apps/api/scripts/build.mjs",
+    "apps/api/scripts/sync-auth-indexes.mjs",
+    "apps/api/src/auth/audit.js",
+    "apps/api/src/auth/auth.integration.js",
+    "apps/api/src/auth/auth.test.js",
+    "apps/api/src/auth/authorization.js",
+    "apps/api/src/auth/code.js",
+    "apps/api/src/auth/delivery.js",
+    "apps/api/src/auth/index-names.js",
+    "apps/api/src/auth/indexes.js",
+    "apps/api/src/auth/models/auth-challenge.js",
+    "apps/api/src/auth/models/auth-event.js",
+    "apps/api/src/auth/models/user.js",
+    "apps/api/src/auth/normalization.js",
+    "apps/api/src/auth/rate-limit.js",
+    "apps/api/src/auth/router.js",
+    "apps/api/src/auth/schemas.js",
+    "apps/api/src/auth/serialization.js",
+    "apps/api/src/auth/service.js",
+    "apps/api/src/health/router.js",
+    "apps/api/src/middleware/security.test.js",
+    "apps/api/src/middleware/session.js",
+    "apps/user-dashboard/src/features/auth/auth-api.test.ts",
+    "apps/user-dashboard/src/features/auth/auth-api.ts",
+    "apps/user-dashboard/src/features/auth/auth-flow.test.ts",
+    "apps/user-dashboard/src/features/auth/auth-flow.ts",
+    "apps/user-dashboard/src/features/auth/auth-recovery.test.ts",
+    "apps/user-dashboard/src/features/auth/auth-recovery.ts",
+    "apps/user-dashboard/src/features/auth/auth-routing.test.ts",
+    "apps/user-dashboard/src/features/auth/auth-routing.ts",
+    "apps/user-dashboard/src/features/auth/auth-state.ts",
+    "apps/user-dashboard/src/features/onboarding/onboarding-draft-storage.test.ts",
+    "apps/user-dashboard/src/features/onboarding/onboarding-draft-storage.ts",
+    "apps/user-dashboard/src/pages/auth/passwordless-auth-page.tsx"
+  ],
+  "affected_module_guides": [
+    ".agents/guidance-map/guides/api/service.md",
+    ".agents/guidance-map/guides/user-dashboard/identity.md",
+    ".agents/guidance-map/guides/user-dashboard/shell.md",
+    ".agents/guidance-map/guides/web/marketing.md",
+    ".agents/guidance-map/guides/workspace/tooling.md"
+  ],
+  "graphify": {
+    "available": false,
+    "graph_path": "F:\\waandapp\\graphify-out\\graph.json",
+    "size_bytes": 0,
+    "nodes": 0,
+    "links": 0,
+    "hyperedges": 0,
+    "communities": 0
+  }
+}

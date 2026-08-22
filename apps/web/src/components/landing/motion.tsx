@@ -11,7 +11,6 @@ import {
 } from 'react';
 import {
   motion,
-  useInView,
   useScroll,
   useMotionValue,
   useReducedMotion,
@@ -920,6 +919,242 @@ export function AppPromoCopy({
     >
       {children}
     </motion.div>
+  );
+}
+/* -------------------------------------------------------------------------- */
+/*                              Why Waand Scene                               */
+/* -------------------------------------------------------------------------- */
+
+type WhyWaandSceneValues = {
+  progress: MotionValue<number>;
+  reducedMotion: boolean;
+};
+
+const WhyWaandSceneContext = createContext<WhyWaandSceneValues | null>(null);
+
+export function WhyWaandScene({ children, className }: StaticDivProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+
+  const { scrollYProgress } = useScroll({
+    target: ref,
+
+    /*
+     * Start:
+     * section has just entered the lower viewport.
+     *
+     * End:
+     * section is approaching its intended showcase position.
+     */
+    offset: ['start 96%', 'start 45%'],
+  });
+
+  /*
+   * Light smoothing only.
+   * The motion is still directly controlled by scroll.
+   */
+  const progress = useSpring(scrollYProgress, {
+    stiffness: 160,
+    damping: 31,
+    mass: 0.32,
+    restDelta: 0.001,
+  });
+
+  const value = useMemo(
+    () => ({
+      progress,
+      reducedMotion: Boolean(reducedMotion),
+    }),
+    [progress, reducedMotion],
+  );
+
+  return (
+    <div ref={ref} className={className}>
+      <WhyWaandSceneContext.Provider value={value}>{children}</WhyWaandSceneContext.Provider>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                           Why Waand Mountain                               */
+/* -------------------------------------------------------------------------- */
+
+export function WhyWaandMountain({ children, className }: StaticDivProps) {
+  const scene = useContext(WhyWaandSceneContext);
+  const localReducedMotion = useReducedMotion();
+
+  const fallbackProgress = useMotionValue(1);
+  const progress = scene?.progress ?? fallbackProgress;
+
+  const reducedMotion = scene?.reducedMotion ?? Boolean(localReducedMotion);
+
+  /*
+   * The mountain behaves like one large physical illustration
+   * rising into the composition.
+   *
+   * There is a very small overscale near the end, but no bounce.
+   */
+  const x = useTransform(progress, [0, 0.22, 0.72, 1], [-76, -48, -7, 0], { clamp: true });
+
+  const y = useTransform(progress, [0, 0.22, 0.72, 1], [180, 118, 16, 0], { clamp: true });
+
+  const rotate = useTransform(progress, [0, 0.25, 0.75, 1], [-5.8, -3.1, -0.35, 0], {
+    clamp: true,
+  });
+
+  const scale = useTransform(progress, [0, 0.25, 0.74, 1], [0.87, 0.93, 1.015, 1], { clamp: true });
+
+  const opacity = useTransform(progress, [0, 0.1, 0.34], [0, 0.58, 1], { clamp: true });
+
+  if (reducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={cn('h-full w-full will-change-transform', className)}
+      style={{
+        x,
+        y,
+        rotate,
+        scale,
+        opacity,
+        transformOrigin: '45% 88%',
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                             Why Waand Copy                                 */
+/* -------------------------------------------------------------------------- */
+
+export type WhyWaandCopyStage = 'eyebrow' | 'title' | 'body' | 'features' | 'action' | 'caption';
+
+type WhyWaandCopyRange = {
+  input: number[];
+  opacity: number[];
+  x: number[];
+  y: number[];
+};
+
+const whyWaandCopyRanges: Record<WhyWaandCopyStage, WhyWaandCopyRange> = {
+  eyebrow: {
+    input: [0, 0.1, 0.38, 0.58],
+    opacity: [0, 0.12, 0.78, 1],
+    x: [24, 20, 4, 0],
+    y: [18, 15, 3, 0],
+  },
+
+  title: {
+    input: [0, 0.12, 0.46, 0.66],
+    opacity: [0.04, 0.14, 0.82, 1],
+    x: [46, 36, 6, 0],
+    y: [34, 28, 5, 0],
+  },
+
+  body: {
+    input: [0, 0.28, 0.58, 0.76],
+    opacity: [0, 0, 0.72, 1],
+    x: [30, 30, 5, 0],
+    y: [24, 24, 5, 0],
+  },
+
+  features: {
+    input: [0, 0.42, 0.7, 0.87],
+    opacity: [0, 0, 0.68, 1],
+    x: [22, 22, 4, 0],
+    y: [20, 20, 4, 0],
+  },
+
+  action: {
+    input: [0, 0.56, 0.78, 0.96],
+    opacity: [0, 0, 0.72, 1],
+    x: [18, 18, 3, 0],
+    y: [18, 18, 3, 0],
+  },
+
+  caption: {
+    input: [0, 0.58, 0.8, 1],
+    opacity: [0, 0, 0.7, 1],
+    x: [0, 0, 0, 0],
+    y: [12, 12, 3, 0],
+  },
+};
+
+export function WhyWaandCopy({
+  children,
+  className,
+  stage,
+}: StaticDivProps & {
+  stage: WhyWaandCopyStage;
+}) {
+  const scene = useContext(WhyWaandSceneContext);
+  const localReducedMotion = useReducedMotion();
+
+  const fallbackProgress = useMotionValue(1);
+  const progress = scene?.progress ?? fallbackProgress;
+
+  const reducedMotion = scene?.reducedMotion ?? Boolean(localReducedMotion);
+
+  const range = whyWaandCopyRanges[stage];
+
+  const opacity = useTransform(progress, range.input, range.opacity, { clamp: true });
+
+  const x = useTransform(progress, range.input, range.x, { clamp: true });
+
+  const y = useTransform(progress, range.input, range.y, { clamp: true });
+
+  if (reducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={className}
+      style={{
+        opacity,
+        x,
+        y,
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                             Why Waand Aura                                 */
+/* -------------------------------------------------------------------------- */
+
+export function WhyWaandAura({ className }: { className?: string }) {
+  const scene = useContext(WhyWaandSceneContext);
+  const localReducedMotion = useReducedMotion();
+
+  const fallbackProgress = useMotionValue(1);
+  const progress = scene?.progress ?? fallbackProgress;
+
+  const reducedMotion = scene?.reducedMotion ?? Boolean(localReducedMotion);
+
+  const opacity = useTransform(progress, [0, 0.28, 0.72, 1], [0, 0.18, 0.72, 1], { clamp: true });
+
+  const scale = useTransform(progress, [0, 0.5, 1], [0.72, 0.9, 1], { clamp: true });
+
+  if (reducedMotion) {
+    return <div aria-hidden="true" className={className} />;
+  }
+
+  return (
+    <motion.div
+      aria-hidden="true"
+      className={className}
+      style={{
+        opacity,
+        scale,
+      }}
+    />
   );
 }
 /* -------------------------------------------------------------------------- */

@@ -1,8 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail } from 'lucide-react';
+import { AtSign } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 
 import { AuthField } from '@/components/auth/auth-field';
 import { AuthFormMotion, AuthMotionItem } from '@/components/auth/auth-form-motion';
@@ -11,7 +10,7 @@ import { AuthLogo } from '@/components/auth/auth-logo';
 import { PasswordField } from '@/components/auth/password-field';
 import { FormError } from '@/components/errors/form-error';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { authApi } from '@/features/auth/auth-api';
 import { useAuth } from '@/features/auth/auth-context';
 import { useAppError } from '@/hooks/use-app-error';
 import { cn } from '@/lib/utils';
@@ -19,7 +18,7 @@ import { loginSchema, type LoginFormValues } from '@/schemas/auth.schema';
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { applySnapshot, state, termsVersion } = useAuth();
   const { clearError, handleError } = useAppError();
   const {
     clearErrors,
@@ -28,26 +27,29 @@ export function LoginPage() {
     register,
     setError,
   } = useForm<LoginFormValues>({
-    defaultValues: { email: '', password: '', remember: true },
+    defaultValues: { identifier: '', password: '' },
     mode: 'onTouched',
     resolver: zodResolver(loginSchema),
   });
 
-  const submit = async (values: LoginFormValues) => {
+  async function submit(values: LoginFormValues) {
     clearErrors('root');
     clearError();
-
     try {
-      const user = await login(values);
-      navigate(user.onboardingCompleted ? '/dashboard' : '/onboarding', { replace: true });
+      const result = await authApi.login(values);
+      applySnapshot(result.snapshot);
+      navigate('/verify', { replace: true });
     } catch (cause) {
       const error = handleError(cause, {
         source: 'authentication',
-        context: { operation: 'login' },
+        context: { operation: 'password-login' },
       });
-      setError('root', { message: error.userMessage, type: 'server' });
+      const fieldMessage = error.fieldErrors?.identifier?.[0] ?? error.fieldErrors?.password?.[0];
+      setError('root', { message: fieldMessage ?? error.userMessage, type: 'server' });
     }
-  };
+  }
+
+  const bootstrapError = state.status === 'anonymous' ? state.error : undefined;
 
   return (
     <AuthFormMotion
@@ -62,11 +64,11 @@ export function LoginPage() {
       <AuthMotionItem>
         <AuthHeader
           className="auth-login-header mt-8 lg:mt-[52px]"
-          subtitle="سفر آینده‌ات همین‌جا ادامه داره"
+          subtitle="نام کاربری یا ایمیل و رمز عبور خود را وارد کنید."
           title={
             <>
               <span className="block">خوش برگشتی</span>
-              <span className="block">به واند وارد شوید</span>
+              <span className="block">به وآند وارد شوید</span>
             </>
           }
           titleClassName="auth-login-title text-[34px] sm:text-[38px] lg:text-[42px]"
@@ -76,21 +78,24 @@ export function LoginPage() {
       <div className="mt-8 space-y-3">
         <AuthMotionItem>
           <AuthField
-            autoComplete="email"
-            error={errors.email?.message}
-            icon={Mail}
-            id="login-email"
-            inputMode="email"
-            label="ایمیل"
-            placeholder="ایمیل"
-            type="email"
-            {...register('email')}
+            autoCapitalize="none"
+            autoComplete="username"
+            dir="ltr"
+            error={errors.identifier?.message}
+            icon={AtSign}
+            id="login-identifier"
+            label="نام کاربری یا ایمیل"
+            placeholder="نام کاربری یا ایمیل"
+            spellCheck={false}
+            type="text"
+            {...register('identifier')}
           />
         </AuthMotionItem>
 
         <AuthMotionItem>
           <PasswordField
             autoComplete="current-password"
+            dir="ltr"
             error={errors.password?.message}
             id="login-password"
             label="رمز عبور"
@@ -100,33 +105,25 @@ export function LoginPage() {
         </AuthMotionItem>
       </div>
 
-      <AuthMotionItem className="mt-3.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
-        <label
-          className="inline-flex cursor-pointer items-center gap-2.5 text-foreground"
-          htmlFor="remember-me"
-        >
-          <Checkbox id="remember-me" {...register('remember')} />
-          <span>مرا به خاطر بسپار</span>
-        </label>
-        <button
+      <AuthMotionItem className="mt-3.5 flex justify-end text-sm">
+        <Link
           className="rounded-md font-semibold text-primary outline-none transition-colors hover:text-primary/80 focus-visible:ring-4 focus-visible:ring-ring/15"
-          onClick={() => toast.info('بازیابی رمز عبور در حال حاضر در دسترس نیست.')}
-          type="button"
+          to="/forgot-password"
         >
           رمز عبور را فراموش کرده‌اید؟
-        </button>
+        </Link>
       </AuthMotionItem>
 
       <AuthMotionItem className="mt-6">
-        <FormError error={errors.root?.message} />
+        <FormError error={errors.root?.message ?? bootstrapError} />
         <Button
           aria-busy={isSubmitting}
-          className={cn('auth-submit-button', errors.root && 'mt-3')}
-          disabled={isSubmitting}
+          className={cn('auth-submit-button', (errors.root || bootstrapError) && 'mt-3')}
+          disabled={isSubmitting || !termsVersion}
           size="auth"
           type="submit"
         >
-          {isSubmitting ? 'در حال ورود…' : 'ورود'}
+          {isSubmitting ? 'در حال بررسی…' : 'ورود'}
         </Button>
       </AuthMotionItem>
 

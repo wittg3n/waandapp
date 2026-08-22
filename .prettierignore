@@ -3,5 +3,7 @@ node_modules
 dist
 coverage
 .turbo
+.agents
+AGENTS.md
 pnpm-lock.yaml
 **/next-env.d.ts

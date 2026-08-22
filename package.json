@@ -14,6 +14,7 @@
     "test": "turbo run test",
     "web": "pnpm --filter @waandapp/web dev",
     "user-dashboard": "pnpm --filter @waandapp/user-dashboard dev",
+    "api": "pnpm --filter @waandapp/api dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "clean": "turbo run clean && node -e \"require('node:fs').rmSync('.turbo', { recursive: true, force: true })\""

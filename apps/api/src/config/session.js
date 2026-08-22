@@ -1,39 +1,43 @@
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
+import mongoose from 'mongoose';
 
 import { config } from './index.js';
 
 const SESSION_COLLECTION = 'sessions';
-const DEVELOPMENT_COOKIE_NAME = 'waand.sid';
-const PRODUCTION_COOKIE_NAME = '__Host-waand.sid';
 
-export function createSessionMiddleware() {
-  const isProduction = config.nodeEnvironment === 'production';
+export function sessionCookieOptions(settings = config) {
+  return {
+    httpOnly: true,
+    secure: settings.nodeEnvironment === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: settings.sessionIdleTtlMs,
+  };
+}
+
+export function createSessionMiddleware(settings = config, mongoClient) {
+  const client = mongoClient ?? mongoose.connection.getClient();
 
   const store = MongoStore.create({
-    mongoUrl: config.mongodbUri,
+    client,
+    dbName: mongoose.connection.db?.databaseName,
     collectionName: SESSION_COLLECTION,
-    ttl: Math.ceil(config.sessionMaxAgeMs / 1000),
-    autoRemove: 'native',
+    ttl: Math.ceil(settings.sessionIdleTtlMs / 1000),
+    // The TTL index is created and awaited by the explicit index lifecycle.
+    // connect-mongo's native mode starts an untracked createIndex promise that
+    // can race with MongoDB shutdown when HTTP startup fails.
+    autoRemove: 'disabled',
   });
 
   return session({
-    name: isProduction ? PRODUCTION_COOKIE_NAME : DEVELOPMENT_COOKIE_NAME,
-
-    secret: config.sessionSecret,
+    name: settings.sessionCookieName,
+    secret: settings.sessionSecret,
     store,
-
     resave: false,
     saveUninitialized: false,
-    rolling: false,
+    rolling: true,
     unset: 'destroy',
-
-    cookie: {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: 'lax',
-      path: '/',
-      maxAge: config.sessionMaxAgeMs,
-    },
+    cookie: sessionCookieOptions(settings),
   });
 }

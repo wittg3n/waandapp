@@ -8,21 +8,37 @@ const repositoryRoot = resolve(webDirectory, '../..');
 
 loadEnvConfig(repositoryRoot, process.env.NODE_ENV !== 'production', console, true);
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+function publicHttpUrl(
+  name: 'NEXT_PUBLIC_API_URL' | 'NEXT_PUBLIC_SITE_URL' | 'NEXT_PUBLIC_USER_DASHBOARD_URL',
+) {
+  const value = process.env[name];
 
-if (!apiUrl) {
-  throw new Error('NEXT_PUBLIC_API_URL is required. Copy .env.example to .env.');
+  if (!value) {
+    throw new Error(`${name} is required. Copy .env.example to .env.`);
+  }
+
+  try {
+    const parsed = new URL(value);
+
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      throw new Error();
+    }
+  } catch {
+    throw new Error(`${name} must be an absolute HTTP(S) URL.`);
+  }
+
+  return value;
 }
 
-try {
-  new URL(apiUrl);
-} catch {
-  throw new Error('NEXT_PUBLIC_API_URL must be a valid absolute URL.');
-}
+const apiUrl = publicHttpUrl('NEXT_PUBLIC_API_URL');
+const siteUrl = publicHttpUrl('NEXT_PUBLIC_SITE_URL');
+const userDashboardUrl = publicHttpUrl('NEXT_PUBLIC_USER_DASHBOARD_URL');
 
 const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: apiUrl,
+    NEXT_PUBLIC_SITE_URL: siteUrl,
+    NEXT_PUBLIC_USER_DASHBOARD_URL: userDashboardUrl,
   },
   output: 'standalone',
   outputFileTracingRoot: repositoryRoot,

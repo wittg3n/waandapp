@@ -5,17 +5,21 @@
   "type": "module",
   "main": "src/server.js",
   "files": [
-    "src"
+    "src",
+    "scripts"
   ],
   "scripts": {
     "dev": "node --watch src/server.js",
-    "build": "node --check src/server.js",
+    "build": "node scripts/build.mjs",
+    "db:indexes": "node scripts/sync-auth-indexes.mjs",
     "start": "node src/server.js",
-    "test": "node --test src/config/environment.test.js",
+    "test": "node --test && node --test src/auth/auth.integration.js",
+    "test:unit": "node --test",
+    "test:integration": "node --test src/auth/auth.integration.js",
     "lint": "eslint src --max-warnings=0"
   },
   "dependencies": {
-    "argon2": "^0.45.1",
+    "argon2": "0.45.1",
     "connect-mongo": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -23,6 +27,7 @@
     "express-rate-limit": "^8.6.2",
     "express-session": "^1.19.0",
     "helmet": "^8.3.0",
+    "libphonenumber-js": "^1.13.11",
     "mongoose": "^9.9.1",
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",

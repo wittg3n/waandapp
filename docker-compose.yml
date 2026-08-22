@@ -33,15 +33,49 @@ services:
       context: .
       dockerfile: infrastructure/docker/api.Dockerfile
     environment:
-      NODE_ENV: production
+      # This loopback HTTP stack intentionally uses development cookie semantics.
+      NODE_ENV: ${NODE_ENV:-development}
       PORT: 4000
       MONGODB_URI: mongodb://mongodb:27017/waandapp
       REDIS_URL: redis://redis:6379
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
+      AUTH_MUTATION_ORIGINS: ${AUTH_MUTATION_ORIGINS:-http://localhost:3001}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-60000}
       RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-100}
       TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-0}
+      SESSION_SECRET: ${SESSION_SECRET:-development-only-session-secret-change-before-production-2026}
+      SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-waand.sid}
+      SESSION_IDLE_TTL_MS: ${SESSION_IDLE_TTL_MS:-3600000}
+      SESSION_ABSOLUTE_TTL_MS: ${SESSION_ABSOLUTE_TTL_MS:-86400000}
+      AUTH_CODE_PEPPER: ${AUTH_CODE_PEPPER:-development-only-auth-code-pepper-change-before-production-2026}
+      AUTH_CODE_TTL_MS: ${AUTH_CODE_TTL_MS:-300000}
+      AUTH_TRANSACTION_TTL_MS: ${AUTH_TRANSACTION_TTL_MS:-1200000}
+      AUTH_STEP_UP_TTL_MS: ${AUTH_STEP_UP_TTL_MS:-600000}
+      AUTH_TERMS_VERSION: ${AUTH_TERMS_VERSION:-v1}
+      AUTH_ARGON2_MEMORY_KIB: ${AUTH_ARGON2_MEMORY_KIB:-65536}
+      AUTH_ARGON2_TIME_COST: ${AUTH_ARGON2_TIME_COST:-3}
+      AUTH_ARGON2_PARALLELISM: ${AUTH_ARGON2_PARALLELISM:-1}
+      AUTH_MAX_VERIFY_ATTEMPTS: ${AUTH_MAX_VERIFY_ATTEMPTS:-5}
+      AUTH_MAX_SENDS_PER_TRANSACTION: ${AUTH_MAX_SENDS_PER_TRANSACTION:-5}
+      AUTH_RESEND_COOLDOWN_MS: ${AUTH_RESEND_COOLDOWN_MS:-60000}
+      AUTH_LOGIN_IP_WINDOW_MS: ${AUTH_LOGIN_IP_WINDOW_MS:-900000}
+      AUTH_LOGIN_IP_LIMIT: ${AUTH_LOGIN_IP_LIMIT:-30}
+      AUTH_LOGIN_IDENTIFIER_WINDOW_MS: ${AUTH_LOGIN_IDENTIFIER_WINDOW_MS:-900000}
+      AUTH_LOGIN_IDENTIFIER_LIMIT: ${AUTH_LOGIN_IDENTIFIER_LIMIT:-10}
+      AUTH_REQUEST_IP_WINDOW_MS: ${AUTH_REQUEST_IP_WINDOW_MS:-900000}
+      AUTH_REQUEST_IP_LIMIT: ${AUTH_REQUEST_IP_LIMIT:-30}
+      AUTH_REQUEST_DESTINATION_WINDOW_MS: ${AUTH_REQUEST_DESTINATION_WINDOW_MS:-3600000}
+      AUTH_REQUEST_DESTINATION_LIMIT: ${AUTH_REQUEST_DESTINATION_LIMIT:-5}
+      AUTH_VERIFY_IP_WINDOW_MS: ${AUTH_VERIFY_IP_WINDOW_MS:-900000}
+      AUTH_VERIFY_IP_LIMIT: ${AUTH_VERIFY_IP_LIMIT:-60}
+      AUTH_VERIFY_DESTINATION_WINDOW_MS: ${AUTH_VERIFY_DESTINATION_WINDOW_MS:-900000}
+      AUTH_VERIFY_DESTINATION_LIMIT: ${AUTH_VERIFY_DESTINATION_LIMIT:-10}
+      AUTH_DELIVERY_MODE: ${AUTH_DELIVERY_MODE:-disabled}
+      AUTH_EMAIL_WEBHOOK_URL: ${AUTH_EMAIL_WEBHOOK_URL:-}
+      AUTH_EMAIL_WEBHOOK_TOKEN: ${AUTH_EMAIL_WEBHOOK_TOKEN:-}
+      AUTH_SMS_WEBHOOK_URL: ${AUTH_SMS_WEBHOOK_URL:-}
+      AUTH_SMS_WEBHOOK_TOKEN: ${AUTH_SMS_WEBHOOK_TOKEN:-}
     init: true
     stop_grace_period: 15s
     ports:
@@ -70,9 +104,13 @@ services:
       dockerfile: infrastructure/docker/web.Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api/v1}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+        NEXT_PUBLIC_USER_DASHBOARD_URL: ${NEXT_PUBLIC_USER_DASHBOARD_URL:-http://localhost:3001}
     environment:
       NODE_ENV: production
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api/v1}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+      NEXT_PUBLIC_USER_DASHBOARD_URL: ${NEXT_PUBLIC_USER_DASHBOARD_URL:-http://localhost:3001}
     init: true
     ports:
       - '127.0.0.1:${WEB_PORT:-3000}:3000'
@@ -96,6 +134,8 @@ services:
     build:
       context: .
       dockerfile: infrastructure/docker/user-dashboard.Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:4000/api/v1}
     init: true
     ports:
       - '127.0.0.1:${USER_DASHBOARD_PORT:-3001}:8080'

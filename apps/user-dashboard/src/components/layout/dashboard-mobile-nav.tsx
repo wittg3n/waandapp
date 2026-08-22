@@ -19,11 +19,6 @@ export function DashboardMobileNav() {
   const [open, setOpen] = useState(false);
   const { logout } = useAuth();
 
-  function handleLogout() {
-    setOpen(false);
-    logout();
-  }
-
   return (
     <Sheet onOpenChange={setOpen} open={open}>
       <SheetTrigger asChild>
@@ -46,7 +41,7 @@ export function DashboardMobileNav() {
           <X aria-hidden="true" className="size-5" />
         </SheetClose>
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <DashboardNavigation logout={handleLogout} onNavigate={() => setOpen(false)} />
+          <DashboardNavigation logout={logout} onNavigate={() => setOpen(false)} />
         </div>
       </SheetContent>
     </Sheet>

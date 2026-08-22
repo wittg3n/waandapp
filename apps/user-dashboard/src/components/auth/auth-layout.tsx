@@ -9,23 +9,60 @@ const ease = [0.22, 1, 0.36, 1] as const;
 export function AuthLayout() {
   const location = useLocation();
   const outlet = useOutlet();
+
   const variant = location.pathname === '/signup' ? 'signup' : 'login';
+  const pageTitle =
+    {
+      '/forgot-password': 'بازیابی رمز عبور',
+      '/login': 'ورود',
+      '/reset-password': 'رمز عبور جدید',
+      '/signup': 'ثبت‌نام',
+      '/verify': 'تأیید هویت',
+    }[location.pathname] ?? 'احراز هویت';
 
   useEffect(() => {
-    document.title = variant === 'login' ? 'واند | ورود' : 'واند | ثبت‌نام';
-  }, [variant]);
+    document.title = `وآند | ${pageTitle}`;
+  }, [pageTitle]);
 
   return (
-    <main className="auth-main min-h-dvh bg-[#f6f7f9] p-2 sm:p-3 lg:h-dvh lg:min-h-0 lg:overflow-hidden lg:px-5 lg:py-4">
+    <main className="auth-main min-h-dvh w-full bg-background lg:h-dvh lg:min-h-0 lg:overflow-hidden">
       <div
-        className="auth-shell-grid mx-auto grid min-h-[calc(100dvh-1rem)] w-full max-w-[1680px] grid-cols-1 overflow-hidden  bg-background shadow-[0_18px_60px_rgba(15,23,42,0.07)] sm:min-h-[calc(100dvh-1.5rem)] sm:rounded-[28px] lg:h-full lg:min-h-0 lg:grid-cols-none"
+        className="
+          auth-shell-grid
+          grid
+          min-h-dvh
+          w-full
+          grid-cols-1
+          overflow-hidden
+          bg-background
+          lg:h-full
+          lg:min-h-0
+          lg:grid-cols-none
+        "
         dir="ltr"
       >
         <AuthIllustration variant={variant} />
 
         <section
-          aria-label={variant === 'login' ? 'ورود به واند' : 'ساخت حساب واند'}
-          className="flex min-h-0 min-w-0 items-start justify-center bg-background px-5 py-7 sm:px-9 sm:py-9 lg:h-full lg:items-center lg:overflow-hidden lg:px-9 lg:py-4 xl:px-[clamp(36px,5vw,88px)]"
+          aria-label={pageTitle}
+          className="
+            flex
+            min-h-0
+            min-w-0
+            items-start
+            justify-center
+            bg-background
+            px-5
+            py-7
+            sm:px-9
+            sm:py-9
+            lg:h-full
+            lg:items-center
+            lg:overflow-y-auto
+            lg:px-9
+            lg:py-4
+            xl:px-[clamp(36px,5vw,88px)]
+          "
           dir="rtl"
         >
           <div className="auth-form-content my-auto flex w-full max-w-[500px] justify-center">

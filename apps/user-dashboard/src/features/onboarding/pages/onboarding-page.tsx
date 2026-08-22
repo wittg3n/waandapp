@@ -9,17 +9,13 @@ import { AuthLogo } from '@/components/auth/auth-logo';
 import { FormError } from '@/components/errors/form-error';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/features/auth/auth-context';
-import { authStorage } from '@/features/auth/auth-storage';
 import { createProfileCompletion } from '@/features/auth/profile-completion';
+import { onboardingDraftStorage } from '@/features/onboarding/onboarding-draft-storage';
 import { useAppError } from '@/hooks/use-app-error';
 import { cn } from '@/lib/utils';
 
 import { OnboardingProgress } from '../components/onboarding-progress';
-import {
-  COMPLETION_VIEW,
-  OnboardingStep,
-  WELCOME_VIEW,
-} from '../components/onboarding-steps';
+import { COMPLETION_VIEW, OnboardingStep, WELCOME_VIEW } from '../components/onboarding-steps';
 import {
   fromInitialProfileData,
   isOnboardingStepComplete,
@@ -35,14 +31,7 @@ const dataStepLabels = ['تحصیلات', 'هدف', 'زبان', 'اولویت‌
 const onboardingCompletion = createProfileCompletion(true).percentage;
 
 const stepFields = [
-  [
-    'currentDegree',
-    'fieldId',
-    'universityId',
-    'studyStatus',
-    'gradeAverage',
-    'gradeScale',
-  ],
+  ['currentDegree', 'fieldId', 'universityId', 'studyStatus', 'gradeAverage', 'gradeScale'],
   ['targetFieldId', 'targetDegree', 'targetCountries', 'intake'],
   ['hasLanguageCertificate', 'languageCertificates'],
   ['annualBudget', 'scholarshipImportance'],
@@ -64,7 +53,7 @@ function resolveInitialView(requestedView: number, values: OnboardingFormValues)
   }
 
   return requestedView === COMPLETION_VIEW && !onboardingSchema.safeParse(values).success
-    ? firstIncompleteStep ?? dataStepLabels.length - 1
+    ? (firstIncompleteStep ?? dataStepLabels.length - 1)
     : requestedView;
 }
 
@@ -78,7 +67,7 @@ export function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [direction, setDirection] = useState(1);
   const [initialState] = useState(() => {
-    const storedDraft = user ? authStorage.getOnboardingDraft(user.email) : null;
+    const storedDraft = user ? onboardingDraftStorage.get(user.id) : null;
     const draftValues = parseOnboardingDraftValues(storedDraft?.values);
     const profileValues = user?.initialProfile
       ? fromInitialProfileData(user.initialProfile)
@@ -108,9 +97,9 @@ export function OnboardingPage() {
   useEffect(() => {
     if (!user) return;
 
-    authStorage.saveOnboardingDraft(user.email, { values: form.getValues(), view });
+    onboardingDraftStorage.save(user.id, { values: form.getValues(), view });
     const subscription = form.watch(() => {
-      authStorage.saveOnboardingDraft(user.email, { values: form.getValues(), view });
+      onboardingDraftStorage.save(user.id, { values: form.getValues(), view });
     });
 
     return () => subscription.unsubscribe();
@@ -161,6 +150,7 @@ export function OnboardingPage() {
 
     try {
       await completeOnboarding(toInitialProfileData(valuesToSubmit));
+      if (user) onboardingDraftStorage.clear(user.id);
       navigate('/dashboard', { replace: true });
     } catch (cause) {
       handleError(cause, {
@@ -181,7 +171,7 @@ export function OnboardingPage() {
     void nextView();
   }
 
-  const firstName = user?.fullName.trim().split(/\s+/)[0];
+  const firstName = user?.firstName || user?.fullName.trim().split(/\s+/)[0];
   const showProgress = isDataStep(view);
   const showBack = isDataStep(view) && view > 0;
   const isStandaloneView = view === WELCOME_VIEW || view === COMPLETION_VIEW;
@@ -205,12 +195,7 @@ export function OnboardingPage() {
           aria-label="فرایند تکمیل پروفایل اولیه"
           className="flex min-h-0 flex-1 flex-col justify-center gap-2 py-1 sm:gap-3"
         >
-          {showProgress && (
-            <OnboardingProgress
-              currentStep={view}
-              labels={dataStepLabels}
-            />
-          )}
+          {showProgress && <OnboardingProgress currentStep={view} labels={dataStepLabels} />}
 
           <FormProvider {...form}>
             <motion.form
@@ -265,7 +250,11 @@ export function OnboardingPage() {
               <footer
                 className={cn(
                   'mt-4 flex items-center gap-3 border-t border-border/70 pt-4',
-                  isStandaloneView ? 'justify-center' : showBack ? 'justify-between' : 'justify-end',
+                  isStandaloneView
+                    ? 'justify-center'
+                    : showBack
+                      ? 'justify-between'
+                      : 'justify-end',
                 )}
               >
                 {showBack && (
@@ -282,10 +271,7 @@ export function OnboardingPage() {
                 )}
 
                 <Button
-                  className={cn(
-                    'min-h-11 min-w-28 px-5',
-                    isStandaloneView && 'w-full max-w-64',
-                  )}
+                  className={cn('min-h-11 min-w-28 px-5', isStandaloneView && 'w-full max-w-64')}
                   disabled={isSubmitting || !currentStepComplete}
                   type="submit"
                 >

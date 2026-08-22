@@ -15,6 +15,11 @@ import {
 } from '@/components/ui/resizable-navbar';
 import { WaandLogo } from '@/components/ui/waand-logo';
 
+const dashboardLoginUrl = new URL(
+  '/login',
+  process.env.NEXT_PUBLIC_USER_DASHBOARD_URL as string,
+).toString();
+
 const navigation = [
   { link: '#how-it-works', name: 'ویژگی‌ها' },
   { link: '#why-waand', name: 'دانشگاه‌ها' },
@@ -34,7 +39,7 @@ export function LandingNavbar() {
           <WaandLogo className="" />
         </NavbarLogo>
         <NavItems ariaLabel="ناوبری اصلی" items={navigation} />
-        <NavbarButton href="/login" variant="dark">
+        <NavbarButton href={dashboardLoginUrl} variant="dark">
           ورود / ثبت‌نام
         </NavbarButton>
       </NavBody>
@@ -69,7 +74,7 @@ export function LandingNavbar() {
           ))}
           <NavbarButton
             className="mt-2 w-full"
-            href="/login"
+            href={dashboardLoginUrl}
             onClick={closeMobileMenu}
             variant="dark"
           >

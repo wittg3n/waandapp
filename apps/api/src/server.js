@@ -1,6 +1,9 @@
 import { createServer } from 'node:http';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { createApp } from './app.js';
+import { createAuthIndexes, verifyAuthIndexes } from './auth/indexes.js';
 import { config } from './config/index.js';
 import { connectMongoDb, disconnectMongoDb } from './infrastructure/mongodb.js';
 import { connectRedis, disconnectRedis } from './infrastructure/redis.js';
@@ -64,11 +67,13 @@ function registerShutdown(server, redis) {
   process.once('unhandledRejection', (error) => void shutdown('Unhandled rejection', error));
 }
 
-async function start() {
+export async function start() {
   let redis;
 
   try {
-    await connectMongoDb(config.mongodbUri, config.nodeEnvironment, logger);
+    await connectMongoDb(config.mongodbUri, logger);
+    if (config.nodeEnvironment === 'production') await verifyAuthIndexes();
+    else await createAuthIndexes();
     redis = await connectRedis(config.redisUrl, logger);
 
     const server = createServer(createApp(redis));
@@ -87,4 +92,6 @@ async function start() {
   }
 }
 
-void start();
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  void start();
+}

@@ -130,7 +130,7 @@ a {
 
 @media (min-width: 1024px) and (max-height: 800px) {
   .auth-main {
-    padding: 12px 16px;
+    padding: 0;
   }
 
   .auth-form-content {

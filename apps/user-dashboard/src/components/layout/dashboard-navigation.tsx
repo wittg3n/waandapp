@@ -5,14 +5,18 @@ import {
   CalendarDays,
   FileText,
   LayoutDashboard,
+  LoaderCircle,
   LogOut,
   MessageSquareText,
   Settings,
   UserRound,
   type LucideIcon,
 } from 'lucide-react';
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { toast } from 'sonner';
 
+import { normalizeError } from '@/errors/normalize-error';
 import { cn } from '@/lib/utils';
 
 type NavigationItem = {
@@ -70,9 +74,23 @@ export function DashboardNavigation({
   logout,
   onNavigate,
 }: {
-  logout: () => void;
+  logout: () => Promise<void>;
   onNavigate?: () => void;
 }) {
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      onNavigate?.();
+    } catch (cause) {
+      toast.error(normalizeError(cause).userMessage);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }
+
   return (
     <>
       <nav aria-label="منوی اصلی" className="mt-4">
@@ -98,12 +116,18 @@ export function DashboardNavigation({
           ))}
           <li>
             <button
+              aria-busy={isLoggingOut}
               className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-[13px] font-bold text-[#626873] outline-none transition-colors hover:bg-destructive/[0.05] hover:text-destructive focus-visible:ring-4 focus-visible:ring-destructive/15 lg:min-h-9"
-              onClick={logout}
+              disabled={isLoggingOut}
+              onClick={() => void handleLogout()}
               type="button"
             >
-              <LogOut aria-hidden="true" className="size-[19px]" strokeWidth={1.75} />
-              خروج
+              {isLoggingOut ? (
+                <LoaderCircle aria-hidden="true" className="size-[19px] animate-spin" />
+              ) : (
+                <LogOut aria-hidden="true" className="size-[19px]" strokeWidth={1.75} />
+              )}
+              {isLoggingOut ? 'در حال خروج…' : 'خروج'}
             </button>
           </li>
         </ul>

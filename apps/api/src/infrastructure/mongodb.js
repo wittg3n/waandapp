@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-export async function connectMongoDb(uri, nodeEnvironment, logger) {
+export async function connectMongoDb(uri, logger) {
   mongoose.set('sanitizeFilter', true);
   mongoose.set('strictQuery', true);
   mongoose.set('bufferCommands', false);
@@ -9,7 +9,8 @@ export async function connectMongoDb(uri, nodeEnvironment, logger) {
   });
 
   await mongoose.connect(uri, {
-    autoIndex: nodeEnvironment !== 'production',
+    autoCreate: false,
+    autoIndex: false,
     maxPoolSize: 10,
     serverSelectionTimeoutMS: 5_000,
   });

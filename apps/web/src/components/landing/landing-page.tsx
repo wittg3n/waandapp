@@ -3,14 +3,12 @@ import {
   Apple,
   AtSign,
   Bell,
-  BookOpen,
   CalendarDays,
   ChartNoAxesColumnIncreasing,
   Check,
   CheckCircle2,
   ChevronLeft,
   Download,
-  FileCheck2,
   FileText,
   Folder,
   Globe2,
@@ -22,9 +20,7 @@ import {
   Send,
   Server,
   Settings,
-  ShieldCheck,
   Sparkles,
-  UserRoundCheck,
 } from 'lucide-react';
 import { LandingNavbar } from '@/components/landing/landing-navbar';
 import { LineShadowText } from '@/components/ui/line-shadow-text';
@@ -32,45 +28,31 @@ import {
   AppPromoCopy,
   AppPromoScene,
   AppPromoVisual,
+  Float,
   HeroAnalysisSignal,
   HeroLayer,
   HeroReveal,
   HeroScene,
-  InteractiveCard,
   MotionLink,
-  ProcessStep,
   ProcessScene,
+  ProcessStep,
   Reveal,
   RevealGroup,
   RevealItem,
+  WhyWaandAura,
+  WhyWaandCopy,
+  WhyWaandMountain,
+  WhyWaandScene,
 } from '@/components/landing/motion';
 import { Testimonials } from '@/components/landing/testimonials';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { WaandLogo } from '@/components/ui/waand-logo';
 
-const benefits = [
-  {
-    detail: 'تطبیق خودکار سوابق شما با الزامات دانشگاه‌ها',
-    icon: FileCheck2,
-    title: 'تحلیل هوشمند و دقیق مدارک',
-  },
-  {
-    detail: 'بهترین دانشگاه‌ها و برنامه‌های متناسب با شما',
-    icon: Sparkles,
-    title: 'پیشنهاد شخصی‌سازی‌شده',
-  },
-  {
-    detail: 'پیگیری وضعیت، یادآوری‌ها و ارسال مدارک',
-    icon: UserRoundCheck,
-    title: 'مدیریت کامل اپلای',
-  },
-  {
-    detail: 'حفظ امنیت اطلاعات و حریم خصوصی شما',
-    icon: ShieldCheck,
-    title: 'امن و خصوصی',
-  },
-] as const;
+const dashboardSignupUrl = new URL(
+  '/signup',
+  process.env.NEXT_PUBLIC_USER_DASHBOARD_URL as string,
+).toString();
 
 function StoreBadges({ compact = false }: { compact?: boolean }) {
   return (
@@ -637,26 +619,6 @@ function DashboardPreview() {
   );
 }
 
-function CampusSkyline() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="absolute bottom-0 right-2 h-44 w-56 text-[#22305f] opacity-20"
-      viewBox="0 0 250 190"
-    >
-      <path d="M185 189V39h28v150M178 39h42l-21-31Z" fill="currentColor" />
-      <path d="M196 39v-18M192 75h14M192 101h14M192 128h14" stroke="#fff" strokeWidth="3" />
-      <path
-        d="M15 190V118h86v72M7 118h102L58 88ZM28 130v60M48 130v60M68 130v60M88 130v60"
-        fill="currentColor"
-        stroke="#fff"
-        strokeWidth="3"
-      />
-      <path d="M117 190v-86h47v86M111 104h59l-29-29Z" fill="currentColor" />
-    </svg>
-  );
-}
-
 function SecurityArt() {
   return (
     <svg aria-hidden="true" className="h-36 w-44" viewBox="0 0 210 170">
@@ -722,7 +684,10 @@ function HeroSection() {
           </HeroReveal>
           <HeroReveal stage="actions">
             <div className="mt-7 flex flex-wrap justify-center gap-3 lg:justify-start">
-              <MotionLink className={buttonVariants({ className: 'min-w-36' })} href="/signup">
+              <MotionLink
+                className={buttonVariants({ className: 'min-w-36' })}
+                href={dashboardSignupUrl}
+              >
                 رایگان شروع کنید
                 <ChevronLeft
                   aria-hidden="true"
@@ -731,9 +696,9 @@ function HeroSection() {
               </MotionLink>
               <MotionLink
                 className={buttonVariants({ className: 'min-w-32', variant: 'secondary' })}
-                href="/demo"
+                href="#why-waand"
               >
-                مشاهده دمو
+                اطلاعات بیشتر
               </MotionLink>
             </div>
           </HeroReveal>
@@ -801,7 +766,7 @@ function HowItWorks() {
                     'mt-6 h-9 w-fit rounded-full bg-white px-5 text-[11px] font-extrabold text-[#171717] shadow-none hover:bg-[#eeeeea]',
                   variant: 'secondary',
                 })}
-                href="/signup"
+                href={dashboardSignupUrl}
               >
                 شروع با مدارک
               </a>
@@ -989,94 +954,236 @@ function AppPromo() {
 function WhyWaand() {
   return (
     <section
-      aria-label="مزایای وآند"
+      aria-labelledby="why-waand-title"
       className="section-shell landing-section scroll-mt-24"
       id="why-waand"
     >
-      <div className="grid gap-7 lg:grid-cols-[1.5fr_.92fr]">
-        <Reveal>
-          <InteractiveCard className="h-full">
-            <article className="relative min-h-[430px] overflow-hidden rounded-[26px] bg-[linear-gradient(135deg,#e6f7f1,#cfeee4)] px-7 py-8 sm:px-12">
-              <div className="relative z-10 text-center lg:text-right">
-                <h2 className="text-[29px] leading-[1.5] font-black tracking-[-0.03em] text-[#171717]">
-                  چرا وآند انتخاب هوشمندتری است؟
-                </h2>
-                <p className="mt-2 text-sm leading-7 text-[#53645f]">
-                  وآند با ترکیب هوش مصنوعی و تجربه متخصصان مسیر اپلای شما را سریع‌تر و مطمئن‌تر
-                  می‌کند.
-                </p>
-              </div>
+      <WhyWaandScene
+        className="
+          relative
+          grid
+          min-h-[620px]
+          items-center
+          gap-10
+          overflow-hidden
+          lg:grid-cols-[.82fr_1.18fr]
+          lg:gap-6
+        "
+      >
+        {/* ---------------------------------------------------------------- */}
+        {/* Copy                                                             */}
+        {/* ---------------------------------------------------------------- */}
 
-              <div className="relative z-20 mx-auto mt-6 max-w-[580px] rounded-2xl bg-white/95 p-5 shadow-[0_12px_26px_rgba(44,102,82,0.08)]">
-                <strong className="text-sm font-extrabold">پیشرفت اپلای</strong>
-                <div className="relative mt-5 grid grid-cols-4 text-center">
-                  <span className="absolute left-[12%] right-[12%] top-3 h-1 rounded-full bg-[#dfe4ee]" />
-                  {['آپلود مدارک', 'تحلیل', 'انتخاب دانشگاه', 'ارسال'].map((stage, index) => (
-                    <span className="relative z-10 text-[9px] text-[#62666d]" key={stage}>
-                      <span
-                        className={cn(
-                          'mx-auto mb-2 grid size-7 place-items-center rounded-full border-2 border-white shadow-sm',
-                          index < 3 ? 'bg-[#6f8cf2] text-white' : 'bg-[#dae0ef] text-[#68717f]',
-                        )}
-                      >
-                        {index < 3 ? <Check className="size-3" strokeWidth={3} /> : index + 1}
-                      </span>
-                      {stage}
-                    </span>
-                  ))}
-                </div>
-              </div>
+        <div className="relative z-20 order-1 text-center lg:order-2 lg:pr-4 lg:text-right">
+          <WhyWaandCopy stage="eyebrow">
+            <span
+              className="
+                mb-5
+                inline-flex
+                items-center
+                rounded-full
+                border
+                border-[#dfe4ff]
+                bg-[#f6f7ff]
+                px-4
+                py-2
+                text-[11px]
+                font-bold
+                text-[#143CFB]
+              "
+            >
+              یک مسیر روشن‌تر برای اپلای
+            </span>
+          </WhyWaandCopy>
 
-              <div className="relative z-30 mt-5 w-[85%] max-w-[440px] rounded-2xl bg-white p-5 shadow-[0_12px_26px_rgba(44,102,82,0.09)]">
-                <span className="flex items-center justify-between gap-4">
-                  <span>
-                    <strong className="block text-sm">دانشگاه‌های پیشنهادی برای شما</strong>
-                    <small className="mt-2 block text-[10px] font-bold text-[#143CFB]">
-                      مشاهده همه
-                    </small>
-                  </span>
-                  <strong className="text-2xl font-black text-[#143CFB]">+۱۲۵</strong>
-                </span>
-                <span className="mt-4 flex items-center gap-5 text-[#6b7280]">
-                  <BookOpen className="size-7" />
-                  <span className="grid size-8 place-items-center rounded-full border-2 border-current text-xs font-black">
-                    U
-                  </span>
-                  <GraduationCap className="size-8" />
-                </span>
-              </div>
-              <CampusSkyline />
-            </article>
-          </InteractiveCard>
-        </Reveal>
+          <WhyWaandCopy stage="title">
+            <h2
+              className="
+                max-w-[590px]
+                text-[32px]
+                font-black
+                leading-[1.55]
+                tracking-[-0.04em]
+                text-[#171717]
+                sm:text-[38px]
+                lg:text-[44px]
+              "
+              id="why-waand-title"
+            >
+              از اولین قدم تا رسیدن به مقصد
+              <br />
+              <span className="text-[#143CFB]">وآند همراه تصمیمات شماست.</span>
+            </h2>
+          </WhyWaandCopy>
 
-        <Reveal delay={0.08}>
-          <InteractiveCard className="h-full">
-            <article className="flex min-h-[430px] items-center rounded-[26px] border border-[#e8e8e8] bg-white px-7 py-8 sm:px-10">
-              <RevealGroup className="w-full space-y-7" stagger={0.08}>
-                {benefits.map((benefit) => {
-                  const Icon = benefit.icon;
-                  return (
-                    <RevealItem className="flex items-start gap-4" key={benefit.title}>
-                      <span className="mt-0.5 grid size-10 shrink-0 place-items-center rounded-xl bg-[#edfaf5] text-[#109a70]">
-                        <Icon aria-hidden="true" className="size-5" strokeWidth={1.8} />
-                      </span>
-                      <span>
-                        <strong className="block text-[15px] font-extrabold text-[#262628]">
-                          {benefit.title}
-                        </strong>
-                        <small className="mt-1 block text-[11px] leading-5 text-[#77777d]">
-                          {benefit.detail}
-                        </small>
-                      </span>
-                    </RevealItem>
-                  );
+          <WhyWaandCopy stage="body">
+            <p
+              className="
+                mx-auto
+                mt-6
+                max-w-[540px]
+                text-[14px]
+                leading-[2.15]
+                text-[#666970]
+                lg:mx-0
+                lg:text-[15px]
+              "
+            >
+              اپلای مجموعه‌ای از تصمیم‌ها، مدارک و ددلاین‌های پیچیده است. وآند با تحلیل سوابق شما،
+              پیدا کردن دانشگاه‌های مناسب و مدیریت هوشمند مراحل درخواست، مسیر رسیدن به هدف را
+              شفاف‌تر می‌کند.
+            </p>
+          </WhyWaandCopy>
+
+          <WhyWaandCopy stage="features">
+            <div
+              className="
+                mt-7
+                flex
+                flex-wrap
+                justify-center
+                gap-x-6
+                gap-y-3
+                text-[12px]
+                font-semibold
+                text-[#4d5058]
+                lg:justify-start
+              "
+            >
+              <span className="flex items-center gap-2">
+                <span className="size-1.5 rounded-full bg-[#143CFB]" />
+                تحلیل مدارک
+              </span>
+
+              <span className="flex items-center gap-2">
+                <span className="size-1.5 rounded-full bg-[#143CFB]" />
+                پیشنهاد دانشگاه
+              </span>
+
+              <span className="flex items-center gap-2">
+                <span className="size-1.5 rounded-full bg-[#143CFB]" />
+                اپلای هوشمند
+              </span>
+            </div>
+          </WhyWaandCopy>
+
+          <WhyWaandCopy stage="action">
+            <div className="mt-8 flex justify-center lg:justify-start">
+              <MotionLink
+                className={buttonVariants({
+                  className: 'min-h-11 min-w-[150px]',
                 })}
-              </RevealGroup>
-            </article>
-          </InteractiveCard>
-        </Reveal>
-      </div>
+                href={dashboardSignupUrl}
+              >
+                مسیرت را شروع کن
+                <ChevronLeft
+                  aria-hidden="true"
+                  className="size-4 transition-transform group-hover/button:-translate-x-1"
+                />
+              </MotionLink>
+            </div>
+          </WhyWaandCopy>
+        </div>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Mountain                                                         */}
+        {/* ---------------------------------------------------------------- */}
+
+        <div
+          className="
+            relative
+            order-2
+            flex
+            min-h-[500px]
+            items-center
+            justify-center
+            lg:order-1
+            lg:min-h-[620px]
+          "
+        >
+          <WhyWaandAura
+            className="
+              absolute
+              left-1/2
+              top-1/2
+              h-[70%]
+              w-[78%]
+              -translate-x-1/2
+              -translate-y-1/2
+              rounded-full
+              bg-[radial-gradient(circle,rgba(20,60,251,0.085)_0%,rgba(20,60,251,0.025)_48%,transparent_72%)]
+              blur-2xl
+            "
+          />
+
+          <WhyWaandMountain
+            className="
+              relative
+              z-10
+              flex
+              h-full
+              w-full
+              items-center
+              justify-center
+            "
+          >
+            <Float
+              className="
+                relative
+                h-[500px]
+                w-full
+                max-w-[540px]
+                sm:h-[570px]
+                lg:h-[650px]
+                lg:max-w-[620px]
+              "
+            >
+              <Image
+                alt="مسیر هدایت‌شده اپلای با وآند تا رسیدن به هدف تحصیلی"
+                className="object-contain object-center"
+                fill
+                sizes="
+                  (max-width: 640px) 92vw,
+                  (max-width: 1024px) 620px,
+                  50vw
+                "
+                src="/assets/waand-guided-path.png"
+              />
+            </Float>
+          </WhyWaandMountain>
+
+          <WhyWaandCopy
+            className="
+              absolute
+              bottom-3
+              left-1/2
+              z-20
+              -translate-x-1/2
+              whitespace-nowrap
+              lg:bottom-5
+            "
+            stage="caption"
+          >
+            <span
+              className="
+                rounded-full
+                border
+                border-black/[0.05]
+                bg-white/90
+                px-4
+                py-2
+                text-[10px]
+                font-medium
+                text-[#73767d]
+                shadow-[0_8px_25px_rgba(20,24,45,0.05)]
+                backdrop-blur-sm
+              "
+            >
+              از اولین مدرک تا مقصد نهایی
+            </span>
+          </WhyWaandCopy>
+        </div>
+      </WhyWaandScene>
     </section>
   );
 }
@@ -1146,7 +1253,7 @@ function FinalCta() {
           </p>
           <MotionLink
             className={buttonVariants({ className: 'mt-6 min-h-10 min-w-36 py-2' })}
-            href="/signup"
+            href={dashboardSignupUrl}
           >
             رایگان شروع کنید
             <ChevronLeft
