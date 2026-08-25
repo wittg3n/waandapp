@@ -1,7 +1,8 @@
 import Image from 'next/image';
+import { FaInstagram, FaLinkedinIn, FaTelegramPlane, FaGithub, FaYoutube } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
 import {
   Apple,
-  AtSign,
   Bell,
   CalendarDays,
   ChartNoAxesColumnIncreasing,
@@ -1285,15 +1286,63 @@ function Footer() {
         <div className="col-span-2 lg:col-span-1">
           <WaandLogo />
           <p className="mt-4 max-w-[250px] text-[12px] leading-6 text-[#69696f]">
-            پلتفرم هوشمند اپلای دانشگاه با قدرت هوش مصنوعی
+            پلتفرم هوشمند اپلای دانشگاه
           </p>
           <div
             aria-label="شبکه‌های اجتماعی وآند"
             className="mt-5 flex items-center gap-4 text-[#38383b]"
           >
-            <AtSign aria-hidden="true" className="size-4" />
-            <MessageCircle aria-hidden="true" className="size-4" />
-            <Send aria-hidden="true" className="size-4" />
+            <div className="flex items-center gap-4">
+              <a
+                href="https://x.com/waandapp"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Waand on X"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <FaXTwitter className="size-5" />
+              </a>
+
+              <a
+                href="https://instagram.com/waandapp"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Waand on Instagram"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <FaInstagram className="size-5" />
+              </a>
+
+              <a
+                href="https://github.com/waandapp"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Waand on GitHub"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <FaGithub className="size-5" />
+              </a>
+
+              <a
+                href="https://youtube.com/@waandapp"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Waand on YouTube"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <FaYoutube className="size-5" />
+              </a>
+
+              <a
+                href="https://t.me/waandapp"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Waand on Telegram"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <FaTelegramPlane className="size-5" />
+              </a>
+            </div>
           </div>
         </div>
 
@@ -1332,13 +1381,6 @@ function Footer() {
               <a href="/careers">فرصت‌های شغلی</a>
             </li>
           </ul>
-        </div>
-
-        <div>
-          <strong className="footer-title">دانلود اپلیکیشن</strong>
-          <div className="mt-4">
-            <StoreBadges compact />
-          </div>
         </div>
       </div>
       <p className="section-shell mt-4 border-t border-[#ededed] pt-3 text-center text-[11px] text-[#808087]">

@@ -4,23 +4,26 @@ import {
   createContext,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
+  useState,
   type ComponentPropsWithoutRef,
   type ReactNode,
 } from 'react';
 import {
   motion,
+  useAnimationFrame,
   useScroll,
   useMotionValue,
   useReducedMotion,
   useSpring,
   useTransform,
+  useVelocity,
   type HTMLMotionProps,
   type MotionValue,
   type Variants,
 } from 'framer-motion';
-
 import { cn } from '@/lib/utils';
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
@@ -1155,6 +1158,407 @@ export function WhyWaandAura({ className }: { className?: string }) {
         scale,
       }}
     />
+  );
+}
+/* -------------------------------------------------------------------------- */
+/*                           Testimonials Scene                               */
+/* -------------------------------------------------------------------------- */
+
+type TestimonialsSceneValues = {
+  progress: MotionValue<number>;
+  scrollVelocity: MotionValue<number>;
+  reducedMotion: boolean;
+};
+
+const TestimonialsSceneContext = createContext<TestimonialsSceneValues | null>(null);
+
+/**
+ * Global controller for the testimonial marquee.
+ *
+ * There are two independent signals:
+ *
+ * progress
+ *   Controls the entrance choreography of the testimonial lanes.
+ *
+ * scrollVelocity
+ *   Measures real page scroll velocity and is used to physically
+ *   accelerate / distort the marquee while the user scrolls.
+ */
+export function TestimonialsScene({ children, className }: StaticDivProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+
+  /*
+   * Section-local scroll progress.
+   *
+   * We only use this for the entrance choreography.
+   */
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start 92%', 'start 42%'],
+  });
+
+  /*
+   * Global page scroll velocity.
+   *
+   * Unlike scrollYProgress, this tells us how aggressively
+   * the user is currently scrolling.
+   */
+  const { scrollY } = useScroll();
+
+  const rawScrollVelocity = useVelocity(scrollY);
+
+  /*
+   * The velocity itself gets inertia.
+   *
+   * When the wheel / trackpad stops, the marquee does not
+   * instantly lose its extra momentum.
+   */
+  const scrollVelocity = useSpring(rawScrollVelocity, {
+    stiffness: 125,
+    damping: 26,
+    mass: 0.48,
+    restDelta: 0.5,
+  });
+
+  const progress = useSpring(scrollYProgress, {
+    stiffness: 150,
+    damping: 30,
+    mass: 0.34,
+    restDelta: 0.001,
+  });
+
+  const value = useMemo(
+    () => ({
+      progress,
+      scrollVelocity,
+      reducedMotion: Boolean(reducedMotion),
+    }),
+    [progress, reducedMotion, scrollVelocity],
+  );
+
+  return (
+    <div ref={ref} className={className}>
+      <TestimonialsSceneContext.Provider value={value}>
+        {children}
+      </TestimonialsSceneContext.Provider>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                          Testimonial Marquee                               */
+/* -------------------------------------------------------------------------- */
+
+type TestimonialMarqueeDirection = 'left' | 'right';
+
+function wrapMarquee(value: number, width: number) {
+  if (!width) return value;
+
+  return -width + ((((value + width) % width) + width) % width);
+}
+
+export function TestimonialMarquee({
+  children,
+  className,
+  direction = 'left',
+  baseVelocity = 30,
+  lane = 0,
+}: StaticDivProps & {
+  direction?: TestimonialMarqueeDirection;
+  baseVelocity?: number;
+  lane?: number;
+}) {
+  const scene = useContext(TestimonialsSceneContext);
+  const localReducedMotion = useReducedMotion();
+
+  const reducedMotion = scene?.reducedMotion ?? Boolean(localReducedMotion);
+
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const firstSetRef = useRef<HTMLDivElement>(null);
+  const cycleWidth = useRef(0);
+  const initialized = useRef(false);
+  const [copiesPerSet, setCopiesPerSet] = useState(1);
+
+  /*
+   * Actual horizontal position of the infinite track.
+   */
+  const x = useMotionValue(0);
+
+  /*
+   * Hovering should not hard-stop a marquee.
+   *
+   * Instead it smoothly falls to ~18% of normal speed.
+   */
+  const hoverTarget = useMotionValue(1);
+
+  const hoverFactor = useSpring(hoverTarget, {
+    stiffness: 150,
+    damping: 24,
+    mass: 0.42,
+  });
+
+  /*
+   * Measure one complete cycle group and grow it until it covers the lane.
+   *
+   * Its exact width, including every trailing gap, is the seamless wrap distance.
+   */
+  useLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    const element = firstSetRef.current;
+
+    if (!viewport || !element) return;
+
+    const updateWidth = () => {
+      const width = element.getBoundingClientRect().width;
+
+      if (!width) return;
+
+      const singleCopyWidth = width / copiesPerSet;
+      const requiredCopies = Math.max(1, Math.ceil(viewport.clientWidth / singleCopyWidth));
+
+      if (requiredCopies > copiesPerSet) {
+        setCopiesPerSet(requiredCopies);
+        return;
+      }
+
+      cycleWidth.current = width;
+
+      if (!initialized.current) {
+        /*
+         * A right-moving lane starts one complete copy
+         * to the left so it can move naturally toward x = 0.
+         */
+        x.set(direction === 'right' ? -width : 0);
+
+        initialized.current = true;
+      } else {
+        x.set(wrapMarquee(x.get(), width));
+      }
+    };
+
+    updateWidth();
+
+    const observer = new ResizeObserver(updateWidth);
+
+    observer.observe(viewport);
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [copiesPerSet, direction, x]);
+
+  /*
+   * The marquee is deliberately frame-driven rather than
+   * transition-driven.
+   *
+   * This lets ambient velocity + scroll velocity + hover
+   * velocity all combine into one physical movement.
+   */
+  useAnimationFrame((_, delta) => {
+    if (reducedMotion) return;
+
+    const width = cycleWidth.current;
+
+    if (!width) return;
+
+    const rawVelocity = scene?.scrollVelocity.get() ?? 0;
+
+    /*
+     * User scrolling adds a temporary speed burst.
+     *
+     * We use the absolute magnitude here:
+     * scrolling in either vertical direction injects energy,
+     * while each lane keeps its own horizontal direction.
+     */
+    const scrollBoost = Math.min(Math.abs(rawVelocity) * 0.055, 170);
+
+    const speed = (baseVelocity + scrollBoost) * hoverFactor.get();
+
+    const directionMultiplier = direction === 'left' ? -1 : 1;
+
+    const movement = directionMultiplier * speed * (delta / 1000);
+
+    const next = x.get() + movement;
+
+    x.set(wrapMarquee(next, width));
+  });
+
+  /*
+   * Rows enter at slightly different moments.
+   */
+  const fallbackProgress = useMotionValue(1);
+  const progress = scene?.progress ?? fallbackProgress;
+
+  const input = lane === 0 ? [0, 0.12, 0.56] : [0, 0.2, 0.67];
+
+  const opacity = useTransform(progress, input, [0, 0.28, 1], {
+    clamp: true,
+  });
+
+  const y = useTransform(progress, input, [lane === 0 ? 48 : 58, 24, 0], {
+    clamp: true,
+  });
+
+  const scale = useTransform(progress, input, [0.975, 0.988, 1], {
+    clamp: true,
+  });
+
+  /*
+   * Reduced-motion version stays completely usable.
+   *
+   * It becomes a horizontal overflow row instead
+   * of an automatically moving marquee.
+   */
+  if (reducedMotion) {
+    return <div className={cn('flex gap-5 overflow-x-auto px-5 pb-3', className)}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      ref={viewportRef}
+      className={cn('relative overflow-hidden py-2', className)}
+      dir="ltr"
+      onPointerEnter={() => hoverTarget.set(0.18)}
+      onPointerLeave={() => hoverTarget.set(1)}
+      style={{
+        opacity,
+        y,
+        scale,
+        WebkitMaskImage:
+          'linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%)',
+        maskImage:
+          'linear-gradient(to right, transparent 0%, black 7%, black 93%, transparent 100%)',
+      }}
+    >
+      <motion.div className="flex w-max will-change-transform" style={{ x }}>
+        {/*
+         * First cycle group.
+         *
+         * Each content copy includes pr-5, so card and copy gaps are
+         * inside the measured wrap distance.
+         */}
+        <div ref={firstSetRef} className="flex shrink-0">
+          {Array.from({ length: copiesPerSet }, (_, index) => (
+            <div
+              aria-hidden={index === 0 ? undefined : true}
+              className="flex shrink-0 gap-5 pr-5"
+              key={index}
+            >
+              {children}
+            </div>
+          ))}
+        </div>
+
+        {/*
+         * Exact duplicate cycle group.
+         *
+         * Hidden from assistive technology because the first content
+         * copy already contains the semantic content.
+         */}
+        <div aria-hidden="true" className="flex shrink-0">
+          {Array.from({ length: copiesPerSet }, (_, index) => (
+            <div className="flex shrink-0 gap-5 pr-5" key={index}>
+              {children}
+            </div>
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                        Testimonial Physical Card                           */
+/* -------------------------------------------------------------------------- */
+
+export function TestimonialMotionCard({
+  children,
+  className,
+  index = 0,
+}: StaticDivProps & {
+  index?: number;
+}) {
+  const scene = useContext(TestimonialsSceneContext);
+  const localReducedMotion = useReducedMotion();
+
+  const reducedMotion = scene?.reducedMotion ?? Boolean(localReducedMotion);
+
+  const fallbackVelocity = useMotionValue(0);
+
+  const velocity = scene?.scrollVelocity ?? fallbackVelocity;
+
+  /*
+   * Alternate the card lean very slightly.
+   *
+   * This prevents the whole marquee from behaving like one
+   * perfectly rigid flat strip.
+   */
+  const direction = index % 2 === 0 ? 1 : -1;
+
+  const rawRotate = useTransform(velocity, (value) => {
+    const normalized = Math.max(-1, Math.min(1, value / 1800));
+
+    return normalized * 1.75 * direction;
+  });
+
+  const rawY = useTransform(velocity, (value) => {
+    const amount = Math.min(Math.abs(value) / 350, 5);
+
+    return -amount;
+  });
+
+  const rawScale = useTransform(velocity, (value) => {
+    const amount = Math.min(Math.abs(value) / 100000, 0.014);
+
+    return 1 + amount;
+  });
+
+  const rotate = useSpring(rawRotate, {
+    stiffness: 125,
+    damping: 24,
+    mass: 0.4,
+  });
+
+  const y = useSpring(rawY, {
+    stiffness: 145,
+    damping: 25,
+    mass: 0.38,
+  });
+
+  const scale = useSpring(rawScale, {
+    stiffness: 140,
+    damping: 24,
+    mass: 0.38,
+  });
+
+  if (reducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={cn('shrink-0 will-change-transform', className)}
+      style={{
+        rotate,
+        scale,
+        y,
+      }}
+    >
+      <motion.div
+        className="h-full"
+        transition={{
+          type: 'spring',
+          stiffness: 360,
+          damping: 26,
+        }}
+        whileHover={{
+          y: -8,
+          scale: 1.018,
+        }}
+      >
+        {children}
+      </motion.div>
+    </motion.div>
   );
 }
 /* -------------------------------------------------------------------------- */

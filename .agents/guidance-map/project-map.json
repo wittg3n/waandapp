@@ -2,22 +2,22 @@
   "schema_version": 1,
   "generator": "code-project-guidance-map",
   "generator_version": "0.4.0",
-  "generated_at": "2026-08-21T23:08:31Z",
+  "generated_at": "2026-08-25T08:39:06Z",
   "repo_root": "F:\\waandapp",
   "git_available": true,
-  "current_head": "98418e0",
-  "file_count": 196,
-  "scanned_file_count": 196,
+  "current_head": "6daef6d",
+  "file_count": 211,
+  "scanned_file_count": 211,
   "truncated": false,
   "language_file_counts": {
-    "typescript": 111,
-    "javascript": 35,
+    "typescript": 116,
+    "javascript": 40,
     "yaml": 3
   },
   "language_loc": {
-    "typescript": 10869,
-    "yaml": 7492,
-    "javascript": 3404
+    "typescript": 13724,
+    "yaml": 7989,
+    "javascript": 6786
   },
   "manifests": [
     "apps/api/package.json",
@@ -32,11 +32,11 @@
   "top_level": [
     {
       "path": "apps",
-      "file_count": 168,
-      "source_file_count": 142,
+      "file_count": 179,
+      "source_file_count": 152,
       "languages": {
-        "javascript": 32,
-        "typescript": 110
+        "javascript": 37,
+        "typescript": 115
       }
     },
     {
@@ -61,34 +61,40 @@
       "file_count": 4,
       "source_file_count": 0,
       "languages": {}
+    },
+    {
+      "path": "security",
+      "file_count": 4,
+      "source_file_count": 0,
+      "languages": {}
     }
   ],
   "module_candidates": [
     {
       "path": "apps/user-dashboard",
-      "file_count": 95,
-      "source_file_count": 95,
+      "file_count": 99,
+      "source_file_count": 99,
       "languages": {
         "javascript": 1,
-        "typescript": 94
+        "typescript": 98
       },
       "manifests": []
     },
     {
       "path": "apps/api",
-      "file_count": 31,
-      "source_file_count": 31,
+      "file_count": 36,
+      "source_file_count": 36,
       "languages": {
-        "javascript": 31
+        "javascript": 36
       },
       "manifests": []
     },
     {
       "path": "apps/web",
-      "file_count": 16,
-      "source_file_count": 16,
+      "file_count": 17,
+      "source_file_count": 17,
       "languages": {
-        "typescript": 16
+        "typescript": 17
       },
       "manifests": []
     },
@@ -167,6 +173,203 @@
       ]
     },
     {
+      "file": "apps/api/src/auth/audit.js",
+      "language": "javascript",
+      "imports": [
+        "../logger.js",
+        "./code.js",
+        "./models/auth-event.js",
+        "./normalization.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/auth.integration.js",
+      "language": "javascript",
+      "imports": [
+        "node:assert/strict",
+        "node:crypto",
+        "node:http",
+        "node:test"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/auth.test.js",
+      "language": "javascript",
+      "imports": [
+        "node:assert/strict",
+        "node:test",
+        "./index-names.js",
+        "./code.js",
+        "./delivery.js",
+        "./normalization.js",
+        "./password.js",
+        "./schemas.js",
+        "./serialization.js",
+        "./models/user.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/authorization.js",
+      "language": "javascript",
+      "imports": [
+        "../middleware/errors.js",
+        "../middleware/session.js",
+        "./models/user.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/challenge-service.js",
+      "language": "javascript",
+      "imports": [
+        "node:crypto",
+        "mongoose",
+        "../middleware/errors.js",
+        "./audit.js",
+        "./code.js",
+        "./delivery.js",
+        "./models/auth-challenge.js",
+        "./models/auth-transaction.js",
+        "./normalization.js",
+        "./rate-limit.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/code.js",
+      "language": "javascript",
+      "imports": [
+        "node:crypto"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/indexes.js",
+      "language": "javascript",
+      "imports": [
+        "node:util",
+        "mongoose",
+        "./index-names.js",
+        "./models/applicant-profile.js",
+        "./models/auth-challenge.js",
+        "./models/auth-event.js",
+        "./models/auth-transaction.js",
+        "./models/legal-acceptance.js",
+        "./models/user.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/models/applicant-profile.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "../index-names.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/models/auth-challenge.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "../index-names.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/models/auth-event.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "../index-names.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/models/auth-transaction.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "../index-names.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/models/legal-acceptance.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "../index-names.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/models/user.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "../index-names.js",
+        "../normalization.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/normalization.js",
+      "language": "javascript",
+      "imports": [
+        "libphonenumber-js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/password.js",
+      "language": "javascript",
+      "imports": [
+        "argon2"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/rate-limit.js",
+      "language": "javascript",
+      "imports": [
+        "express-rate-limit",
+        "rate-limit-redis",
+        "../middleware/errors.js",
+        "./code.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/router.js",
+      "language": "javascript",
+      "imports": [
+        "express",
+        "../middleware/errors.js",
+        "../middleware/session.js",
+        "./audit.js",
+        "./authorization.js",
+        "./models/user.js",
+        "./rate-limit.js",
+        "./schemas.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/schemas.js",
+      "language": "javascript",
+      "imports": [
+        "zod",
+        "./normalization.js",
+        "./password.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/auth/service.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "../middleware/errors.js",
+        "../middleware/session.js",
+        "./audit.js",
+        "./challenge-service.js",
+        "./code.js",
+        "./models/applicant-profile.js",
+        "./models/auth-transaction.js",
+        "./models/legal-acceptance.js",
+        "./models/user.js",
+        "./normalization.js",
+        "./password.js"
+      ]
+    },
+    {
       "file": "apps/api/src/config/environment.test.js",
       "language": "javascript",
       "imports": [
@@ -193,6 +396,14 @@
         "connect-mongo",
         "mongoose",
         "./index.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/health/router.js",
+      "language": "javascript",
+      "imports": [
+        "express",
+        "../infrastructure/mongodb.js"
       ]
     },
     {
@@ -223,6 +434,24 @@
       "imports": [
         "zod",
         "../logger.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/middleware/security.test.js",
+      "language": "javascript",
+      "imports": [
+        "node:assert/strict",
+        "node:events",
+        "node:test"
+      ]
+    },
+    {
+      "file": "apps/api/src/middleware/session.js",
+      "language": "javascript",
+      "imports": [
+        "node:crypto",
+        "../config/session.js",
+        "./errors.js"
       ]
     },
     {
@@ -283,8 +512,9 @@
         "@/features/dashboard/pages/feature-placeholder-page",
         "@/features/onboarding/pages/onboarding-page",
         "@/pages/auth/login-page",
-        "@/pages/auth/signup-page",
-        "@/pages/errors/not-found-page"
+        "@/pages/auth/password-recovery-page",
+        "@/pages/auth/reset-password-page",
+        "@/pages/auth/signup-page"
       ]
     },
     {
@@ -339,6 +569,46 @@
       "language": "typescript",
       "imports": [
         "../ui/waand-logo"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/auth/password-field.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react",
+        "@/components/auth/auth-field",
+        "@/components/ui/tooltip"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/auth/verification-panel.test.tsx",
+      "language": "typescript",
+      "imports": [
+        "@testing-library/react",
+        "vitest",
+        "@/components/auth/verification-panel",
+        "@/errors/app-error",
+        "@/errors/error-codes",
+        "@/features/auth/types"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/components/auth/verification-panel.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react",
+        "@/components/auth/auth-field",
+        "@/components/errors/form-error",
+        "@/components/ui/button",
+        "@/errors/error-codes",
+        "@/features/auth/auth-api",
+        "@/features/auth/auth-flow",
+        "@/features/auth/types",
+        "@/hooks/use-app-error",
+        "@/lib/utils",
+        "@/schemas/auth.schema"
       ]
     },
     {
@@ -640,6 +910,25 @@
       ]
     },
     {
+      "file": "apps/user-dashboard/src/features/auth/auth-api.test.ts",
+      "language": "typescript",
+      "imports": [
+        "vitest",
+        "@/features/auth/auth-api"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-api.ts",
+      "language": "typescript",
+      "imports": [
+        "zod",
+        "@/errors/app-error",
+        "@/errors/error-codes",
+        "@/errors/normalize-error",
+        "@/features/auth/types"
+      ]
+    },
+    {
       "file": "apps/user-dashboard/src/features/auth/auth-context.tsx",
       "language": "typescript",
       "imports": [
@@ -648,10 +937,18 @@
         "@/errors/error-codes",
         "@/errors/normalize-error",
         "@/features/auth/auth-api",
-        "@/features/auth/auth-recovery",
         "@/features/auth/auth-state",
         "@/features/auth/types",
         "@/features/onboarding/onboarding-draft-storage"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-flow.test.ts",
+      "language": "typescript",
+      "imports": [
+        "vitest",
+        "@/features/auth/auth-flow",
+        "@/schemas/auth.schema"
       ]
     },
     {
@@ -662,6 +959,33 @@
         "react-router-dom",
         "@/features/auth/auth-context",
         "@/features/auth/auth-routing"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-routing.test.ts",
+      "language": "typescript",
+      "imports": [
+        "vitest",
+        "@/features/auth/auth-state",
+        "@/features/auth/auth-routing",
+        "@/features/auth/types"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-routing.ts",
+      "language": "typescript",
+      "imports": [
+        "@/features/auth/types"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/features/auth/auth-state.ts",
+      "language": "typescript",
+      "imports": [
+        "@/errors/app-error",
+        "@/errors/error-codes",
+        "@/features/auth/profile-completion",
+        "@/features/auth/types"
       ]
     },
     {
@@ -935,6 +1259,14 @@
       ]
     },
     {
+      "file": "apps/user-dashboard/src/features/onboarding/onboarding-draft-storage.test.ts",
+      "language": "typescript",
+      "imports": [
+        "vitest",
+        "@/features/onboarding/onboarding-draft-storage"
+      ]
+    },
+    {
       "file": "apps/user-dashboard/src/features/onboarding/pages/onboarding-page.tsx",
       "language": "typescript",
       "imports": [
@@ -994,14 +1326,101 @@
       "file": "apps/user-dashboard/src/pages/auth/login-page.tsx",
       "language": "typescript",
       "imports": [
-        "@/pages/auth/passwordless-auth-page"
+        "@hookform/resolvers/zod",
+        "lucide-react",
+        "react-hook-form",
+        "react-router-dom",
+        "@/components/auth/auth-field",
+        "@/components/auth/auth-form-motion",
+        "@/components/auth/auth-header",
+        "@/components/auth/auth-logo",
+        "@/components/auth/password-field",
+        "@/components/errors/form-error",
+        "@/components/ui/button",
+        "@/features/auth/auth-api"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/pages/auth/password-recovery-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@hookform/resolvers/zod",
+        "lucide-react",
+        "react-hook-form",
+        "react-router-dom",
+        "@/components/auth/auth-field",
+        "@/components/auth/auth-form-motion",
+        "@/components/auth/auth-header",
+        "@/components/auth/auth-logo",
+        "@/components/auth/verification-panel",
+        "@/components/errors/form-error",
+        "@/components/ui/button",
+        "@/features/auth/auth-api"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/pages/auth/reset-password-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@hookform/resolvers/zod",
+        "react-hook-form",
+        "react-router-dom",
+        "sonner",
+        "@/components/auth/auth-form-motion",
+        "@/components/auth/auth-header",
+        "@/components/auth/auth-logo",
+        "@/components/auth/password-field",
+        "@/components/errors/form-error",
+        "@/components/ui/button",
+        "@/errors/error-codes",
+        "@/features/auth/auth-api"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/pages/auth/signup-page.test.tsx",
+      "language": "typescript",
+      "imports": [
+        "@testing-library/react",
+        "vitest",
+        "react-router-dom",
+        "@/components/ui/tooltip",
+        "@/errors/app-error",
+        "@/errors/error-codes",
+        "@/pages/auth/signup-page"
       ]
     },
     {
       "file": "apps/user-dashboard/src/pages/auth/signup-page.tsx",
       "language": "typescript",
       "imports": [
-        "@/pages/auth/passwordless-auth-page"
+        "@hookform/resolvers/zod",
+        "framer-motion",
+        "lucide-react",
+        "react",
+        "react-hook-form",
+        "react-router-dom",
+        "@/components/auth/auth-field",
+        "@/components/auth/auth-form-motion",
+        "@/components/auth/auth-header",
+        "@/components/auth/auth-logo",
+        "@/components/auth/password-field",
+        "@/components/errors/form-error"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/pages/auth/verify-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react-router-dom",
+        "@/components/auth/auth-form-motion",
+        "@/components/auth/auth-header",
+        "@/components/auth/auth-logo",
+        "@/components/auth/verification-panel",
+        "@/features/auth/auth-api",
+        "@/features/auth/auth-context",
+        "@/features/auth/auth-routing",
+        "@/features/auth/types"
       ]
     },
     {
@@ -1012,6 +1431,32 @@
         "@/components/errors/error-state",
         "@/errors/error-catalog",
         "@/errors/error-codes"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/pages/settings-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@hookform/resolvers/zod",
+        "lucide-react",
+        "react",
+        "react-hook-form",
+        "sonner",
+        "@/components/auth/auth-field",
+        "@/components/auth/password-field",
+        "@/components/auth/verification-panel",
+        "@/components/errors/form-error",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/errors/error-codes"
+      ]
+    },
+    {
+      "file": "apps/user-dashboard/src/schemas/auth.schema.test.ts",
+      "language": "typescript",
+      "imports": [
+        "vitest",
+        "@/schemas/auth.schema"
       ]
     },
     {
@@ -1098,6 +1543,8 @@
       "language": "typescript",
       "imports": [
         "next/image",
+        "react-icons/fa",
+        "react-icons/fa6",
         "lucide-react",
         "@/components/landing/landing-navbar",
         "@/components/ui/line-shadow-text",
@@ -1121,10 +1568,8 @@
       "file": "apps/web/src/components/landing/testimonials.tsx",
       "language": "typescript",
       "imports": [
-        "react",
-        "framer-motion",
         "lucide-react",
-        "@/components/ui/button",
+        "@/components/landing/motion",
         "@/lib/utils"
       ]
     },
@@ -1198,312 +1643,42 @@
       ]
     },
     {
-      "file": "apps/api/src/auth/audit.js",
-      "language": "javascript",
-      "imports": [
-        "../logger.js",
-        "./code.js",
-        "./models/auth-event.js",
-        "./normalization.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/auth/auth.integration.js",
-      "language": "javascript",
-      "imports": [
-        "node:assert/strict",
-        "node:http",
-        "node:crypto",
-        "node:test"
-      ]
-    },
-    {
-      "file": "apps/api/src/auth/auth.test.js",
-      "language": "javascript",
-      "imports": [
-        "node:assert/strict",
-        "node:test",
-        "./code.js",
-        "./delivery.js",
-        "./normalization.js",
-        "./schemas.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/auth/authorization.js",
-      "language": "javascript",
-      "imports": [
-        "../middleware/errors.js",
-        "../middleware/session.js",
-        "./models/user.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/auth/code.js",
-      "language": "javascript",
-      "imports": [
-        "node:crypto"
-      ]
-    },
-    {
-      "file": "apps/api/src/auth/indexes.js",
-      "language": "javascript",
-      "imports": [
-        "node:util",
-        "./index-names.js",
-        "./models/auth-challenge.js",
-        "./models/auth-event.js",
-        "./models/user.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/auth/models/auth-challenge.js",
-      "language": "javascript",
-      "imports": [
-        "mongoose",
-        "../index-names.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/auth/models/auth-event.js",
-      "language": "javascript",
-      "imports": [
-        "mongoose",
-        "../index-names.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/auth/models/user.js",
-      "language": "javascript",
-      "imports": [
-        "mongoose",
-        "../index-names.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/auth/normalization.js",
-      "language": "javascript",
-      "imports": [
-        "libphonenumber-js"
-      ]
-    },
-    {
-      "file": "apps/api/src/auth/rate-limit.js",
-      "language": "javascript",
-      "imports": [
-        "express-rate-limit",
-        "rate-limit-redis",
-        "../middleware/errors.js",
-        "./code.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/auth/router.js",
-      "language": "javascript",
-      "imports": [
-        "express",
-        "../middleware/errors.js",
-        "../middleware/session.js",
-        "./audit.js",
-        "./authorization.js",
-        "./models/user.js",
-        "./rate-limit.js",
-        "./schemas.js",
-        "./serialization.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/auth/schemas.js",
-      "language": "javascript",
-      "imports": [
-        "zod",
-        "./normalization.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/auth/service.js",
-      "language": "javascript",
-      "imports": [
-        "mongoose",
-        "../middleware/errors.js",
-        "../middleware/session.js",
-        "./audit.js",
-        "./code.js",
-        "./delivery.js",
-        "./models/auth-challenge.js",
-        "./models/user.js",
-        "./rate-limit.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/health/router.js",
-      "language": "javascript",
-      "imports": [
-        "express",
-        "../infrastructure/mongodb.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/middleware/security.test.js",
-      "language": "javascript",
-      "imports": [
-        "node:assert/strict",
-        "node:test"
-      ]
-    },
-    {
-      "file": "apps/api/src/middleware/session.js",
-      "language": "javascript",
-      "imports": [
-        "node:crypto",
-        "../config/session.js",
-        "./errors.js"
-      ]
-    },
-    {
-      "file": "apps/user-dashboard/src/features/auth/auth-api.test.ts",
+      "file": "apps/web/src/components/ui/marquee.tsx",
       "language": "typescript",
       "imports": [
-        "vitest",
-        "@/features/auth/auth-api"
-      ]
-    },
-    {
-      "file": "apps/user-dashboard/src/features/auth/auth-api.ts",
-      "language": "typescript",
-      "imports": [
-        "zod",
-        "@/errors/app-error",
-        "@/errors/error-codes",
-        "@/errors/normalize-error",
-        "@/features/auth/types"
-      ]
-    },
-    {
-      "file": "apps/user-dashboard/src/features/auth/auth-flow.test.ts",
-      "language": "typescript",
-      "imports": [
-        "vitest",
-        "@/features/auth/auth-flow",
-        "@/schemas/auth.schema"
-      ]
-    },
-    {
-      "file": "apps/user-dashboard/src/features/auth/auth-flow.ts",
-      "language": "typescript",
-      "imports": [
-        "@/features/auth/types"
-      ]
-    },
-    {
-      "file": "apps/user-dashboard/src/features/auth/auth-recovery.test.ts",
-      "language": "typescript",
-      "imports": [
-        "vitest",
-        "@/errors/app-error",
-        "@/errors/error-codes",
-        "@/features/auth/auth-recovery"
-      ]
-    },
-    {
-      "file": "apps/user-dashboard/src/features/auth/auth-recovery.ts",
-      "language": "typescript",
-      "imports": [
-        "@/errors/app-error",
-        "@/errors/error-codes"
-      ]
-    },
-    {
-      "file": "apps/user-dashboard/src/features/auth/auth-routing.test.ts",
-      "language": "typescript",
-      "imports": [
-        "vitest",
-        "@/features/auth/auth-state",
-        "@/features/auth/auth-routing",
-        "@/features/auth/types"
-      ]
-    },
-    {
-      "file": "apps/user-dashboard/src/features/auth/auth-routing.ts",
-      "language": "typescript",
-      "imports": [
-        "@/features/auth/types"
-      ]
-    },
-    {
-      "file": "apps/user-dashboard/src/features/auth/auth-state.ts",
-      "language": "typescript",
-      "imports": [
-        "@/errors/app-error",
-        "@/errors/error-codes",
-        "@/features/auth/profile-completion",
-        "@/features/auth/types"
-      ]
-    },
-    {
-      "file": "apps/user-dashboard/src/features/onboarding/onboarding-draft-storage.test.ts",
-      "language": "typescript",
-      "imports": [
-        "vitest",
-        "@/features/onboarding/onboarding-draft-storage"
-      ]
-    },
-    {
-      "file": "apps/user-dashboard/src/pages/auth/passwordless-auth-page.tsx",
-      "language": "typescript",
-      "imports": [
-        "lucide-react",
         "react",
-        "react-router-dom",
-        "@/components/auth/auth-field",
-        "@/components/auth/auth-form-motion",
-        "@/components/auth/auth-header",
-        "@/components/auth/auth-logo",
-        "@/components/errors/form-error",
-        "@/components/ui/button",
-        "@/features/auth/auth-api",
-        "@/features/auth/auth-context",
-        "@/features/auth/auth-flow"
+        "@/lib/utils"
       ]
     }
   ],
   "changed_files": [
     ".env.example",
+    "AUTHENTICATION.md",
     "README.md",
-    "apps/api/package.json",
     "apps/api/src/app.js",
+    "apps/api/src/auth/auth.integration.js",
+    "apps/api/src/auth/auth.test.js",
+    "apps/api/src/auth/challenge-service.js",
+    "apps/api/src/auth/delivery.js",
+    "apps/api/src/auth/schemas.js",
+    "apps/api/src/auth/service.js",
     "apps/api/src/config/environment.js",
     "apps/api/src/config/environment.test.js",
-    "apps/api/src/config/session.js",
-    "apps/api/src/logger.js",
-    "apps/api/src/middleware/errors.js",
     "apps/api/src/server.js",
-    "apps/user-dashboard/eslint.config.js",
+    "apps/api/src/tools/dev-auth-webhook.mjs",
     "apps/user-dashboard/package.json",
-    "apps/user-dashboard/src/app/router.tsx",
-    "apps/user-dashboard/src/components/auth/password-field.tsx",
-    "apps/user-dashboard/src/components/layout/dashboard-mobile-nav.tsx",
-    "apps/user-dashboard/src/components/layout/dashboard-navigation.tsx",
-    "apps/user-dashboard/src/errors/error-catalog.ts",
-    "apps/user-dashboard/src/errors/error-codes.ts",
-    "apps/user-dashboard/src/features/auth/auth-context.tsx",
-    "apps/user-dashboard/src/features/auth/auth-guard.tsx",
-    "apps/user-dashboard/src/features/auth/auth-storage.ts",
-    "apps/user-dashboard/src/features/auth/types.ts",
-    "apps/user-dashboard/src/features/onboarding/pages/onboarding-page.tsx",
+    "apps/user-dashboard/src/components/auth/verification-panel.test.tsx",
+    "apps/user-dashboard/src/features/auth/auth-api.test.ts",
     "apps/user-dashboard/src/pages/auth/login-page.tsx",
+    "apps/user-dashboard/src/pages/auth/reset-password-page.tsx",
+    "apps/user-dashboard/src/pages/auth/signup-page.test.tsx",
     "apps/user-dashboard/src/pages/auth/signup-page.tsx",
+    "apps/user-dashboard/src/pages/auth/verify-page.tsx",
+    "apps/user-dashboard/src/pages/settings-page.tsx",
+    "apps/user-dashboard/src/schemas/auth.schema.test.ts",
     "apps/user-dashboard/src/schemas/auth.schema.ts",
-    "apps/user-dashboard/vite.config.ts",
-    "apps/web/next.config.ts",
-    "apps/web/src/components/landing/landing-navbar.tsx",
-    "apps/web/src/components/landing/landing-page.tsx",
-    "apps/web/src/components/landing/motion.tsx",
     "docker-compose.yml",
-    "infrastructure/docker/user-dashboard.Dockerfile",
-    "infrastructure/docker/web.Dockerfile",
     "pnpm-lock.yaml",
-    "turbo.json",
     ".agents/guidance-map/guides/api/service.md",
     ".agents/guidance-map/guides/user-dashboard/identity.md",
     ".agents/guidance-map/guides/user-dashboard/product.md",
@@ -1512,42 +1687,74 @@
     ".agents/guidance-map/guides/workspace/tooling.md",
     ".agents/guidance-map/manifest.json",
     ".agents/guidance-map/project-map.json",
+    ".prettierignore",
     "AGENTS.md",
-    "AUTHENTICATION.md",
+    "apps/api/package.json",
     "apps/api/scripts/build.mjs",
     "apps/api/scripts/sync-auth-indexes.mjs",
     "apps/api/src/auth/audit.js",
-    "apps/api/src/auth/auth.integration.js",
-    "apps/api/src/auth/auth.test.js",
     "apps/api/src/auth/authorization.js",
     "apps/api/src/auth/code.js",
-    "apps/api/src/auth/delivery.js",
     "apps/api/src/auth/index-names.js",
     "apps/api/src/auth/indexes.js",
+    "apps/api/src/auth/models/applicant-profile.js",
     "apps/api/src/auth/models/auth-challenge.js",
     "apps/api/src/auth/models/auth-event.js",
+    "apps/api/src/auth/models/auth-transaction.js",
+    "apps/api/src/auth/models/legal-acceptance.js",
     "apps/api/src/auth/models/user.js",
     "apps/api/src/auth/normalization.js",
+    "apps/api/src/auth/password.js",
     "apps/api/src/auth/rate-limit.js",
     "apps/api/src/auth/router.js",
-    "apps/api/src/auth/schemas.js",
     "apps/api/src/auth/serialization.js",
-    "apps/api/src/auth/service.js",
+    "apps/api/src/config/session.js",
     "apps/api/src/health/router.js",
+    "apps/api/src/infrastructure/mongodb.js",
+    "apps/api/src/logger.js",
+    "apps/api/src/middleware/errors.js",
     "apps/api/src/middleware/security.test.js",
     "apps/api/src/middleware/session.js",
-    "apps/user-dashboard/src/features/auth/auth-api.test.ts",
+    "apps/user-dashboard/eslint.config.js",
+    "apps/user-dashboard/src/app/router.tsx",
+    "apps/user-dashboard/src/components/auth/auth-layout.tsx",
+    "apps/user-dashboard/src/components/auth/verification-panel.tsx",
+    "apps/user-dashboard/src/components/layout/dashboard-mobile-nav.tsx",
+    "apps/user-dashboard/src/components/layout/dashboard-navigation.tsx",
+    "apps/user-dashboard/src/errors/error-catalog.ts",
+    "apps/user-dashboard/src/errors/error-codes.ts",
     "apps/user-dashboard/src/features/auth/auth-api.ts",
+    "apps/user-dashboard/src/features/auth/auth-context.tsx",
     "apps/user-dashboard/src/features/auth/auth-flow.test.ts",
     "apps/user-dashboard/src/features/auth/auth-flow.ts",
-    "apps/user-dashboard/src/features/auth/auth-recovery.test.ts",
-    "apps/user-dashboard/src/features/auth/auth-recovery.ts",
+    "apps/user-dashboard/src/features/auth/auth-guard.tsx",
     "apps/user-dashboard/src/features/auth/auth-routing.test.ts",
     "apps/user-dashboard/src/features/auth/auth-routing.ts",
     "apps/user-dashboard/src/features/auth/auth-state.ts",
+    "apps/user-dashboard/src/features/auth/auth-storage.ts",
+    "apps/user-dashboard/src/features/auth/types.ts",
     "apps/user-dashboard/src/features/onboarding/onboarding-draft-storage.test.ts",
     "apps/user-dashboard/src/features/onboarding/onboarding-draft-storage.ts",
-    "apps/user-dashboard/src/pages/auth/passwordless-auth-page.tsx"
+    "apps/user-dashboard/src/features/onboarding/pages/onboarding-page.tsx",
+    "apps/user-dashboard/src/pages/auth/password-recovery-page.tsx",
+    "apps/user-dashboard/vite.config.ts",
+    "apps/web/next.config.ts",
+    "apps/web/src/components/landing/landing-navbar.tsx",
+    "apps/web/src/components/landing/landing-page.tsx",
+    "apps/web/src/components/landing/motion.tsx",
+    "infrastructure/docker/user-dashboard.Dockerfile",
+    "infrastructure/docker/web.Dockerfile",
+    "package.json",
+    "turbo.json",
+    ".gitignore",
+    "apps/web/package.json",
+    "apps/web/src/components/landing/testimonials.tsx",
+    "apps/web/src/styles/globals.css",
+    "apps/web/src/components/ui/marquee.tsx",
+    "security/pentest/attack-surface.md",
+    "security/pentest/remediation.md",
+    "security/pentest/scope.md",
+    "security/pentest/test-matrix.md"
   ],
   "affected_module_guides": [
     ".agents/guidance-map/guides/api/service.md",

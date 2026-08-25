@@ -1,174 +1,441 @@
 'use client';
 
-import { useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import { Quote, Star } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import {
+  Reveal,
+  TestimonialMarquee,
+  TestimonialMotionCard,
+  TestimonialsScene,
+} from '@/components/landing/motion';
 import { cn } from '@/lib/utils';
 
-const testimonials = [
+type Testimonial = {
+  name: string;
+  meta: string;
+  quote: string;
+  initials: string;
+  tone: 'white' | 'blue' | 'warm' | 'dark';
+};
+
+/*
+ * Demo data.
+ *
+ * Replace these with your verified production testimonials.
+ * The first one follows the testimonial already present in
+ * your original Waand landing-page design.
+ */
+const testimonials: Testimonial[] = [
   {
     name: 'نیما محمدی',
-    program: 'پذیرفته‌شده کارشناسی ارشد مهندسی کامپیوتر',
+    initials: 'نم',
+    meta: 'پذیرفته‌شده در آلمان · مهندسی کامپیوتر',
     quote:
-      'واند تمام فرآیند اپلای را برای من ساده کرد؛ از انتخاب دانشگاه‌ها تا ارسال مدارک، همه‌چیز منظم و سریع انجام شد.',
+      'وآند واقعاً فرآیند اپلای را برای من ساده کرد. از انتخاب دانشگاه‌ها تا مدیریت مدارک، همه چیز منظم و قابل پیگیری بود.',
+    tone: 'blue',
   },
   {
-    name: 'سارا یوسفی',
-    program: 'دانشجوی کارشناسی ارشد مدیریت',
+    name: 'سارا احمدی',
+    initials: 'سا',
+    meta: 'اپلای فرانسه · معماری',
     quote:
-      'پیشنهادهای شخصی‌سازی‌شده واند کمک کرد زمانم را روی دانشگاه‌هایی بگذارم که واقعاً با سوابق من هم‌خوانی داشتند.',
+      'قبلاً بین ددلاین‌ها و مدارک مختلف سردرگم می‌شدم. داشتن همه مراحل در یک داشبورد باعث شد دقیق‌تر جلو بروم.',
+    tone: 'white',
   },
   {
-    name: 'آرمان رستگار',
-    program: 'پذیرفته‌شده علوم داده',
+    name: 'امیر رضایی',
+    initials: 'ار',
+    meta: 'اپلای کانادا · علوم داده',
     quote:
-      'وضعیت هر درخواست را یک‌جا می‌دیدم و هیچ مرحله یا مدرکی جا نمی‌ماند. برای اولین بار اپلای واقعاً قابل مدیریت شد.',
+      'پیشنهاد دانشگاه‌ها بر اساس پروفایل من باعث شد گزینه‌هایی را ببینم که در جست‌وجوی شخصی خودم پیدا نکرده بودم.',
+    tone: 'warm',
   },
-] as const;
+  {
+    name: 'مهسا کریمی',
+    initials: 'مک',
+    meta: 'اپلای ایتالیا · طراحی',
+    quote:
+      'چیزی که برای من مهم بود این بود که بدانم در هر مرحله دقیقاً چه کاری باید انجام بدهم و چه چیزی هنوز ناقص است.',
+    tone: 'dark',
+  },
+  {
+    name: 'علی موسوی',
+    initials: 'عم',
+    meta: 'اپلای آمریکا · مهندسی برق',
+    quote:
+      'تحلیل مدارک قبل از شروع درخواست‌ها کمک کرد مشکلات پرونده‌ام را زودتر پیدا کنم و برایشان برنامه داشته باشم.',
+    tone: 'white',
+  },
+  {
+    name: 'ترانه حسینی',
+    initials: 'تح',
+    meta: 'اپلای آلمان · مدیریت',
+    quote:
+      'مدیریت ددلاین‌ها برای چند دانشگاه همیشه سخت بود. وآند کل مسیر را بسیار شفاف‌تر و قابل کنترل‌تر کرد.',
+    tone: 'blue',
+  },
+];
 
-function StudentPortrait({
-  className,
-  variant,
-}: {
-  className?: string;
-  variant: 'mint' | 'peach';
-}) {
-  const mint = variant === 'mint';
+const firstLane = testimonials.slice(0, 3);
+const secondLane = testimonials.slice(3);
+
+const toneStyles = {
+  white: 'border-[#e8e9ef] bg-white text-[#171717] shadow-[0_16px_45px_rgba(25,31,55,0.055)]',
+
+  blue: 'border-[#dfe4ff] bg-[#f2f4ff] text-[#171717] shadow-[0_18px_50px_rgba(20,60,251,0.065)]',
+
+  warm: 'border-[#f3e2cf] bg-[#fff5e9] text-[#171717] shadow-[0_18px_48px_rgba(135,88,42,0.06)]',
+
+  dark: 'border-[#202020] bg-[#171717] text-white shadow-[0_20px_55px_rgba(0,0,0,0.14)]',
+} as const;
+
+function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; index: number }) {
+  const dark = testimonial.tone === 'dark';
 
   return (
-    <svg aria-hidden="true" className={cn('size-full', className)} viewBox="0 0 120 120">
-      <circle cx="60" cy="60" fill={mint ? '#b9ead3' : '#f5d2b3'} r="60" />
-      <path d="M21 121c4-28 20-43 39-43s35 15 39 43" fill={mint ? '#0d7257' : '#5c3022'} />
-      <ellipse cx="60" cy="53" fill={mint ? '#e8b38c' : '#d99a6c'} rx="25" ry="30" />
-      <path
-        d={
-          mint
-            ? 'M36 50c0-25 14-35 28-35 18 0 28 14 25 35-6-9-14-15-26-16-7 8-16 13-27 16Z'
-            : 'M34 56c-4-28 10-42 28-42 22 0 33 18 28 46-5-13-15-24-30-28-8 10-16 18-26 24Z'
-        }
-        fill={mint ? '#24201f' : '#6e3d25'}
-      />
-      {!mint && <path d="M33 48c-7 18-2 36 7 45-2-18 2-34 12-48Z" fill="#6e3d25" />}
-      <circle cx="51" cy="55" fill="#312622" r="2" />
-      <circle cx="70" cy="55" fill="#312622" r="2" />
-      <path
-        d="M53 67c5 4 10 4 15 0"
-        fill="none"
-        stroke="#8a5042"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
-    </svg>
+    <TestimonialMotionCard
+      className="
+        w-[310px]
+        sm:w-[350px]
+        lg:w-[390px]
+      "
+      index={index}
+    >
+      <article
+        className={cn(
+          `
+            group
+            relative
+            flex
+            min-h-[230px]
+            h-full
+            flex-col
+            overflow-hidden
+            rounded-[24px]
+            border
+            px-6
+            py-6
+            text-right
+            transition-[border-color,box-shadow]
+            duration-300
+            sm:min-h-[245px]
+            sm:px-7
+            sm:py-7
+          `,
+          toneStyles[testimonial.tone],
+        )}
+        dir="rtl"
+      >
+        {/* ------------------------------------------------------------- */}
+        {/* Decorative quote                                              */}
+        {/* ------------------------------------------------------------- */}
+
+        <Quote
+          aria-hidden="true"
+          className={cn(
+            `
+              absolute
+              left-5
+              top-5
+              size-12
+              -rotate-6
+              transition-transform
+              duration-500
+              group-hover:-rotate-12
+              group-hover:scale-110
+            `,
+            dark ? 'text-white/[0.06]' : 'text-[#143CFB]/[0.07]',
+          )}
+          fill="currentColor"
+          strokeWidth={0}
+        />
+
+        {/* ------------------------------------------------------------- */}
+        {/* Rating                                                        */}
+        {/* ------------------------------------------------------------- */}
+
+        <div aria-label="۵ از ۵ ستاره" className="relative z-10 flex gap-1">
+          {Array.from({ length: 5 }).map((_, star) => (
+            <Star
+              aria-hidden="true"
+              className={cn(
+                'size-3.5',
+                dark ? 'fill-[#f8c453] text-[#f8c453]' : 'fill-[#eaaa35] text-[#eaaa35]',
+              )}
+              key={star}
+              strokeWidth={1.5}
+            />
+          ))}
+        </div>
+
+        {/* ------------------------------------------------------------- */}
+        {/* Quote                                                         */}
+        {/* ------------------------------------------------------------- */}
+
+        <blockquote
+          className={cn(
+            `
+              relative
+              z-10
+              mt-5
+              text-[13px]
+              font-medium
+              leading-[2]
+              sm:text-[14px]
+            `,
+            dark ? 'text-white/82' : 'text-[#3f424a]',
+          )}
+        >
+          «{testimonial.quote}»
+        </blockquote>
+
+        {/* ------------------------------------------------------------- */}
+        {/* Person                                                        */}
+        {/* ------------------------------------------------------------- */}
+
+        <footer className="relative z-10 mt-auto flex items-center gap-3 pt-6">
+          <span
+            className={cn(
+              `
+                grid
+                size-10
+                shrink-0
+                place-items-center
+                rounded-full
+                text-[11px]
+                font-black
+              `,
+              dark ? 'bg-white text-[#171717]' : 'bg-[#143CFB] text-white',
+            )}
+          >
+            {testimonial.initials}
+          </span>
+
+          <span className="min-w-0">
+            <strong
+              className={cn('block text-[12px] font-black', dark ? 'text-white' : 'text-[#202126]')}
+            >
+              {testimonial.name}
+            </strong>
+
+            <small
+              className={cn(
+                'mt-1 block text-[9px] leading-5',
+                dark ? 'text-white/45' : 'text-[#81848c]',
+              )}
+            >
+              {testimonial.meta}
+            </small>
+          </span>
+        </footer>
+
+        {/* ------------------------------------------------------------- */}
+        {/* Hover signal                                                  */}
+        {/* ------------------------------------------------------------- */}
+
+        <span
+          aria-hidden="true"
+          className={cn(
+            `
+              absolute
+              inset-x-8
+              bottom-0
+              h-px
+              origin-right
+              scale-x-0
+              transition-transform
+              duration-500
+              group-hover:scale-x-100
+            `,
+            dark ? 'bg-white/30' : 'bg-[#143CFB]/35',
+          )}
+        />
+      </article>
+    </TestimonialMotionCard>
   );
 }
 
 export function Testimonials() {
-  const [index, setIndex] = useState(0);
-  const reducedMotion = useReducedMotion();
-  const testimonial = testimonials[index] ?? testimonials[0];
-
-  const move = (direction: number) => {
-    setIndex((current) => (current + direction + testimonials.length) % testimonials.length);
-  };
-
   return (
-    <motion.section
-      initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+    <section
       aria-labelledby="testimonials-title"
-      className="section-shell landing-section scroll-mt-24"
+      className="
+        landing-section
+        scroll-mt-24
+        overflow-hidden
+        py-20
+        sm:py-24
+        lg:py-28
+      "
       id="testimonials"
-      transition={reducedMotion ? { duration: 0 } : { duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      viewport={{ amount: 0.15, once: true }}
-      whileInView={{ opacity: 1, y: 0 }}
     >
-      <h2 className="section-title text-center" id="testimonials-title">
-        دانشجویان ما می‌گویند
-      </h2>
+      <TestimonialsScene className="relative">
+        {/* -------------------------------------------------------------- */}
+        {/* Heading                                                        */}
+        {/* -------------------------------------------------------------- */}
 
-      <div
-        className="relative mt-6 grid items-center gap-10 lg:grid-cols-[1.05fr_.95fr] lg:gap-16"
-        dir="ltr"
-      >
+        <div className="section-shell">
+          <Reveal>
+            <div className="mx-auto max-w-[650px] text-center">
+              <span
+                className="
+                  mb-4
+                  inline-flex
+                  items-center
+                  gap-2
+                  rounded-full
+                  border
+                  border-[#dfe4ff]
+                  bg-[#f6f7ff]
+                  px-4
+                  py-2
+                  text-[10px]
+                  font-bold
+                  text-[#143CFB]
+                "
+              >
+                تجربه واقعی مسیر اپلای
+                <span className="size-1.5 rounded-full bg-[#143CFB]" />
+              </span>
+
+              <h2
+                className="
+                  text-[30px]
+                  font-black
+                  leading-[1.55]
+                  tracking-[-0.04em]
+                  text-[#171717]
+                  sm:text-[36px]
+                  lg:text-[42px]
+                "
+                id="testimonials-title"
+              >
+                دانشجویان ما می‌گویند
+              </h2>
+
+              <p
+                className="
+                  mx-auto
+                  mt-4
+                  max-w-[520px]
+                  text-[13px]
+                  leading-7
+                  text-[#73767e]
+                  sm:text-[14px]
+                "
+              >
+                تجربه دانشجویانی که مسیر اپلای خود را ساده‌تر، منظم‌تر و هوشمندانه‌تر مدیریت
+                کرده‌اند.
+              </p>
+            </div>
+          </Reveal>
+        </div>
+
+        {/* -------------------------------------------------------------- */}
+        {/* Marquee canvas                                                 */}
+        {/* -------------------------------------------------------------- */}
+
         <div
-          className="relative order-2 mx-auto flex min-h-32 w-full max-w-[480px] items-center justify-center sm:min-h-40 lg:order-1"
-          dir="rtl"
+          className="
+            relative
+            mt-11
+            space-y-4
+            sm:mt-14
+            sm:space-y-5
+          "
         >
-          <div className="avatar-orbit -ml-4 size-24 overflow-hidden rounded-full border-4 border-white shadow-sm sm:size-36">
-            <StudentPortrait variant="mint" />
-          </div>
-          <div className="avatar-orbit z-10 -ml-4 grid size-32 place-items-center rounded-full border-4 border-white bg-[#d8d5ff] text-center shadow-sm sm:size-44">
-            <div>
-              <strong className="block text-3xl font-extrabold text-[#171717]">+۱۲۰۰</strong>
-              <span className="mt-1 block text-xs text-[#58585e]">دانشجوی راضی</span>
+          {/* subtle background atmosphere */}
+
+          <div
+            aria-hidden="true"
+            className="
+              pointer-events-none
+              absolute
+              left-1/2
+              top-1/2
+              h-[420px]
+              w-[820px]
+              -translate-x-1/2
+              -translate-y-1/2
+              rounded-full
+              bg-[radial-gradient(circle,rgba(20,60,251,0.06)_0%,rgba(20,60,251,0.018)_45%,transparent_72%)]
+              blur-3xl
+            "
+          />
+
+          {/* lane 1 */}
+
+          <TestimonialMarquee baseVelocity={31} direction="left" lane={0}>
+            {firstLane.map((testimonial, index) => (
+              <TestimonialCard index={index} key={testimonial.name} testimonial={testimonial} />
+            ))}
+          </TestimonialMarquee>
+
+          {/* lane 2 */}
+
+          <TestimonialMarquee baseVelocity={24} direction="right" lane={1}>
+            {secondLane.map((testimonial, index) => (
+              <TestimonialCard
+                index={index + firstLane.length}
+                key={testimonial.name}
+                testimonial={testimonial}
+              />
+            ))}
+          </TestimonialMarquee>
+        </div>
+
+        {/* -------------------------------------------------------------- */}
+        {/* Supporting metric                                              */}
+        {/* -------------------------------------------------------------- */}
+
+        <Reveal delay={0.08}>
+          <div className="section-shell mt-11">
+            <div
+              className="
+                mx-auto
+                flex
+                w-fit
+                items-center
+                gap-3
+                rounded-full
+                border
+                border-black/[0.055]
+                bg-white/80
+                px-5
+                py-2.5
+                text-[10px]
+                text-[#747780]
+                shadow-[0_8px_28px_rgba(30,36,65,0.04)]
+                backdrop-blur-md
+              "
+            >
+              <span className="flex -space-x-2" dir="ltr">
+                {['ن', 'س', 'م', 'ع'].map((letter, index) => (
+                  <span
+                    className="
+                      grid
+                      size-7
+                      place-items-center
+                      rounded-full
+                      border-2
+                      border-white
+                      bg-[#e7eaff]
+                      text-[8px]
+                      font-black
+                      text-[#143CFB]
+                    "
+                    key={`${letter}-${index}`}
+                  >
+                    {letter}
+                  </span>
+                ))}
+              </span>
+
+              <span>تجربه دانشجویان، بخشی از مسیر ساخت وآند</span>
             </div>
           </div>
-          <div className="avatar-orbit size-24 overflow-hidden rounded-full border-4 border-white shadow-sm sm:size-36">
-            <StudentPortrait variant="peach" />
-          </div>
-        </div>
-
-        <div
-          className="order-1 min-h-44 text-center lg:order-2 lg:text-right"
-          aria-live="polite"
-          dir="rtl"
-        >
-          <AnimatePresence initial={false} mode="wait">
-            <motion.figure
-              key={testimonial.name}
-              initial={reducedMotion ? false : { opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={reducedMotion ? {} : { opacity: 0, x: -10 }}
-              transition={reducedMotion ? { duration: 0 } : { duration: 0.24 }}
-            >
-              <figcaption>
-                <strong className="text-xl font-extrabold text-[#181818]">
-                  {testimonial.name}
-                </strong>
-                <span className="mt-1 block text-sm text-[#66666d]">{testimonial.program}</span>
-              </figcaption>
-              <blockquote className="mt-4 max-w-xl text-[15px] leading-8 text-[#5d5d63]">
-                «{testimonial.quote}»
-              </blockquote>
-              <div
-                aria-label="امتیاز ۵ از ۵"
-                className="mt-4 flex justify-center gap-1 text-[#f5ae00] lg:justify-start"
-                role="img"
-              >
-                {Array.from({ length: 5 }).map((_, star) => (
-                  <Star aria-hidden="true" className="size-4 fill-current" key={star} />
-                ))}
-              </div>
-            </motion.figure>
-          </AnimatePresence>
-        </div>
-
-        <Button
-          aria-label="نظر قبلی"
-          className="absolute left-0 top-1/2 -translate-y-1/2 rounded-full border-[#ececec] bg-white text-[#252525] shadow-none"
-          onClick={() => move(-1)}
-          size="icon"
-          variant="secondary"
-        >
-          <ChevronLeft
-            aria-hidden="true"
-            className="size-5 transition-transform duration-200 motion-safe:group-hover/button:-translate-x-0.5 motion-reduce:transition-none"
-          />
-        </Button>
-        <Button
-          aria-label="نظر بعدی"
-          className="absolute right-0 top-1/2 -translate-y-1/2 rounded-full border-[#ececec] bg-white text-[#252525] shadow-none"
-          onClick={() => move(1)}
-          size="icon"
-          variant="secondary"
-        >
-          <ChevronRight
-            aria-hidden="true"
-            className="size-5 transition-transform duration-200 motion-safe:group-hover/button:translate-x-0.5 motion-reduce:transition-none"
-          />
-        </Button>
-      </div>
-    </motion.section>
+        </Reveal>
+      </TestimonialsScene>
+    </section>
   );
 }

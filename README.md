@@ -14,6 +14,10 @@ Production-aware monorepo for the Waand marketing site, applicant dashboard, and
 
 Turborepo coordinates scripts across pnpm workspaces. MongoDB and Redis are provided by Docker Compose and persist data in named volumes.
 
+## Documentation
+
+- [Authentication](AUTHENTICATION.md): architecture, cookie and CSRF lifecycle, signup/login/recovery/step-up flows, API contract, delivery, operations, and troubleshooting.
+
 ## Prerequisites
 
 - Node.js 22.12 or newer
@@ -68,7 +72,7 @@ The API rejects missing or unsafe configuration. A development webhook channel m
 
 ## Local development
 
-Start MongoDB and Redis in Docker, then run both applications with watch mode:
+Start MongoDB and Redis in Docker, then run all three applications with watch mode:
 
 ```bash
 docker compose up -d mongodb redis
