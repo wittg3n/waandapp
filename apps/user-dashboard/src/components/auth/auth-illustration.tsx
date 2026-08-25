@@ -1,20 +1,10 @@
 import { motion } from 'framer-motion';
 
-import loginVisual from '@/assets/auth/login-illustration.png';
-import signupVisual from '@/assets/auth/signup-illustration.png';
-
-type AuthIllustrationProps = {
-  variant: 'login' | 'signup';
-};
-
-const visuals = {
-  login: loginVisual,
-  signup: signupVisual,
-} as const;
+import visual from '@/assets/auth/login-illustration.png';
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
-export function AuthIllustration({ variant }: AuthIllustrationProps) {
+export function AuthIllustration() {
   return (
     <motion.aside
       animate={{ opacity: 1, scale: 1, x: 0 }}
@@ -23,11 +13,7 @@ export function AuthIllustration({ variant }: AuthIllustrationProps) {
       initial={{ opacity: 0, scale: 0.995, x: -8 }}
       transition={{ duration: 0.5, ease }}
     >
-      <img
-        alt=""
-        className="absolute inset-0 size-full object-cover object-center"
-        src={visuals[variant]}
-      />
+      <img alt="" className="absolute inset-0 size-full object-cover object-center" src={visual} />
     </motion.aside>
   );
 }
