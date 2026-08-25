@@ -2,7 +2,7 @@
 Guide ID: user-dashboard.identity
 Guide kind: leaf
 Guide path: .agents/guidance-map/guides/user-dashboard/identity.md
-Content hash: sha256:70a9bc3c5c9d26d1
+Content hash: sha256:71b6666771814fe1
 <!-- code-project-guidance-map:guide:end -->
 
 # Dashboard Authentication and Onboarding

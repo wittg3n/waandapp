@@ -1,71 +1,75 @@
 {
-  "content_hash": "sha256:6db6b233a8a85265",
-  "generated_at": "2026-08-21T21:04:43Z",
+  "content_hash": "sha256:7e37043c6f0b1c67",
+  "generated_at": "2026-08-25T11:02:26Z",
   "generator": "code-project-guidance-map",
   "generator_version": "0.4.0",
-  "git_baseline": "98418e0",
+  "git_baseline": "4e2eded",
   "guide_format": "action-map:v5",
   "guides": [
     {
-      "change_here_when": "Adding API routes or middleware, changing startup/shutdown, validating runtime settings, or adapting database/cache connections.",
-      "do_not_put_here": "Browser UI, shared workspace tooling, or deployment-time MongoDB/Redis provisioning.",
-      "estimated_tokens": 357,
+      "change_here_when": "Adding server routes or middleware, changing auth/session behavior, environment contracts, indexes, dependencies, or service lifecycle.",
+      "do_not_put_here": "Browser UI/state, shared workspace tooling, or deployment-time datastore provisioning.",
+      "estimated_tokens": 555,
       "id": "api.service",
       "kind": "leaf",
       "module_path": "",
-      "owns": "Express HTTP service, runtime configuration, request safeguards, logging, and MongoDB/Redis connection lifecycle.",
+      "owns": "Express HTTP composition, production authentication and authorization, runtime configuration, request safeguards, logging, and MongoDB/Redis lifecycle.",
       "parent_id": null,
       "path": ".agents/guidance-map/guides/api/service.md",
       "read_when": "Changing API behavior, middleware order, environment contracts, dependency connections, session composition, or service lifecycle.",
-      "size_bytes": 2260,
+      "size_bytes": 3554,
       "skip_when": "Editing frontend UI, shared tooling, or external infrastructure provisioning.",
       "source_globs": [
-        "apps/api/**"
+        "apps/api/**",
+        "AUTHENTICATION.md"
       ],
-      "source_snapshot": "sha256:d72e950c8078971cb88d998e3076fb13cf13ef4f520870b6bc3472eb2702d493; files=12",
+      "source_snapshot": "sha256:77b9a11eec3e26dd439649335d6b738b070c41d0d3e18ec77f45e2dc67da4181; files=37",
       "tags": [
         "api",
         "express",
-        "node",
+        "authentication",
+        "authorization",
+        "sessions",
         "mongodb",
         "redis",
         "middleware",
         "configuration",
-        "logging",
-        "sessions"
+        "logging"
       ],
       "title": "API Service"
     },
     {
-      "change_here_when": "Editing auth forms/layout, auth persistence or guards, onboarding steps and choices, or the initial profile contract and completion calculation.",
-      "do_not_put_here": "Server/API authentication, shared UI/error primitives, dashboard feature behavior, or Iranian field/university datasets.",
-      "estimated_tokens": 473,
+      "change_here_when": "Editing login/signup/recovery, auth API state or guards, sensitive account settings, onboarding, or dashboard-side auth/profile contracts.",
+      "do_not_put_here": "Server credential/session enforcement, shared UI/error primitives, dashboard product behavior, or Iranian datasets.",
+      "estimated_tokens": 622,
       "id": "user-dashboard.identity",
       "kind": "leaf",
       "module_path": "",
-      "owns": "Client-side login/signup UX, local auth identity and route status, onboarding draft/completion flow, and initial-profile validation and normalization.",
+      "owns": "Dashboard auth UX/API orchestration, session/preauth route state, account-security flows, onboarding drafts, and profile validation/completion.",
       "parent_id": null,
       "path": ".agents/guidance-map/guides/user-dashboard/identity.md",
-      "read_when": "Changing login/signup screens or schemas, auth context/storage/redirects, onboarding steps, draft recovery, or initial-profile completion.",
-      "size_bytes": 3271,
-      "skip_when": "Editing post-onboarding dashboard features, shared UI primitives, backend authentication, or dataset contents.",
+      "read_when": "Changing auth screens or schemas, API transitions, context/guards/redirects, account-security settings, onboarding steps, drafts, or profile completion.",
+      "size_bytes": 4482,
+      "skip_when": "Editing dashboard product cards, generic UI primitives, backend authentication, or dataset contents.",
       "source_globs": [
         "apps/user-dashboard/src/components/auth/**",
         "apps/user-dashboard/src/features/auth/**",
         "apps/user-dashboard/src/features/onboarding/**",
         "apps/user-dashboard/src/pages/auth/**",
+        "apps/user-dashboard/src/pages/settings-page.tsx",
         "apps/user-dashboard/src/schemas/**"
       ],
-      "source_snapshot": "sha256:be355fe02fcf3a4347477029b70d3feda6855621fb3550a415c8bdf0916d069d; files=30",
+      "source_snapshot": "sha256:650aa6aa243c447bc82c9c588a2d4bb24fe6c256a3bfa768193a76d700403c67; files=46",
       "tags": [
         "authentication",
-        "auth",
+        "auth-api",
         "login",
         "signup",
+        "recovery",
+        "account-settings",
         "onboarding",
         "profile",
-        "localStorage",
-        "route guards",
+        "route-guards",
         "validation"
       ],
       "title": "Dashboard Authentication and Onboarding"
@@ -73,7 +77,7 @@
     {
       "change_here_when": "Editing route/provider wiring, navigation or shell layout, reusable controls/tokens/error UX, Iranian reference data, or Vite/package configuration.",
       "do_not_put_here": "Auth, onboarding, dashboard-feature page/business logic, backend behavior, or feature-only components.",
-      "estimated_tokens": 643,
+      "estimated_tokens": 711,
       "id": "user-dashboard.shell",
       "kind": "leaf",
       "module_path": "",
@@ -81,7 +85,7 @@
       "parent_id": null,
       "path": ".agents/guidance-map/guides/user-dashboard/shell.md",
       "read_when": "Changing application composition, dashboard chrome, shared UI/global CSS, error infrastructure, reference datasets, or user-dashboard tooling.",
-      "size_bytes": 4746,
+      "size_bytes": 4977,
       "skip_when": "Working solely inside auth, onboarding, dashboard feature internals, or backend/API modules.",
       "source_globs": [
         "apps/user-dashboard/src/app/**",
@@ -104,7 +108,7 @@
         "apps/user-dashboard/eslint.config.js",
         "apps/user-dashboard/components.json"
       ],
-      "source_snapshot": "sha256:e6ab8577cd8f917899c65f4e49ba333e98fe0a370c67b62f15095fc2813666a4; files=43",
+      "source_snapshot": "sha256:000074b0664f708160ed4e2b6ad9897791e589f9d0fa37e6d11f3655a48a40ef; files=43",
       "tags": [
         "react",
         "vite",
@@ -150,22 +154,22 @@
       "title": "Dashboard Product Experience"
     },
     {
-      "change_here_when": "Editing landing sections, copy, CTAs, navigation/footer, marketing visuals or animation, global web styling, metadata, or Next.js build behavior.",
+      "change_here_when": "Editing landing sections, copy, CTAs, navigation/footer, testimonials/marquee behavior, visuals/styles, metadata, or Next.js packaging.",
       "do_not_put_here": "Authenticated dashboard behavior, API/domain logic, identity implementation, or repository-wide shared configuration/packages.",
-      "estimated_tokens": 520,
+      "estimated_tokens": 978,
       "id": "web.marketing",
       "kind": "leaf",
       "module_path": "",
-      "owns": "Persian public marketing site, landing content and motion, app-local presentation primitives/assets, and web metadata/SEO endpoints.",
+      "owns": "Persian public marketing site, landing content and motion, app-local presentation/assets, testimonials, and web metadata/SEO endpoints.",
       "parent_id": null,
       "path": ".agents/guidance-map/guides/web/marketing.md",
       "read_when": "Changing the public homepage, landing interactions, navigation targets, marketing artwork, SEO metadata, robots/sitemap, or web build configuration.",
-      "size_bytes": 3313,
+      "size_bytes": 6070,
       "skip_when": "Editing user-dashboard features/authentication, backend APIs, or shared workspace packages.",
       "source_globs": [
         "apps/web/**"
       ],
-      "source_snapshot": "sha256:1d7f52e4b88d9573b0a2a1916aa9d07b09ecd40d32bfc2a34a8fd369b2c11c56; files=17",
+      "source_snapshot": "sha256:1d21fc904b7065900633cc7278d18c626cf1d756e33865a271190092bcc09209; files=18",
       "tags": [
         "marketing",
         "landing-page",
@@ -174,16 +178,47 @@
         "metadata",
         "structured-data",
         "motion",
+        "marquee",
+        "testimonials",
         "rtl",
-        "public-assets",
         "cta"
       ],
       "title": "Marketing Web App"
     },
     {
+      "change_here_when": "Assessment authority/safety gates, implementation-derived surface, evidence statuses, findings, or acceptance criteria change.",
+      "do_not_put_here": "Runtime controls/fixes, production secrets, raw tokens, or authorization beyond the explicitly documented local scope.",
+      "estimated_tokens": 561,
+      "id": "security.pentest",
+      "kind": "leaf",
+      "module_path": "",
+      "owns": "Authorized local assessment scope, attack-surface inventory, test matrix/evidence expectations, and remediation/closure tracking.",
+      "parent_id": null,
+      "path": ".agents/guidance-map/guides/security/pentest.md",
+      "read_when": "Planning or documenting an authorized security assessment, updating evidence/status, or tracking remediation closure.",
+      "size_bytes": 3573,
+      "skip_when": "Implementing ordinary application behavior or applying a security fix already routed to an owning app/infrastructure module.",
+      "source_globs": [
+        "security/pentest/**"
+      ],
+      "source_snapshot": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855; files=0",
+      "tags": [
+        "security",
+        "pentest",
+        "authorization",
+        "scope",
+        "attack-surface",
+        "evidence",
+        "remediation",
+        "findings",
+        "release-gates"
+      ],
+      "title": "Security Assessment Documentation"
+    },
+    {
       "change_here_when": "Updating workspaces or Turbo tasks, shared presets/exports, dependency locks, documented environment inputs, container builds, Compose topology, or Nginx serving behavior.",
       "do_not_put_here": "Application-domain implementation, app-only configuration, real credentials, or external production-platform policy.",
-      "estimated_tokens": 646,
+      "estimated_tokens": 707,
       "id": "workspace.tooling",
       "kind": "leaf",
       "module_path": "",
@@ -191,7 +226,7 @@
       "parent_id": null,
       "path": ".agents/guidance-map/guides/workspace/tooling.md",
       "read_when": "Changing root tooling, shared packages, environment contracts, Docker images/services, health checks, ports, or persistence.",
-      "size_bytes": 4189,
+      "size_bytes": 4701,
       "skip_when": "Editing application features, page/UI behavior, API domain logic, or app-local configuration with no workspace impact.",
       "source_globs": [
         "package.json",
@@ -208,7 +243,7 @@
         "infrastructure/**",
         "packages/**"
       ],
-      "source_snapshot": "sha256:3e3b3e11ee267581dd341d608e3d36d47dac04792778a7a8b9f19c96c55a476b; files=11",
+      "source_snapshot": "sha256:d7bdb22c9638238556a1ab58ba4c44c3b2e6d77d6b309641660831405661aadc; files=11",
       "tags": [
         "workspace",
         "pnpm",
@@ -224,6 +259,6 @@
       "title": "Workspace Platform and Shared Packages"
     }
   ],
-  "local_change_baseline": "sha256:f5ed69194a62b3d50cc2d0156f6026f319ae754d3f7174ee5a283a20079386ba:W1siYXBwcy91c2VyLWRhc2hib2FyZC9zcmMvY29tcG9uZW50cy9hdXRoL2F1dGgtbGF5b3V0LnRzeCIsInNoYTI1NjozNWIwMjFmYTZmZDQ4YjQ4YmRhZDI4MjRhNDRkMjRhNTE5ZTc1YzM2NDIxYzZjNDE3M2RjZGZkZjQxMmVhNzk3Il0sWyJhcHBzL3VzZXItZGFzaGJvYXJkL3NyYy9zdHlsZXMvZ2xvYmFscy5jc3MiLCJzaGEyNTY6MzcyYzhkN2NlNDc5NWIyMGZmOGM0M2FiZjBjNGQ2OWY0NTE4YTFhMzdkZGViMTNiNWYwZjU1YWNmN2RmY2E3ZSJdLFsiYXBwcy93ZWIvcHVibGljL2Fzc2V0cy93YWFuZC1ndWlkZWQtcGF0aC5wbmciLCJzaGEyNTY6YjgzMzdjOTNjNTAzNmNmY2FiYTgxYWM3YWVjZTBmYTgyNjQ1NTJmOTcwODAzODc3N2UwNWQ0MmJlNzQzNzg3MSJdLFsiYXBwcy93ZWIvc3JjL2NvbXBvbmVudHMvbGFuZGluZy9sYW5kaW5nLXBhZ2UudHN4Iiwic2hhMjU2OjE4OTYxNWFmZWM4N2I5NmE3NmJkZDZmNjI3ZDAwOWI3NzEwY2RhOGJhMGU3YWMwNWE5MmFlNzhmMDdjOWQ1NTAiXSxbImFwcHMvd2ViL3NyYy9jb21wb25lbnRzL2xhbmRpbmcvbW90aW9uLnRzeCIsInNoYTI1NjozZmNkMmU5MTZmOWNhNzgyZGU3OTg1YmNmMjk4OWI0OTkyZTU0NjEzY2ViZmQ0MzFhMzhhODI5NDljMDdiOTExIl1d",
+  "local_change_baseline": "sha256:84fd42bbef6701df3fc330674fd038820e7f75f1c24e15857b6ea2503e1aaa1c:W1siYXBwcy93ZWIvbmV4dC1lbnYuZC50cyIsInNoYTI1NjoxODYyYWM0YmJiYzUxOTJkNGJmNTYyMTYxZGY2NmVhNTQ3ZWQzZTY3MTczMTAwNjU2YWI2MDZhZTk3OTdkYjJiIl0sWyJhcHBzL3dlYi9zcmMvY29tcG9uZW50cy9sYW5kaW5nL2xhbmRpbmctcGFnZS50c3giLCJzaGEyNTY6OWI0MzkxOTY4ZmIzMjVlMjFlZjY4Y2IxOGNjZGNmNDAwMzBhNzAwMWEyZWQwMmY2YmI1MTdhM2Q4ZDZlMWEzNiJdLFsiYXBwcy93ZWIvc3JjL2NvbXBvbmVudHMvbGFuZGluZy9tb3Rpb24udHN4Iiwic2hhMjU2OmNjYTVkMGM4NDc5NDFjOWMzYTQ1YjU2N2RkZTc4YzQ3OTkxYjAwM2Q3YjZjZDgwNWY4Y2VkOTcyNGU3YTZlY2EiXV0",
   "schema_version": 2
 }

@@ -166,9 +166,19 @@ export function RevealItem({ children, className }: StaticDivProps) {
 /*                                Motion Link                                 */
 /* -------------------------------------------------------------------------- */
 
-type MotionLinkProps = Omit<HTMLMotionProps<'a'>, 'children' | 'className'> & StaticDivProps;
+type MotionLinkProps = Omit<HTMLMotionProps<'a'>, 'children' | 'className'> &
+  StaticDivProps & {
+    hoverScale?: number;
+    tapScale?: number;
+  };
 
-export function MotionLink({ children, className, ...props }: MotionLinkProps) {
+export function MotionLink({
+  children,
+  className,
+  hoverScale = 1.02,
+  tapScale = 0.97,
+  ...props
+}: MotionLinkProps) {
   const reducedMotion = useReducedMotion();
 
   return (
@@ -184,14 +194,14 @@ export function MotionLink({ children, className, ...props }: MotionLinkProps) {
         reducedMotion
           ? {}
           : {
-              scale: 1.02,
+              scale: hoverScale,
             }
       }
       whileTap={
         reducedMotion
           ? {}
           : {
-              scale: 0.97,
+              scale: tapScale,
             }
       }
     >
@@ -331,10 +341,18 @@ export function HeroScene({ children, className, ...props }: ComponentPropsWitho
   );
 
   useEffect(() => {
-    if (reducedMotion) {
-      pointerX.jump(0);
-      pointerY.jump(0);
-    }
+    const pointerMedia = window.matchMedia(journeyDesktopPointer);
+    const resetUnavailablePointer = () => {
+      if (reducedMotion || !pointerMedia.matches) {
+        pointerX.jump(0);
+        pointerY.jump(0);
+      }
+    };
+
+    resetUnavailablePointer();
+    pointerMedia.addEventListener('change', resetUnavailablePointer);
+
+    return () => pointerMedia.removeEventListener('change', resetUnavailablePointer);
   }, [pointerX, pointerY, reducedMotion]);
 
   return (
@@ -1559,6 +1577,525 @@ export function TestimonialMotionCard({
         {children}
       </motion.div>
     </motion.div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Final Journey                                 */
+/* -------------------------------------------------------------------------- */
+
+const journeyPathDelay = 0.55;
+const journeyPathDuration = 2.7;
+const journeyMilestoneProgress = [0.16, 0.37, 0.58, 0.78] as const;
+export const journeyPortalOutlineDelay = journeyPathDelay + journeyPathDuration * 0.88;
+const journeyPortalDelay = journeyPortalOutlineDelay;
+
+type JourneySceneValues = {
+  x: MotionValue<number>;
+  y: MotionValue<number>;
+};
+
+const JourneySceneContext = createContext<JourneySceneValues | null>(null);
+const journeyDesktopPointer = '(hover: hover) and (pointer: fine) and (min-width: 1024px)';
+
+function useJourneyParallax(depthX: number, depthY = depthX * 0.72) {
+  const scene = useContext(JourneySceneContext);
+  const fallbackX = useMotionValue(0);
+  const fallbackY = useMotionValue(0);
+  const sourceX = scene?.x ?? fallbackX;
+  const sourceY = scene?.y ?? fallbackY;
+
+  return {
+    x: useTransform(sourceX, (value) => value * depthX),
+    y: useTransform(sourceY, (value) => value * depthY),
+  };
+}
+
+export function JourneyScene({
+  'aria-label': ariaLabel,
+  children,
+  className,
+  dir,
+}: StaticDivProps & {
+  'aria-label': string;
+  dir: 'ltr' | 'rtl';
+}) {
+  const reducedMotion = useReducedMotion();
+  const pointerX = useMotionValue(0);
+  const pointerY = useMotionValue(0);
+  const x = useSpring(pointerX, { stiffness: 92, damping: 24, mass: 0.52 });
+  const y = useSpring(pointerY, { stiffness: 92, damping: 24, mass: 0.52 });
+  const bounds = useRef<DOMRect | null>(null);
+  const values = useMemo(() => ({ x, y }), [x, y]);
+
+  useEffect(() => {
+    if (reducedMotion) {
+      pointerX.jump(0);
+      pointerY.jump(0);
+    }
+  }, [pointerX, pointerY, reducedMotion]);
+
+  if (reducedMotion) {
+    return (
+      <JourneySceneContext.Provider value={values}>
+        <div aria-label={ariaLabel} className={className} dir={dir} role="group">
+          {children}
+        </div>
+      </JourneySceneContext.Provider>
+    );
+  }
+
+  return (
+    <JourneySceneContext.Provider value={values}>
+      <motion.div
+        aria-label={ariaLabel}
+        className={className}
+        dir={dir}
+        initial="hidden"
+        onPointerEnter={(event) => {
+          bounds.current = event.currentTarget.getBoundingClientRect();
+        }}
+        onPointerLeave={() => {
+          bounds.current = null;
+          pointerX.set(0);
+          pointerY.set(0);
+        }}
+        onPointerMove={(event) => {
+          if (window.matchMedia(journeyDesktopPointer).matches) {
+            const rect = bounds.current ?? event.currentTarget.getBoundingClientRect();
+            pointerX.set(((event.clientX - rect.left) / rect.width - 0.5) * 2);
+            pointerY.set(((event.clientY - rect.top) / rect.height - 0.5) * 2);
+          } else {
+            pointerX.set(0);
+            pointerY.set(0);
+          }
+        }}
+        role="group"
+        viewport={{ amount: 0.28, once: true }}
+        whileInView="visible"
+      >
+        {children}
+      </motion.div>
+    </JourneySceneContext.Provider>
+  );
+}
+
+export function JourneyAmbientMotion({ children, className }: StaticDivProps) {
+  const reducedMotion = useReducedMotion();
+
+  if (reducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={className}
+      variants={{
+        hidden: { opacity: 0 },
+        visible: { opacity: 1, transition: { duration: 0.62, ease: easeOut } },
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function JourneyCopyMotion({ children, className }: StaticDivProps) {
+  const reducedMotion = useReducedMotion();
+
+  if (reducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={className}
+      variants={{
+        hidden: { filter: 'blur(3px)', opacity: 0, y: 10 },
+        visible: {
+          filter: 'blur(0px)',
+          opacity: 1,
+          y: 0,
+          transition: { delay: 0.04, duration: 0.58, ease: easeOut },
+        },
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function JourneyStartMotion({ children, className }: StaticDivProps) {
+  const reducedMotion = useReducedMotion();
+  const parallax = useJourneyParallax(4, 3);
+
+  if (reducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div style={parallax}>
+      <motion.div
+        className={className}
+        variants={{
+          hidden: { opacity: 0, scale: 0.985, x: -14, y: 6 },
+          visible: {
+            opacity: 1,
+            scale: 1,
+            x: 0,
+            y: 0,
+            transition: { delay: 0.2, duration: 0.62, ease: easeOut },
+          },
+        }}
+      >
+        {children}
+      </motion.div>
+    </motion.div>
+  );
+}
+
+export function JourneyPathMotion({
+  className,
+  d,
+  delay = journeyPathDelay,
+  duration = journeyPathDuration,
+  filter,
+  opacity = 1,
+  stroke = 'currentColor',
+  strokeWidth = 4,
+}: {
+  className?: string;
+  d: string;
+  delay?: number;
+  duration?: number;
+  filter?: string;
+  opacity?: number;
+  stroke?: string;
+  strokeWidth?: number;
+}) {
+  const reducedMotion = useReducedMotion();
+
+  if (reducedMotion) {
+    return (
+      <path
+        className={className}
+        d={d}
+        fill="none"
+        filter={filter}
+        opacity={opacity}
+        stroke={stroke}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={strokeWidth}
+      />
+    );
+  }
+
+  return (
+    <motion.path
+      className={className}
+      d={d}
+      fill="none"
+      filter={filter}
+      stroke={stroke}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={strokeWidth}
+      variants={{
+        hidden: { opacity: 0, pathLength: 0 },
+        visible: {
+          opacity,
+          pathLength: 1,
+          transition: { delay, duration, ease: 'linear' },
+        },
+      }}
+    />
+  );
+}
+
+export function JourneyMilestoneMotion({
+  accent = false,
+  bubbleX,
+  bubbleY,
+  children,
+  className,
+  filter,
+  index,
+  radius = 33,
+  x,
+  y,
+}: StaticDivProps & {
+  accent?: boolean;
+  bubbleX: number;
+  bubbleY: number;
+  filter?: string;
+  index: number;
+  radius?: number;
+  x: number;
+  y: number;
+}) {
+  const reducedMotion = useReducedMotion();
+  const parallax = useJourneyParallax(2.5, 2);
+  const dx = x - bubbleX;
+  const dy = y - bubbleY;
+  const distance = Math.max(Math.hypot(dx, dy), 1);
+  const connectorX = bubbleX + (dx / distance) * (radius + 4);
+  const connectorY = bubbleY + (dy / distance) * (radius + 4);
+  const connectorPath = `M ${x} ${y} L ${connectorX} ${connectorY}`;
+  const badgeX = bubbleX + radius * 0.68;
+  const badgeY = bubbleY + radius * 0.68;
+  const arrival = journeyPathDelay + journeyPathDuration * journeyMilestoneProgress[index]!;
+  const badgeFill = accent ? '#F4C379' : '#143CFB';
+
+  const bubble = (
+    <>
+      <circle
+        cx={bubbleX}
+        cy={bubbleY}
+        fill="#FFFFFF"
+        fillOpacity="0.54"
+        filter={filter}
+        r={radius + 2}
+      />
+      <circle
+        cx={bubbleX}
+        cy={bubbleY}
+        fill="#FFFFFF"
+        fillOpacity="0.98"
+        r={radius}
+        stroke="#E6EAF5"
+        strokeOpacity="0.86"
+        strokeWidth="1"
+      />
+      {children}
+    </>
+  );
+
+  const badge = (
+    <>
+      <circle cx={badgeX} cy={badgeY} fill="#FFFFFF" r="8.6" />
+      <circle cx={badgeX} cy={badgeY} fill={badgeFill} r="7" />
+      <path
+        d={`M ${badgeX - 2.7} ${badgeY + 0.1} l 1.85 2 3.5 -3.95`}
+        fill="none"
+        stroke="#FFFFFF"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.55"
+      />
+    </>
+  );
+
+  if (reducedMotion) {
+    return (
+      <g className={className}>
+        <circle cx={x} cy={y} fill="#143CFB" fillOpacity="0.1" r="8.5" />
+        <circle cx={x} cy={y} fill="#143CFB" r="4.7" />
+        <path
+          d={connectorPath}
+          fill="none"
+          stroke="#AAB9EE"
+          strokeDasharray="2 5.5"
+          strokeLinecap="round"
+          strokeWidth="1"
+        />
+        {bubble}
+        {badge}
+      </g>
+    );
+  }
+
+  return (
+    <g className={className}>
+      <motion.circle
+        cx={x}
+        cy={y}
+        fill="#143CFB"
+        fillOpacity="0.1"
+        r="8.5"
+        style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+        variants={{
+          hidden: { opacity: 0, scale: 0 },
+          visible: {
+            opacity: 1,
+            scale: 1,
+            transition: { delay: arrival, duration: 0.34, ease: easeOut },
+          },
+        }}
+      />
+      <motion.circle
+        cx={x}
+        cy={y}
+        fill="#143CFB"
+        r="4.7"
+        style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+        variants={{
+          hidden: { opacity: 0, scale: 0 },
+          visible: {
+            opacity: 1,
+            scale: 1,
+            transition: { delay: arrival, duration: 0.34, ease: easeOut },
+          },
+        }}
+      />
+      <motion.path
+        d={connectorPath}
+        fill="none"
+        stroke="#AAB9EE"
+        strokeDasharray="2 5.5"
+        strokeLinecap="round"
+        strokeWidth="1"
+        variants={{
+          hidden: { opacity: 0, pathLength: 0 },
+          visible: {
+            opacity: 0.58,
+            pathLength: 1,
+            transition: { delay: arrival + 0.07, duration: 0.3, ease: easeOut },
+          },
+        }}
+      />
+      <motion.g
+        style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+        variants={{
+          hidden: { filter: 'blur(4px)', opacity: 0, scale: 0.94, y: 10 },
+          visible: {
+            filter: 'blur(0px)',
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            transition: { delay: arrival + 0.22, duration: 0.5, ease: easeOut },
+          },
+        }}
+      >
+        <motion.g style={parallax}>
+          {bubble}
+          <motion.g
+            style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+            variants={{
+              hidden: { opacity: 0, scale: 0.6 },
+              visible: {
+                opacity: 1,
+                scale: 1,
+                transition: { delay: arrival + 0.6, duration: 0.3, ease: easeOut },
+              },
+            }}
+          >
+            {badge}
+          </motion.g>
+        </motion.g>
+      </motion.g>
+    </g>
+  );
+}
+
+type PortalStage = 'beam' | 'endpoint' | 'glow' | 'outline' | 'pulse' | 'sparkles';
+
+const portalStageVariants: Record<PortalStage, Variants> = {
+  outline: {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { delay: journeyPortalDelay, duration: 0.5, ease: easeOut },
+    },
+  },
+  glow: {
+    hidden: { opacity: 0, scale: 0.985 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: { delay: journeyPortalDelay + 0.18, duration: 0.82, ease: easeOut },
+    },
+  },
+  beam: {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { delay: journeyPortalDelay + 0.36, duration: 0.9, ease: easeOut },
+    },
+  },
+  endpoint: {
+    hidden: { opacity: 0, scale: 0.72 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: { delay: journeyPathDelay + journeyPathDuration - 0.04, duration: 0.45 },
+    },
+  },
+  pulse: {
+    hidden: { opacity: 0, scale: 1 },
+    visible: {
+      opacity: [0, 0.55, 0],
+      scale: [1, 1.5, 1],
+      transition: {
+        delay: journeyPathDelay + journeyPathDuration,
+        duration: 0.65,
+        ease: easeOut,
+      },
+    },
+  },
+  sparkles: {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: { delay: journeyPortalDelay + 0.62, duration: 0.55, ease: easeOut },
+    },
+  },
+};
+
+export function FuturePortalMotion({
+  children,
+  className,
+  stage = 'outline',
+}: StaticDivProps & { stage?: PortalStage }) {
+  const reducedMotion = useReducedMotion();
+
+  if (reducedMotion) {
+    return stage === 'pulse' ? null : <g className={className}>{children}</g>;
+  }
+
+  return (
+    <motion.g
+      className={className}
+      style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+      variants={portalStageVariants[stage]}
+    >
+      <g>{children}</g>
+    </motion.g>
+  );
+}
+
+export function JourneyDecorationMotion({
+  children,
+  className,
+  depth = 3,
+  index = 0,
+}: StaticDivProps & { depth?: number; index?: number }) {
+  const reducedMotion = useReducedMotion();
+  const parallax = useJourneyParallax(depth);
+
+  if (reducedMotion) {
+    return <g className={className}>{children}</g>;
+  }
+
+  return (
+    <motion.g
+      className={className}
+      style={parallax}
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: {
+            delay: journeyPathDelay + journeyPathDuration + 0.28 + index * 0.08,
+            duration: 0.58,
+            ease: easeOut,
+          },
+        },
+      }}
+    >
+      {children}
+    </motion.g>
   );
 }
 /* -------------------------------------------------------------------------- */

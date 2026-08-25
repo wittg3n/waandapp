@@ -3,6 +3,7 @@ import { FaInstagram, FaLinkedinIn, FaTelegramPlane, FaGithub, FaYoutube } from 
 import { FaXTwitter } from 'react-icons/fa6';
 import {
   Apple,
+  ArrowRight,
   Bell,
   CalendarDays,
   ChartNoAxesColumnIncreasing,
@@ -14,14 +15,17 @@ import {
   Folder,
   Globe2,
   GraduationCap,
+  Landmark,
   LayoutDashboard,
   LockKeyhole,
+  Mail,
   MessageCircle,
   Play,
   Send,
   Server,
   Settings,
   Sparkles,
+  UserRound,
 } from 'lucide-react';
 import { LandingNavbar } from '@/components/landing/landing-navbar';
 import { LineShadowText } from '@/components/ui/line-shadow-text';
@@ -34,6 +38,15 @@ import {
   HeroLayer,
   HeroReveal,
   HeroScene,
+  FuturePortalMotion,
+  JourneyAmbientMotion,
+  JourneyCopyMotion,
+  JourneyDecorationMotion,
+  JourneyMilestoneMotion,
+  JourneyPathMotion,
+  JourneyScene,
+  JourneyStartMotion,
+  journeyPortalOutlineDelay,
   MotionLink,
   ProcessScene,
   ProcessStep,
@@ -1234,36 +1247,809 @@ function SecuritySection() {
   );
 }
 
+type JourneyPoint = {
+  bubbleX: number;
+  bubbleY: number;
+  x: number;
+  y: number;
+};
+
+const journeySteps = [
+  { accent: false, icon: UserRound, label: 'ساخت پروفایل' },
+  { accent: true, icon: Landmark, label: 'انتخاب دانشگاه' },
+  { accent: false, icon: FileText, label: 'آماده‌سازی درخواست' },
+  { accent: false, icon: Mail, label: 'دریافت پذیرش' },
+] as const;
+
+const desktopJourneyPoints = [
+  { bubbleX: 446, bubbleY: 211, x: 446, y: 306 },
+  { bubbleX: 632, bubbleY: 198, x: 632, y: 286 },
+  { bubbleX: 812, bubbleY: 166, x: 812, y: 253 },
+  { bubbleX: 982, bubbleY: 143, x: 982, y: 226 },
+] as const satisfies readonly JourneyPoint[];
+
+const tabletJourneyPoints = [
+  { bubbleX: 265, bubbleY: 154, x: 265, y: 215 },
+  { bubbleX: 380, bubbleY: 137, x: 380, y: 198 },
+  { bubbleX: 500, bubbleY: 119, x: 500, y: 180 },
+  { bubbleX: 615, bubbleY: 104, x: 615, y: 165 },
+] as const satisfies readonly JourneyPoint[];
+
+const mobileJourneyPoints = [
+  { bubbleX: 94, bubbleY: 215, x: 190, y: 235 },
+  { bubbleX: 294, bubbleY: 335, x: 172, y: 355 },
+  { bubbleX: 96, bubbleY: 455, x: 218, y: 475 },
+  { bubbleX: 294, bubbleY: 565, x: 190, y: 585 },
+] as const satisfies readonly JourneyPoint[];
+
+const desktopJourneyMilestones = journeySteps.map((step, index) => ({
+  ...step,
+  ...desktopJourneyPoints[index]!,
+}));
+
+const tabletJourneyMilestones = journeySteps.map((step, index) => ({
+  ...step,
+  ...tabletJourneyPoints[index]!,
+}));
+
+const mobileJourneyMilestones = journeySteps.map((step, index) => ({
+  ...step,
+  ...mobileJourneyPoints[index]!,
+}));
+
+const desktopJourneyPath =
+  'M 312 356 C 352 356 398 334 446 306 C 500 275 550 271 594 280 C 611 284 622 289 632 286 C 690 282 746 272 812 253 C 870 231 926 220 982 226 C 1050 233 1125 244 1194 249';
+
+const tabletJourneyPath =
+  'M 170 245 C 205 245 235 229 265 215 C 310 194 342 194 380 198 C 425 202 463 188 500 180 C 545 166 580 160 615 165 C 652 170 680 176 706 176';
+
+const mobileJourneyPath =
+  'M 195 156 C 195 190 205 215 190 235 C 173 275 150 320 172 355 C 190 400 236 442 218 475 C 200 516 168 557 190 585 C 207 620 201 672 195 708';
+
+function JourneyDefs({ prefix, vertical = false }: { prefix: string; vertical?: boolean }) {
+  return (
+    <defs>
+      <linearGradient
+        id={prefix + '-path-gradient'}
+        x1={vertical ? '50%' : '0%'}
+        x2={vertical ? '50%' : '100%'}
+        y1="0%"
+        y2={vertical ? '100%' : '0%'}
+      >
+        <stop offset="0%" stopColor="#143CFB" />
+        <stop offset="18%" stopColor="#143CFB" />
+        <stop offset="45%" stopColor="#6B84F7" />
+        <stop offset="74%" stopColor="#A5B4F4" />
+        <stop offset="100%" stopColor="#D0D7F2" />
+      </linearGradient>
+      <linearGradient id={prefix + '-arch-stroke'} x1="0%" x2="100%" y1="0%" y2="0%">
+        <stop offset="0%" stopColor="#353A4B" stopOpacity="0.42" />
+        <stop offset="48%" stopColor="#F8F9FC" />
+        <stop offset="100%" stopColor="#143CFB" stopOpacity="0.92" />
+      </linearGradient>
+      <linearGradient id={prefix + '-portal-shell'} x1="0%" x2="100%" y1="0%" y2="0%">
+        <stop offset="0%" stopColor="#E9EBF1" />
+        <stop offset="46%" stopColor="#FFFFFF" />
+        <stop offset="82%" stopColor="#F5F7FF" />
+        <stop offset="100%" stopColor="#D9E1FF" />
+      </linearGradient>
+      <radialGradient id={prefix + '-portal-interior'} cx="38%" cy="76%" r="78%">
+        <stop offset="0%" stopColor="#FFF2D9" stopOpacity="0.62" />
+        <stop offset="46%" stopColor="#FFFFFF" stopOpacity="0.98" />
+        <stop offset="100%" stopColor="#FAFBFF" />
+      </radialGradient>
+      <linearGradient id={prefix + '-beam'} x1="54%" x2="42%" y1="0%" y2="100%">
+        <stop offset="0%" stopColor="#FFF3DA" stopOpacity="0.38" />
+        <stop offset="48%" stopColor="#FFFFFF" stopOpacity="0.22" />
+        <stop offset="100%" stopColor="#DDE5FF" stopOpacity="0.02" />
+      </linearGradient>
+      <pattern height="10" id={prefix + '-dots'} patternUnits="userSpaceOnUse" width="10">
+        <circle cx="2" cy="2" fill="#143CFB" r="1.2" />
+      </pattern>
+      <filter
+        colorInterpolationFilters="sRGB"
+        height="180%"
+        id={prefix + '-path-glow'}
+        width="180%"
+        x="-40%"
+        y="-40%"
+      >
+        <feGaussianBlur stdDeviation="4" />
+      </filter>
+      <filter
+        colorInterpolationFilters="sRGB"
+        height="220%"
+        id={prefix + '-bubble-shadow'}
+        width="220%"
+        x="-60%"
+        y="-45%"
+      >
+        <feDropShadow dx="0" dy="5" floodColor="#52659A" floodOpacity="0.1" stdDeviation="5.5" />
+      </filter>
+      <filter
+        colorInterpolationFilters="sRGB"
+        height="220%"
+        id={prefix + '-portal-glow'}
+        width="220%"
+        x="-60%"
+        y="-60%"
+      >
+        <feGaussianBlur stdDeviation="13" />
+      </filter>
+      <filter
+        colorInterpolationFilters="sRGB"
+        height="180%"
+        id={prefix + '-beam-blur'}
+        width="180%"
+        x="-40%"
+        y="-35%"
+      >
+        <feGaussianBlur stdDeviation="6" />
+      </filter>
+    </defs>
+  );
+}
+
+function JourneyStartCard() {
+  return (
+    <JourneyStartMotion className="relative h-[156px] w-[224px] rounded-[17px] border border-[#DCE4FF]/70 bg-white/96 p-4 shadow-[0_16px_44px_rgba(31,52,121,0.09)] backdrop-blur-md">
+      <span
+        aria-hidden="true"
+        className="absolute -bottom-4 left-1/2 h-8 w-[68%] -translate-x-1/2 rounded-full bg-[#143CFB]/9 blur-2xl"
+      />
+      <div className="relative flex items-center gap-2.5" dir="ltr">
+        <WaandLogo markClassName="size-7" showWordmark={false} />
+        <strong className="text-[18px] font-extrabold tracking-[-0.035em] text-[#252B45]">
+          Waand
+        </strong>
+      </div>
+      <div aria-hidden="true" className="relative mt-3 space-y-1.5">
+        <span className="block h-1.5 w-[70%] rounded-full bg-[#E9EDF7]" />
+        <span className="block h-1.5 w-[52%] rounded-full bg-[#EFF2F8]" />
+        <span className="block h-1.5 w-[36%] rounded-full bg-[#F3F5FA]" />
+      </div>
+      <MotionLink
+        aria-label="شروع رایگان مسیر اپلای در وآند"
+        className="group/journey-button relative mt-3 flex h-9 w-[72%] items-center justify-center overflow-hidden rounded-[10px] bg-[linear-gradient(90deg,#143CFB,#2452FF)] text-white shadow-[0_7px_18px_rgba(20,60,251,0.2)] transition-shadow duration-300 hover:shadow-[0_10px_22px_rgba(20,60,251,0.27)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#143CFB]"
+        hoverScale={1.01}
+        href={dashboardSignupUrl}
+        tapScale={0.985}
+      >
+        <span
+          aria-hidden="true"
+          className="absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-white/20 transition-transform duration-700 ease-out group-hover/journey-button:translate-x-[470%]"
+        />
+        <ArrowRight
+          aria-hidden="true"
+          className="relative size-4 transition-transform duration-300 group-hover/journey-button:translate-x-0.5"
+          strokeWidth={1.8}
+        />
+      </MotionLink>
+    </JourneyStartMotion>
+  );
+}
+
+type JourneyMilestoneItem = (typeof journeySteps)[number] & JourneyPoint;
+
+function JourneyMilestones({
+  items,
+  prefix,
+  radius = 29.5,
+}: {
+  items: ReadonlyArray<JourneyMilestoneItem>;
+  prefix: string;
+  radius?: number;
+}) {
+  const iconSize = radius * 0.76;
+
+  return items.map((milestone, index) => {
+    const Icon = milestone.icon;
+
+    return (
+      <JourneyMilestoneMotion
+        accent={milestone.accent}
+        bubbleX={milestone.bubbleX}
+        bubbleY={milestone.bubbleY}
+        filter={'url(#' + prefix + '-bubble-shadow)'}
+        index={index}
+        key={milestone.label}
+        radius={radius}
+        x={milestone.x}
+        y={milestone.y}
+      >
+        <Icon
+          aria-hidden="true"
+          color="#596176"
+          height={iconSize}
+          strokeWidth={1.5}
+          width={iconSize}
+          x={milestone.bubbleX - iconSize / 2}
+          y={milestone.bubbleY - iconSize / 2}
+        />
+      </JourneyMilestoneMotion>
+    );
+  });
+}
+
+type PortalGeometry = {
+  base: number;
+  beam: string;
+  center: number;
+  left: number;
+  pathX: number;
+  pathY: number;
+  right: number;
+  shoulder: number;
+  top: number;
+};
+
+const desktopPortal: PortalGeometry = {
+  base: 266,
+  beam: 'M 1192 254 L 1307 263 L 1436 425 L 760 480 Z',
+  center: 1248,
+  left: 1188,
+  pathX: 1194,
+  pathY: 249,
+  right: 1308,
+  shoulder: 164,
+  top: 76,
+};
+
+const tabletPortal: PortalGeometry = {
+  base: 190,
+  beam: 'M 704 177 L 808 188 L 820 296 L 430 320 Z',
+  center: 754,
+  left: 700,
+  pathX: 706,
+  pathY: 176,
+  right: 808,
+  shoulder: 105,
+  top: 45,
+};
+
+const mobilePortal: PortalGeometry = {
+  base: 752,
+  beam: 'M 151 714 L 239 714 L 286 759 L 104 759 Z',
+  center: 195,
+  left: 140,
+  pathX: 195,
+  pathY: 708,
+  right: 250,
+  shoulder: 687,
+  top: 635,
+};
+
+function portalOutline({
+  base,
+  center,
+  left,
+  right,
+  shoulder,
+  top,
+}: Pick<PortalGeometry, 'base' | 'center' | 'left' | 'right' | 'shoulder' | 'top'>) {
+  return [
+    'M',
+    left,
+    base,
+    'V',
+    shoulder,
+    'C',
+    left,
+    top + 26,
+    center - 28,
+    top,
+    center,
+    top,
+    'C',
+    center + 28,
+    top,
+    right,
+    top + 26,
+    right,
+    shoulder,
+    'V',
+    base,
+  ].join(' ');
+}
+
+function portalRightEdge({
+  base,
+  center,
+  right,
+  shoulder,
+  top,
+}: Pick<PortalGeometry, 'base' | 'center' | 'right' | 'shoulder' | 'top'>) {
+  return [
+    'M',
+    center,
+    top,
+    'C',
+    center + 28,
+    top,
+    right,
+    top + 26,
+    right,
+    shoulder,
+    'V',
+    base,
+  ].join(' ');
+}
+
+function FuturePortal({ geometry, prefix }: { geometry: PortalGeometry; prefix: string }) {
+  const outerOutline = portalOutline(geometry);
+  const innerGeometry = {
+    base: geometry.base,
+    center: geometry.center,
+    left: geometry.left + 15,
+    right: geometry.right - 15,
+    shoulder: geometry.shoulder + 3,
+    top: geometry.top + 17,
+  };
+  const innerOutline = portalOutline(innerGeometry);
+  const outerFill = outerOutline + ' H ' + geometry.left + ' Z';
+  const innerFill = innerOutline + ' H ' + innerGeometry.left + ' Z';
+  const rimFill = outerFill + ' ' + innerFill;
+  const rightEdge = portalRightEdge(geometry);
+  const portalHeight = geometry.base - geometry.top;
+  const portalWidth = geometry.right - geometry.left;
+
+  return (
+    <>
+      <FuturePortalMotion stage="beam">
+        <path
+          d={geometry.beam}
+          fill="#9DAFFF"
+          filter={'url(#' + prefix + '-beam-blur)'}
+          opacity="0.09"
+        />
+        <path
+          d={geometry.beam}
+          fill={'url(#' + prefix + '-beam)'}
+          filter={'url(#' + prefix + '-beam-blur)'}
+          opacity="0.56"
+        />
+      </FuturePortalMotion>
+      <FuturePortalMotion stage="glow">
+        <ellipse
+          cx={geometry.center + portalWidth * 0.18}
+          cy={geometry.top + portalHeight * 0.5}
+          fill="#143CFB"
+          filter={'url(#' + prefix + '-portal-glow)'}
+          opacity="0.08"
+          rx={portalWidth * 0.64}
+          ry={portalHeight * 0.58}
+        />
+        <ellipse
+          cx={geometry.center - portalWidth * 0.08}
+          cy={geometry.top + portalHeight * 0.58}
+          fill="#FFE1AE"
+          filter={'url(#' + prefix + '-portal-glow)'}
+          opacity="0.18"
+          rx={portalWidth * 0.44}
+          ry={portalHeight * 0.44}
+        />
+        <path
+          d={outerOutline}
+          fill="none"
+          filter={'url(#' + prefix + '-portal-glow)'}
+          opacity="0.18"
+          stroke="#143CFB"
+          strokeWidth="10"
+        />
+      </FuturePortalMotion>
+      <FuturePortalMotion stage="outline">
+        <path
+          d={rightEdge}
+          fill="none"
+          opacity="0.14"
+          stroke="#143CFB"
+          strokeLinecap="round"
+          strokeWidth="8"
+          transform="translate(5 2)"
+        />
+        <path
+          clipRule="evenodd"
+          d={rimFill}
+          fill={'url(#' + prefix + '-portal-shell)'}
+          fillRule="evenodd"
+        />
+        <path d={innerFill} fill={'url(#' + prefix + '-portal-interior)'} />
+      </FuturePortalMotion>
+      <JourneyPathMotion
+        d={outerOutline}
+        delay={journeyPortalOutlineDelay}
+        duration={1.02}
+        opacity={0.92}
+        stroke={'url(#' + prefix + '-arch-stroke)'}
+        strokeWidth={3.2}
+      />
+      <JourneyPathMotion
+        d={innerOutline}
+        delay={journeyPortalOutlineDelay + 0.12}
+        duration={0.8}
+        opacity={0.44}
+        stroke="#353A4B"
+        strokeWidth={1.35}
+      />
+      <JourneyPathMotion
+        d={rightEdge}
+        delay={journeyPortalOutlineDelay + 0.08}
+        duration={0.84}
+        opacity={0.84}
+        stroke="#143CFB"
+        strokeWidth={3.4}
+      />
+      <FuturePortalMotion stage="endpoint">
+        <circle
+          cx={geometry.pathX}
+          cy={geometry.pathY}
+          fill="#FFFFFF"
+          filter={'url(#' + prefix + '-bubble-shadow)'}
+          r="6"
+        />
+        <circle cx={geometry.pathX} cy={geometry.pathY} fill="#DCE5FF" r="2.8" />
+      </FuturePortalMotion>
+      <FuturePortalMotion stage="pulse">
+        <circle
+          cx={geometry.pathX}
+          cy={geometry.pathY}
+          fill="none"
+          r="10"
+          stroke="#143CFB"
+          strokeOpacity="0.42"
+          strokeWidth="1.6"
+        />
+      </FuturePortalMotion>
+      <FuturePortalMotion stage="sparkles">
+        <path
+          d={
+            'M ' +
+            (geometry.right + 30) +
+            ' ' +
+            (geometry.top + 36) +
+            ' l 3 6 6 3 -6 3 -3 6 -3 -6 -6 -3 6 -3 Z'
+          }
+          fill="#FFFFFF"
+          opacity="0.82"
+        />
+        <circle
+          cx={geometry.right + 48}
+          cy={geometry.shoulder + 14}
+          fill="#394052"
+          opacity="0.34"
+          r="2"
+        />
+        <path
+          d={
+            'M ' +
+            (geometry.left - 24) +
+            ' ' +
+            (geometry.top + 20) +
+            ' l 2 4 4 2 -4 2 -2 4 -2 -4 -4 -2 4 -2 Z'
+          }
+          fill="#CAD4FF"
+          opacity="0.42"
+        />
+      </FuturePortalMotion>
+    </>
+  );
+}
+
+function DesktopJourneyDecorations() {
+  return (
+    <>
+      <JourneyDecorationMotion depth={3.5} index={0}>
+        <path
+          d="M 360 105 C 360 94 369 86 380 86 C 386 73 405 73 412 88 C 425 87 433 96 433 106 Z"
+          fill="none"
+          opacity="0.2"
+          stroke="#9EB2FF"
+          strokeWidth="2"
+        />
+      </JourneyDecorationMotion>
+      <JourneyDecorationMotion depth={4} index={1}>
+        <circle cx="82" cy="242" fill="#F4C379" opacity="0.38" r="5" />
+      </JourneyDecorationMotion>
+      <JourneyDecorationMotion depth={2.5} index={2}>
+        <rect
+          fill="url(#desktop-journey-dots)"
+          height="56"
+          opacity="0.19"
+          width="76"
+          x="45"
+          y="348"
+        />
+        <rect
+          fill="url(#desktop-journey-dots)"
+          height="56"
+          opacity="0.24"
+          width="76"
+          x="1350"
+          y="350"
+        />
+      </JourneyDecorationMotion>
+      <JourneyDecorationMotion depth={3} index={3}>
+        <circle
+          cx="950"
+          cy="70"
+          fill="none"
+          opacity="0.3"
+          r="8"
+          stroke="#F2BC6E"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M 1382 208 l 7 7 -7 7 -7 -7 Z"
+          fill="none"
+          opacity="0.24"
+          stroke="#143CFB"
+          strokeWidth="1.7"
+        />
+      </JourneyDecorationMotion>
+    </>
+  );
+}
+
+function MobileJourneyDecorations() {
+  return (
+    <>
+      <JourneyDecorationMotion depth={2} index={0}>
+        <path
+          d="M 34 286 l 7 7 -7 7 -7 -7 Z"
+          fill="none"
+          opacity="0.24"
+          stroke="#143CFB"
+          strokeWidth="1.5"
+        />
+        <circle cx="358" cy="444" fill="#F4C379" opacity="0.3" r="4" />
+      </JourneyDecorationMotion>
+      <JourneyDecorationMotion depth={2.5} index={1}>
+        <rect
+          fill="url(#mobile-journey-dots)"
+          height="46"
+          opacity="0.22"
+          width="56"
+          x="15"
+          y="655"
+        />
+      </JourneyDecorationMotion>
+    </>
+  );
+}
+
+function DesktopJourney() {
+  return (
+    <div className="relative hidden aspect-[3/1] w-full xl:block">
+      <JourneyCopyMotion className="absolute left-[6%] top-[3%] z-30 w-[24%] max-w-[360px] text-right [direction:rtl]">
+        <h2
+          className="text-[clamp(1.15rem,1.8vw,1.9rem)] font-black leading-[1.55] tracking-[-0.035em] text-[#171717]"
+          aria-hidden="true"
+        >
+          آینده تحصیلی شما
+          <span className="block text-[#143CFB]">از همین‌جا شروع می‌شود</span>
+        </h2>
+        <p className="mt-1.5 hidden text-[12px] leading-6 text-[#777B87] xl:block">
+          از اولین قدم تا پذیرش، مسیرتان روشن است.
+        </p>
+      </JourneyCopyMotion>
+
+      <svg
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full overflow-visible"
+        focusable="false"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 1440 480"
+      >
+        <JourneyDefs prefix="desktop-journey" />
+        <DesktopJourneyDecorations />
+        <FuturePortal geometry={desktopPortal} prefix="desktop-journey" />
+
+        <JourneyPathMotion
+          d={desktopJourneyPath}
+          filter="url(#desktop-journey-path-glow)"
+          opacity={0.1}
+          stroke="url(#desktop-journey-path-gradient)"
+          strokeWidth={11}
+        />
+        <JourneyPathMotion
+          d={desktopJourneyPath}
+          opacity={0.5}
+          stroke="#B8C6F7"
+          strokeWidth={5.6}
+        />
+        <JourneyPathMotion
+          d={desktopJourneyPath}
+          stroke="url(#desktop-journey-path-gradient)"
+          strokeWidth={3.2}
+        />
+
+        <circle cx="312" cy="356" fill="#FFFFFF" r="7.5" />
+        <circle cx="312" cy="356" fill="#FFFFFF" r="5.2" stroke="#143CFB" strokeWidth="2.7" />
+
+        <JourneyMilestones items={desktopJourneyMilestones} prefix="desktop-journey" />
+      </svg>
+
+      <div className="absolute right-[78.9%] top-[58.5%] z-30 origin-top-right scale-[0.68] xl:scale-[0.8] 2xl:scale-[0.84]">
+        <JourneyStartCard />
+      </div>
+    </div>
+  );
+}
+
+function TabletJourney() {
+  return (
+    <div className="relative mx-auto hidden aspect-[41/16] w-full max-w-[1000px] md:block xl:hidden">
+      <JourneyCopyMotion className="absolute left-[4.5%] top-[4%] z-30 w-[32%] max-w-[270px] text-right [direction:rtl]">
+        <h2
+          className="text-[clamp(1.1rem,2.7vw,1.4rem)] font-black leading-[1.52] tracking-[-0.035em] text-[#171717]"
+          aria-hidden="true"
+        >
+          آینده تحصیلی شما
+          <span className="block text-[#143CFB]">از همین‌جا شروع می‌شود</span>
+        </h2>
+        <p className="mt-1 text-[11px] leading-5 text-[#777B87]">
+          از اولین قدم تا پذیرش، مسیرتان روشن است.
+        </p>
+      </JourneyCopyMotion>
+
+      <svg
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full overflow-visible"
+        focusable="false"
+        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 820 320"
+      >
+        <JourneyDefs prefix="tablet-journey" />
+        <JourneyDecorationMotion depth={2.5} index={0}>
+          <circle
+            cx="590"
+            cy="54"
+            fill="none"
+            opacity="0.22"
+            r="5.5"
+            stroke="#F2BC6E"
+            strokeWidth="1.2"
+          />
+        </JourneyDecorationMotion>
+        <JourneyDecorationMotion depth={2} index={1}>
+          <rect
+            fill="url(#tablet-journey-dots)"
+            height="36"
+            opacity="0.16"
+            width="44"
+            x="24"
+            y="268"
+          />
+        </JourneyDecorationMotion>
+        <FuturePortal geometry={tabletPortal} prefix="tablet-journey" />
+
+        <JourneyPathMotion
+          d={tabletJourneyPath}
+          filter="url(#tablet-journey-path-glow)"
+          opacity={0.09}
+          stroke="url(#tablet-journey-path-gradient)"
+          strokeWidth={10}
+        />
+        <JourneyPathMotion
+          d={tabletJourneyPath}
+          opacity={0.48}
+          stroke="#B8C6F7"
+          strokeWidth={5}
+        />
+        <JourneyPathMotion
+          d={tabletJourneyPath}
+          stroke="url(#tablet-journey-path-gradient)"
+          strokeWidth={3}
+        />
+
+        <circle cx="170" cy="245" fill="#FFFFFF" r="6.5" />
+        <circle cx="170" cy="245" fill="#FFFFFF" r="4.5" stroke="#143CFB" strokeWidth="2.4" />
+
+        <JourneyMilestones
+          items={tabletJourneyMilestones}
+          prefix="tablet-journey"
+          radius={25.5}
+        />
+      </svg>
+
+      <div className="absolute right-[80%] top-[51.5%] z-30 origin-top-right scale-[0.64] lg:scale-[0.72]">
+        <JourneyStartCard />
+      </div>
+    </div>
+  );
+}
+
+function MobileJourney() {
+  return (
+    <div className="md:hidden">
+      <JourneyCopyMotion className="relative z-30 mx-auto max-w-[350px] px-2 text-right [direction:rtl]">
+        <h2
+          className="text-[clamp(1.75rem,7.2vw,2.1rem)] font-black leading-[1.48] tracking-[-0.045em] text-[#171717]"
+          aria-hidden="true"
+        >
+          آینده تحصیلی شما
+          <span className="block text-[#143CFB]">از همین‌جا شروع می‌شود</span>
+        </h2>
+        <p className="mt-3 text-sm leading-7 text-[#747782]">
+          از اولین قدم تا پذیرش، مسیرتان روشن است.
+        </p>
+      </JourneyCopyMotion>
+
+      <div className="relative mx-auto mt-7 aspect-[39/76] w-full max-w-[390px]">
+        <svg
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full"
+          focusable="false"
+          preserveAspectRatio="xMidYMid meet"
+          viewBox="0 0 390 760"
+        >
+          <JourneyDefs prefix="mobile-journey" vertical />
+          <MobileJourneyDecorations />
+          <FuturePortal geometry={mobilePortal} prefix="mobile-journey" />
+
+          <JourneyPathMotion
+            d={mobileJourneyPath}
+            filter="url(#mobile-journey-path-glow)"
+            opacity={0.09}
+            stroke="url(#mobile-journey-path-gradient)"
+            strokeWidth={10}
+          />
+          <JourneyPathMotion
+            d={mobileJourneyPath}
+            opacity={0.48}
+            stroke="#BCC9FF"
+            strokeWidth={5}
+          />
+          <JourneyPathMotion
+            d={mobileJourneyPath}
+            stroke="url(#mobile-journey-path-gradient)"
+            strokeWidth={3}
+          />
+
+          <circle cx="195" cy="156" fill="#FFFFFF" r="8" />
+          <circle cx="195" cy="156" fill="#FFFFFF" r="5.3" stroke="#143CFB" strokeWidth="3" />
+
+          <JourneyMilestones items={mobileJourneyMilestones} prefix="mobile-journey" radius={27.5} />
+        </svg>
+
+        <div className="absolute left-1/2 top-0 z-30 origin-top -translate-x-1/2 scale-[0.79] min-[340px]:scale-[0.84] min-[360px]:scale-[0.89] min-[380px]:scale-[0.96] min-[407px]:scale-100">
+          <JourneyStartCard />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function FinalCta() {
   return (
     <section
       aria-labelledby="final-cta-title"
-      className="section-shell landing-section landing-section--compact scroll-mt-24"
+      className="relative isolate scroll-mt-24 overflow-hidden bg-background py-[clamp(3.75rem,7vw,6.25rem)] md:py-12 lg:py-[clamp(2.25rem,3.2vw,3.5rem)]"
       id="final-cta"
     >
-      <Reveal>
-        <div className="rounded-[24px] bg-[linear-gradient(100deg,#ffe7ce,#fde0c1,#f9e5d2)] px-7 py-10 text-center sm:px-12 sm:py-12">
-          <h2
-            className="text-[26px] font-black tracking-[-0.03em] text-[#222] sm:text-[30px]"
-            id="final-cta-title"
-          >
-            آینده تحصیلی شما از همین‌جا شروع می‌شود
-          </h2>
-          <p className="mt-3 text-sm leading-7 text-[#6a5c52]">
-            همین حالا ثبت‌نام کنید و یک قدم به دانشگاه رویایی‌تان نزدیک‌تر شوید.
-          </p>
-          <MotionLink
-            className={buttonVariants({ className: 'mt-6 min-h-10 min-w-36 py-2' })}
-            href={dashboardSignupUrl}
-          >
-            رایگان شروع کنید
-            <ChevronLeft
-              aria-hidden="true"
-              className="size-4 transition-transform group-hover/button:-translate-x-1"
-            />
-          </MotionLink>
-        </div>
-      </Reveal>
+      <h2 className="sr-only" id="final-cta-title">
+        آینده تحصیلی شما از همین‌جا شروع می‌شود
+      </h2>
+
+      <JourneyScene
+        aria-label="مسیر اپلای از شروع با وآند تا ساخت پروفایل، انتخاب دانشگاه، آماده‌سازی درخواست، دریافت پذیرش و ورود به آینده"
+        className="relative mx-auto w-[min(96vw,1500px)]"
+        dir="ltr"
+      >
+        <JourneyAmbientMotion className="pointer-events-none absolute inset-0 -z-10">
+          <span className="absolute inset-0 bg-[radial-gradient(circle_at_48%_52%,rgba(20,60,251,0.03),transparent_34%),radial-gradient(circle_at_84%_45%,rgba(250,219,174,0.08),transparent_24%),radial-gradient(circle_at_12%_18%,rgba(178,185,255,0.045),transparent_26%)]" />
+        </JourneyAmbientMotion>
+
+        <DesktopJourney />
+        <TabletJourney />
+        <MobileJourney />
+
+        <ol className="sr-only" dir="rtl">
+          {journeySteps.map((step) => (
+            <li key={step.label}>{step.label}</li>
+          ))}
+        </ol>
+      </JourneyScene>
     </section>
   );
 }

@@ -2,12 +2,12 @@
   "schema_version": 1,
   "generator": "code-project-guidance-map",
   "generator_version": "0.4.0",
-  "generated_at": "2026-08-25T08:39:06Z",
+  "generated_at": "2026-08-25T10:50:59Z",
   "repo_root": "F:\\waandapp",
   "git_available": true,
-  "current_head": "6daef6d",
-  "file_count": 211,
-  "scanned_file_count": 211,
+  "current_head": "4e2eded",
+  "file_count": 210,
+  "scanned_file_count": 210,
   "truncated": false,
   "language_file_counts": {
     "typescript": 116,
@@ -15,7 +15,7 @@
     "yaml": 3
   },
   "language_loc": {
-    "typescript": 13724,
+    "typescript": 14890,
     "yaml": 7989,
     "javascript": 6786
   },
@@ -40,20 +40,20 @@
       }
     },
     {
-      "path": ".",
-      "file_count": 12,
-      "source_file_count": 3,
-      "languages": {
-        "yaml": 3
-      }
-    },
-    {
       "path": "packages",
       "file_count": 12,
       "source_file_count": 4,
       "languages": {
         "javascript": 3,
         "typescript": 1
+      }
+    },
+    {
+      "path": ".",
+      "file_count": 11,
+      "source_file_count": 3,
+      "languages": {
+        "yaml": 3
       }
     },
     {
@@ -1481,8 +1481,8 @@
       "file": "apps/web/next-env.d.ts",
       "language": "typescript",
       "imports": [
-        "./.next/dev/types/routes.d.ts",
-        "./.next/dev/types/root-params.d.ts"
+        "./.next/types/routes.d.ts",
+        "./.next/types/root-params.d.ts"
       ]
     },
     {
@@ -1591,6 +1591,14 @@
       ]
     },
     {
+      "file": "apps/web/src/components/ui/marquee.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
       "file": "apps/web/src/components/ui/resizable-navbar.tsx",
       "language": "typescript",
       "imports": [
@@ -1641,127 +1649,25 @@
         "globals",
         "./base.js"
       ]
-    },
-    {
-      "file": "apps/web/src/components/ui/marquee.tsx",
-      "language": "typescript",
-      "imports": [
-        "react",
-        "@/lib/utils"
-      ]
     }
   ],
   "changed_files": [
-    ".env.example",
-    "AUTHENTICATION.md",
-    "README.md",
-    "apps/api/src/app.js",
-    "apps/api/src/auth/auth.integration.js",
-    "apps/api/src/auth/auth.test.js",
-    "apps/api/src/auth/challenge-service.js",
-    "apps/api/src/auth/delivery.js",
-    "apps/api/src/auth/schemas.js",
-    "apps/api/src/auth/service.js",
-    "apps/api/src/config/environment.js",
-    "apps/api/src/config/environment.test.js",
-    "apps/api/src/server.js",
-    "apps/api/src/tools/dev-auth-webhook.mjs",
-    "apps/user-dashboard/package.json",
-    "apps/user-dashboard/src/components/auth/verification-panel.test.tsx",
-    "apps/user-dashboard/src/features/auth/auth-api.test.ts",
-    "apps/user-dashboard/src/pages/auth/login-page.tsx",
-    "apps/user-dashboard/src/pages/auth/reset-password-page.tsx",
-    "apps/user-dashboard/src/pages/auth/signup-page.test.tsx",
-    "apps/user-dashboard/src/pages/auth/signup-page.tsx",
-    "apps/user-dashboard/src/pages/auth/verify-page.tsx",
-    "apps/user-dashboard/src/pages/settings-page.tsx",
-    "apps/user-dashboard/src/schemas/auth.schema.test.ts",
-    "apps/user-dashboard/src/schemas/auth.schema.ts",
-    "docker-compose.yml",
-    "pnpm-lock.yaml",
     ".agents/guidance-map/guides/api/service.md",
     ".agents/guidance-map/guides/user-dashboard/identity.md",
-    ".agents/guidance-map/guides/user-dashboard/product.md",
     ".agents/guidance-map/guides/user-dashboard/shell.md",
     ".agents/guidance-map/guides/web/marketing.md",
     ".agents/guidance-map/guides/workspace/tooling.md",
     ".agents/guidance-map/manifest.json",
     ".agents/guidance-map/project-map.json",
-    ".prettierignore",
     "AGENTS.md",
-    "apps/api/package.json",
-    "apps/api/scripts/build.mjs",
-    "apps/api/scripts/sync-auth-indexes.mjs",
-    "apps/api/src/auth/audit.js",
-    "apps/api/src/auth/authorization.js",
-    "apps/api/src/auth/code.js",
-    "apps/api/src/auth/index-names.js",
-    "apps/api/src/auth/indexes.js",
-    "apps/api/src/auth/models/applicant-profile.js",
-    "apps/api/src/auth/models/auth-challenge.js",
-    "apps/api/src/auth/models/auth-event.js",
-    "apps/api/src/auth/models/auth-transaction.js",
-    "apps/api/src/auth/models/legal-acceptance.js",
-    "apps/api/src/auth/models/user.js",
-    "apps/api/src/auth/normalization.js",
-    "apps/api/src/auth/password.js",
-    "apps/api/src/auth/rate-limit.js",
-    "apps/api/src/auth/router.js",
-    "apps/api/src/auth/serialization.js",
-    "apps/api/src/config/session.js",
-    "apps/api/src/health/router.js",
-    "apps/api/src/infrastructure/mongodb.js",
-    "apps/api/src/logger.js",
-    "apps/api/src/middleware/errors.js",
-    "apps/api/src/middleware/security.test.js",
-    "apps/api/src/middleware/session.js",
-    "apps/user-dashboard/eslint.config.js",
-    "apps/user-dashboard/src/app/router.tsx",
-    "apps/user-dashboard/src/components/auth/auth-layout.tsx",
-    "apps/user-dashboard/src/components/auth/verification-panel.tsx",
-    "apps/user-dashboard/src/components/layout/dashboard-mobile-nav.tsx",
-    "apps/user-dashboard/src/components/layout/dashboard-navigation.tsx",
-    "apps/user-dashboard/src/errors/error-catalog.ts",
-    "apps/user-dashboard/src/errors/error-codes.ts",
-    "apps/user-dashboard/src/features/auth/auth-api.ts",
-    "apps/user-dashboard/src/features/auth/auth-context.tsx",
-    "apps/user-dashboard/src/features/auth/auth-flow.test.ts",
-    "apps/user-dashboard/src/features/auth/auth-flow.ts",
-    "apps/user-dashboard/src/features/auth/auth-guard.tsx",
-    "apps/user-dashboard/src/features/auth/auth-routing.test.ts",
-    "apps/user-dashboard/src/features/auth/auth-routing.ts",
-    "apps/user-dashboard/src/features/auth/auth-state.ts",
-    "apps/user-dashboard/src/features/auth/auth-storage.ts",
-    "apps/user-dashboard/src/features/auth/types.ts",
-    "apps/user-dashboard/src/features/onboarding/onboarding-draft-storage.test.ts",
-    "apps/user-dashboard/src/features/onboarding/onboarding-draft-storage.ts",
-    "apps/user-dashboard/src/features/onboarding/pages/onboarding-page.tsx",
-    "apps/user-dashboard/src/pages/auth/password-recovery-page.tsx",
-    "apps/user-dashboard/vite.config.ts",
-    "apps/web/next.config.ts",
-    "apps/web/src/components/landing/landing-navbar.tsx",
+    "apps/web/next-env.d.ts",
     "apps/web/src/components/landing/landing-page.tsx",
     "apps/web/src/components/landing/motion.tsx",
-    "infrastructure/docker/user-dashboard.Dockerfile",
-    "infrastructure/docker/web.Dockerfile",
-    "package.json",
-    "turbo.json",
-    ".gitignore",
-    "apps/web/package.json",
-    "apps/web/src/components/landing/testimonials.tsx",
-    "apps/web/src/styles/globals.css",
-    "apps/web/src/components/ui/marquee.tsx",
-    "security/pentest/attack-surface.md",
-    "security/pentest/remediation.md",
-    "security/pentest/scope.md",
-    "security/pentest/test-matrix.md"
+    ".agents/guidance-map/guides/security/pentest.md"
   ],
   "affected_module_guides": [
     ".agents/guidance-map/guides/api/service.md",
-    ".agents/guidance-map/guides/user-dashboard/identity.md",
-    ".agents/guidance-map/guides/user-dashboard/shell.md",
-    ".agents/guidance-map/guides/web/marketing.md",
-    ".agents/guidance-map/guides/workspace/tooling.md"
+    ".agents/guidance-map/guides/web/marketing.md"
   ],
   "graphify": {
     "available": false,

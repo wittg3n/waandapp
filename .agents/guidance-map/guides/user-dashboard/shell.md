@@ -2,7 +2,7 @@
 Guide ID: user-dashboard.shell
 Guide kind: leaf
 Guide path: .agents/guidance-map/guides/user-dashboard/shell.md
-Content hash: sha256:19ae14fd417b4033
+Content hash: sha256:0ae926b4f11c70a5
 <!-- code-project-guidance-map:guide:end -->
 
 # Dashboard Application Shell and UI
@@ -46,4 +46,4 @@ vite.config.ts
 - Add backend error codes to both `error-codes.ts` and `error-catalog.ts`; normalize unknown failures through `normalizeError`, keep user-safe Persian copy in the catalog, and configure production reporting through `setErrorReporter`.
 - The repository's broad `data/` ignore rule can hide `src/data/**` edits; verify intended Iranian dataset and index changes with Git, then run `validate:iran-data`.
 - Keep `components.json`, Vite, and TypeScript aliases aligned; add dependencies with root-pinned pnpm rather than editing the lockfile manually.
-- Run `pnpm --filter @waandapp/user-dashboard test`, `lint`, `typecheck`, and `build`; also run `validate:iran-data` after changing either Iranian JSON dataset.
+- Run `pnpm --filter @waandapp/user-dashboard test`, `pnpm --filter @waandapp/user-dashboard lint`, `pnpm --filter @waandapp/user-dashboard typecheck`, and `pnpm --filter @waandapp/user-dashboard build`; also run `pnpm --filter @waandapp/user-dashboard validate:iran-data` after changing either Iranian JSON dataset.

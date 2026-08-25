@@ -2,7 +2,7 @@
 Guide ID: api.service
 Guide kind: leaf
 Guide path: .agents/guidance-map/guides/api/service.md
-Content hash: sha256:810e57724a022fcd
+Content hash: sha256:46077a7ae01bdbc8
 <!-- code-project-guidance-map:guide:end -->
 
 # API Service
@@ -35,7 +35,7 @@ src/infrastructure/
 
 ## Local Rules
 
-- Keep credential verification, sessions, authorization, CSRF/origin enforcement, rate limiting, and auth audit behavior server-owned; never rely on dashboard local/demo identity as a security boundary.
+- Keep credential verification, sessions, authorization, CSRF/origin enforcement, rate limiting, and auth audit behavior server-owned; never rely on dashboard or browser state as a security boundary.
 - Read runtime settings through the frozen `config` export; synchronize environment names with root contracts and add validation cases in `src/config/environment.test.js` when the contract changes.
 - Preserve middleware order so health stays session-free, request safeguards wrap protected routes, sessions precede auth, and not-found/error handlers remain last.
 - Keep startup atomic and shutdown idempotent: never listen before MongoDB, required indexes, and Redis are ready; close HTTP, Redis, and MongoDB resources on failure or termination.
