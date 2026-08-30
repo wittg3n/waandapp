@@ -2,22 +2,22 @@
   "schema_version": 1,
   "generator": "code-project-guidance-map",
   "generator_version": "0.4.0",
-  "generated_at": "2026-08-25T10:50:59Z",
+  "generated_at": "2026-08-30T14:31:37Z",
   "repo_root": "F:\\waandapp",
   "git_available": true,
-  "current_head": "4e2eded",
-  "file_count": 210,
-  "scanned_file_count": 210,
+  "current_head": "db84984",
+  "file_count": 294,
+  "scanned_file_count": 294,
   "truncated": false,
   "language_file_counts": {
-    "typescript": 116,
-    "javascript": 40,
+    "typescript": 166,
+    "javascript": 51,
     "yaml": 3
   },
   "language_loc": {
-    "typescript": 14890,
-    "yaml": 7989,
-    "javascript": 6786
+    "typescript": 18759,
+    "yaml": 9819,
+    "javascript": 8178
   },
   "manifests": [
     "apps/api/package.json",
@@ -27,16 +27,25 @@
     "packages/eslint-config/package.json",
     "packages/shared/package.json",
     "packages/typescript-config/package.json",
-    "pnpm-workspace.yaml"
+    "pnpm-workspace.yaml",
+    "apps/blog/package.json"
   ],
   "top_level": [
     {
       "path": "apps",
-      "file_count": 179,
-      "source_file_count": 152,
+      "file_count": 261,
+      "source_file_count": 213,
       "languages": {
-        "javascript": 37,
-        "typescript": 115
+        "javascript": 48,
+        "typescript": 165
+      }
+    },
+    {
+      "path": ".",
+      "file_count": 12,
+      "source_file_count": 3,
+      "languages": {
+        "yaml": 3
       }
     },
     {
@@ -49,16 +58,8 @@
       }
     },
     {
-      "path": ".",
-      "file_count": 11,
-      "source_file_count": 3,
-      "languages": {
-        "yaml": 3
-      }
-    },
-    {
       "path": "infrastructure",
-      "file_count": 4,
+      "file_count": 5,
       "source_file_count": 0,
       "languages": {}
     },
@@ -82,19 +83,28 @@
     },
     {
       "path": "apps/api",
-      "file_count": 36,
-      "source_file_count": 36,
+      "file_count": 47,
+      "source_file_count": 47,
       "languages": {
-        "javascript": 36
+        "javascript": 47
+      },
+      "manifests": []
+    },
+    {
+      "path": "apps/blog",
+      "file_count": 35,
+      "source_file_count": 35,
+      "languages": {
+        "typescript": 35
       },
       "manifests": []
     },
     {
       "path": "apps/web",
-      "file_count": 17,
-      "source_file_count": 17,
+      "file_count": 32,
+      "source_file_count": 32,
       "languages": {
-        "typescript": 17
+        "typescript": 32
       },
       "manifests": []
     },
@@ -168,8 +178,8 @@
         "./auth/router.js",
         "./auth/service.js",
         "./auth/delivery.js",
-        "./config/index.js",
-        "./config/session.js"
+        "./blog/routes.js",
+        "./config/index.js"
       ]
     },
     {
@@ -463,6 +473,7 @@
         "node:url",
         "./app.js",
         "./auth/indexes.js",
+        "./blog/indexes.js",
         "./config/index.js",
         "./infrastructure/mongodb.js",
         "./infrastructure/redis.js",
@@ -550,8 +561,7 @@
       "language": "typescript",
       "imports": [
         "framer-motion",
-        "@/assets/auth/login-illustration.png",
-        "@/assets/auth/signup-illustration.png"
+        "@/assets/auth/login-illustration.png"
       ]
     },
     {
@@ -1481,8 +1491,8 @@
       "file": "apps/web/next-env.d.ts",
       "language": "typescript",
       "imports": [
-        "./.next/types/routes.d.ts",
-        "./.next/types/root-params.d.ts"
+        "./.next/dev/types/routes.d.ts",
+        "./.next/dev/types/root-params.d.ts"
       ]
     },
     {
@@ -1501,6 +1511,8 @@
       "imports": [
         "next",
         "react",
+        "@/components/marketing/public-footer",
+        "@/components/marketing/public-navbar",
         "@/lib/site",
         "@/styles/globals.css"
       ]
@@ -1535,7 +1547,8 @@
       "imports": [
         "react",
         "@/components/ui/resizable-navbar",
-        "@/components/ui/waand-logo"
+        "@/components/ui/waand-logo",
+        "@/lib/public-routes"
       ]
     },
     {
@@ -1543,14 +1556,12 @@
       "language": "typescript",
       "imports": [
         "next/image",
-        "react-icons/fa",
-        "react-icons/fa6",
         "lucide-react",
-        "@/components/landing/landing-navbar",
         "@/components/ui/line-shadow-text",
         "@/components/landing/motion",
         "@/components/landing/testimonials",
         "@/components/ui/button",
+        "@/lib/public-routes",
         "@/lib/utils",
         "@/components/ui/waand-logo"
       ]
@@ -1561,7 +1572,8 @@
       "imports": [
         "react",
         "framer-motion",
-        "@/lib/utils"
+        "@/lib/utils",
+        "@/hooks/use-hydrated-reduced-motion"
       ]
     },
     {
@@ -1605,6 +1617,7 @@
         "lucide-react",
         "motion/react",
         "react",
+        "@/hooks/use-hydrated-reduced-motion",
         "@/lib/utils"
       ]
     },
@@ -1649,10 +1662,508 @@
         "globals",
         "./base.js"
       ]
+    },
+    {
+      "file": "apps/api/src/blog/blog.test.js",
+      "language": "javascript",
+      "imports": [
+        "node:assert/strict",
+        "node:events",
+        "node:test",
+        "express",
+        "mongoose",
+        "./errors.js",
+        "./index-names.js",
+        "./indexes.js",
+        "./models/post.js",
+        "./repository.js",
+        "./routes.js",
+        "./seed.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/blog/controllers.js",
+      "language": "javascript",
+      "imports": [
+        "./validation.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/blog/errors.js",
+      "language": "javascript",
+      "imports": [
+        "../middleware/errors.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/blog/indexes.js",
+      "language": "javascript",
+      "imports": [
+        "node:util",
+        "./index-names.js",
+        "./models/post.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/blog/models/post.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "../index-names.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/blog/repository.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "./models/post.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/blog/routes.js",
+      "language": "javascript",
+      "imports": [
+        "express",
+        "./controllers.js",
+        "./service.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/blog/seed.js",
+      "language": "javascript",
+      "imports": [
+        "./models/post.js",
+        "./validation.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/blog/service.js",
+      "language": "javascript",
+      "imports": [
+        "./errors.js",
+        "./repository.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/blog/validation.js",
+      "language": "javascript",
+      "imports": [
+        "zod",
+        "./errors.js"
+      ]
+    },
+    {
+      "file": "apps/blog/next-env.d.ts",
+      "language": "typescript",
+      "imports": [
+        "./.next/types/routes.d.ts",
+        "./.next/types/root-params.d.ts"
+      ]
+    },
+    {
+      "file": "apps/blog/next.config.ts",
+      "language": "typescript",
+      "imports": [
+        "@next/env",
+        "next",
+        "node:path",
+        "node:url"
+      ]
+    },
+    {
+      "file": "apps/blog/src/app/category/[slug]/loading.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/status/route-loading"
+      ]
+    },
+    {
+      "file": "apps/blog/src/app/category/[slug]/page.tsx",
+      "language": "typescript",
+      "imports": [
+        "next",
+        "next/link",
+        "next/navigation",
+        "@/components/posts/article-grid",
+        "@/components/posts/pagination",
+        "@/components/status/empty-state",
+        "@/lib/blog-api",
+        "@/lib/route-params",
+        "@/lib/site"
+      ]
+    },
+    {
+      "file": "apps/blog/src/app/error.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/status/route-error"
+      ]
+    },
+    {
+      "file": "apps/blog/src/app/layout.tsx",
+      "language": "typescript",
+      "imports": [
+        "next",
+        "react",
+        "@/components/layout/site-footer",
+        "@/components/layout/site-header",
+        "@/lib/site",
+        "@/styles/globals.css"
+      ]
+    },
+    {
+      "file": "apps/blog/src/app/loading.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/status/route-loading"
+      ]
+    },
+    {
+      "file": "apps/blog/src/app/not-found.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/status/empty-state"
+      ]
+    },
+    {
+      "file": "apps/blog/src/app/page.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "next",
+        "next/link",
+        "@/components/posts/article-grid",
+        "@/components/posts/featured-article",
+        "@/components/search/search-form",
+        "@/components/status/empty-state",
+        "@/lib/blog-api",
+        "@/lib/site"
+      ]
+    },
+    {
+      "file": "apps/blog/src/app/posts/[slug]/loading.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/status/route-loading"
+      ]
+    },
+    {
+      "file": "apps/blog/src/app/posts/[slug]/page.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "next",
+        "next/image",
+        "next/link",
+        "next/navigation",
+        "@/components/posts/article-grid",
+        "@/components/posts/post-meta",
+        "@/lib/article-content",
+        "@/lib/blog-api",
+        "@/lib/format",
+        "@/lib/site"
+      ]
+    },
+    {
+      "file": "apps/blog/src/app/robots.ts",
+      "language": "typescript",
+      "imports": [
+        "next",
+        "@/lib/site"
+      ]
+    },
+    {
+      "file": "apps/blog/src/app/search/loading.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/status/route-loading"
+      ]
+    },
+    {
+      "file": "apps/blog/src/app/search/page.tsx",
+      "language": "typescript",
+      "imports": [
+        "next",
+        "@/components/posts/article-grid",
+        "@/components/posts/pagination",
+        "@/components/search/search-form",
+        "@/components/status/empty-state",
+        "@/lib/blog-api",
+        "@/lib/route-params"
+      ]
+    },
+    {
+      "file": "apps/blog/src/app/sitemap.ts",
+      "language": "typescript",
+      "imports": [
+        "next",
+        "@/lib/blog-api",
+        "@/lib/site"
+      ]
+    },
+    {
+      "file": "apps/blog/src/components/layout/site-footer.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/ui/waand-logo",
+        "@/lib/site"
+      ]
+    },
+    {
+      "file": "apps/blog/src/components/layout/site-header.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "@/components/ui/waand-logo",
+        "@/lib/site"
+      ]
+    },
+    {
+      "file": "apps/blog/src/components/posts/article-card.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "next/image",
+        "next/link",
+        "@/components/posts/post-meta",
+        "@/lib/blog-api",
+        "@/lib/format"
+      ]
+    },
+    {
+      "file": "apps/blog/src/components/posts/article-grid.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/posts/article-card",
+        "@/lib/blog-api"
+      ]
+    },
+    {
+      "file": "apps/blog/src/components/posts/featured-article.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "next/image",
+        "next/link",
+        "@/components/posts/post-meta",
+        "@/lib/blog-api",
+        "@/lib/format"
+      ]
+    },
+    {
+      "file": "apps/blog/src/components/posts/pagination.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "@/lib/blog-api"
+      ]
+    },
+    {
+      "file": "apps/blog/src/components/posts/post-meta.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "@/lib/format",
+        "@/lib/blog-api",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/blog/src/components/search/search-form.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/blog/src/components/status/empty-state.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react"
+      ]
+    },
+    {
+      "file": "apps/blog/src/components/status/route-error.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react"
+      ]
+    },
+    {
+      "file": "apps/blog/src/components/ui/button.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/blog/src/components/ui/input.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/blog/src/components/ui/waand-logo.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/blog/src/lib/blog-api.ts",
+      "language": "typescript",
+      "imports": [
+        "server-only"
+      ]
+    },
+    {
+      "file": "apps/blog/src/lib/format.ts",
+      "language": "typescript",
+      "imports": [
+        "@/lib/blog-api"
+      ]
+    },
+    {
+      "file": "apps/blog/src/lib/utils.ts",
+      "language": "typescript",
+      "imports": [
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "file": "apps/web/src/app/about/page.tsx",
+      "language": "typescript",
+      "imports": [
+        "next",
+        "lucide-react",
+        "@/components/landing/motion",
+        "@/components/marketing/final-cta",
+        "@/components/marketing/section-heading",
+        "@/components/ui/waand-logo"
+      ]
+    },
+    {
+      "file": "apps/web/src/app/contact/page.tsx",
+      "language": "typescript",
+      "imports": [
+        "next",
+        "lucide-react",
+        "@/components/landing/motion",
+        "@/components/marketing/contact-form",
+        "@/components/marketing/section-heading"
+      ]
+    },
+    {
+      "file": "apps/web/src/app/faq/page.tsx",
+      "language": "typescript",
+      "imports": [
+        "next",
+        "lucide-react",
+        "@/components/landing/motion",
+        "@/components/marketing/final-cta",
+        "@/lib/faq"
+      ]
+    },
+    {
+      "file": "apps/web/src/app/how-it-works/page.tsx",
+      "language": "typescript",
+      "imports": [
+        "next",
+        "@/components/marketing/how-it-works-section"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/marketing/contact-form.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "lucide-react",
+        "@/components/ui/button"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/marketing/final-cta.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "@/components/landing/motion",
+        "@/components/ui/button",
+        "@/lib/public-routes"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/marketing/how-it-works-journey.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "@/components/landing/motion",
+        "@/components/marketing/section-heading"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/marketing/how-it-works-section.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "@/components/landing/motion",
+        "@/components/marketing/final-cta",
+        "@/components/marketing/how-it-works-journey"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/marketing/public-footer.tsx",
+      "language": "typescript",
+      "imports": [
+        "react-icons/fa",
+        "react-icons/fa6",
+        "@/components/ui/waand-logo",
+        "@/lib/public-routes"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/marketing/public-navbar.tsx",
+      "language": "typescript",
+      "imports": [
+        "next/navigation",
+        "react",
+        "@/components/ui/resizable-navbar",
+        "@/components/ui/waand-logo",
+        "@/lib/public-routes"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/marketing/section-heading.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/web/src/hooks/use-hydrated-reduced-motion.ts",
+      "language": "typescript",
+      "imports": [
+        "motion/react",
+        "react"
+      ]
     }
   ],
   "changed_files": [
+    "apps/user-dashboard/src/app/favicon.ico",
+    "apps/user-dashboard/src/components/auth/auth-illustration.tsx",
+    "apps/web/src/app/favicon.ico",
     ".agents/guidance-map/guides/api/service.md",
+    ".agents/guidance-map/guides/security/pentest.md",
     ".agents/guidance-map/guides/user-dashboard/identity.md",
     ".agents/guidance-map/guides/user-dashboard/shell.md",
     ".agents/guidance-map/guides/web/marketing.md",
@@ -1660,14 +2171,117 @@
     ".agents/guidance-map/manifest.json",
     ".agents/guidance-map/project-map.json",
     "AGENTS.md",
-    "apps/web/next-env.d.ts",
     "apps/web/src/components/landing/landing-page.tsx",
     "apps/web/src/components/landing/motion.tsx",
-    ".agents/guidance-map/guides/security/pentest.md"
+    ".env.example",
+    "README.md",
+    "apps/api/package.json",
+    "apps/api/scripts/sync-auth-indexes.mjs",
+    "apps/api/src/app.js",
+    "apps/api/src/server.js",
+    "apps/user-dashboard/src/components/auth/auth-layout.tsx",
+    "apps/web/next.config.ts",
+    "apps/web/src/app/layout.tsx",
+    "apps/web/src/app/sitemap.ts",
+    "apps/web/src/components/landing/landing-navbar.tsx",
+    "apps/web/src/components/ui/resizable-navbar.tsx",
+    "apps/web/src/lib/site.ts",
+    "apps/web/src/styles/globals.css",
+    "docker-compose.yml",
+    "infrastructure/docker/web.Dockerfile",
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "turbo.json",
+    "apps/admin-dashboard/",
+    "apps/api/scripts/seed-blog.mjs",
+    "apps/api/src/blog/blog.test.js",
+    "apps/api/src/blog/controllers.js",
+    "apps/api/src/blog/errors.js",
+    "apps/api/src/blog/index-names.js",
+    "apps/api/src/blog/indexes.js",
+    "apps/api/src/blog/models/post.js",
+    "apps/api/src/blog/repository.js",
+    "apps/api/src/blog/routes.js",
+    "apps/api/src/blog/seed.js",
+    "apps/api/src/blog/service.js",
+    "apps/api/src/blog/validation.js",
+    "apps/blog/components.json",
+    "apps/blog/eslint.config.mjs",
+    "apps/blog/next-env.d.ts",
+    "apps/blog/next.config.ts",
+    "apps/blog/package.json",
+    "apps/blog/postcss.config.mjs",
+    "apps/blog/public/covers/application-roadmap.svg",
+    "apps/blog/public/covers/deadlines.svg",
+    "apps/blog/public/covers/language-exam.svg",
+    "apps/blog/public/covers/resume.svg",
+    "apps/blog/public/covers/scholarship.svg",
+    "apps/blog/public/covers/statement-of-purpose.svg",
+    "apps/blog/public/covers/student-story.svg",
+    "apps/blog/public/covers/university-choice.svg",
+    "apps/blog/scripts/check-content.mjs",
+    "apps/blog/scripts/next-command.mjs",
+    "apps/blog/src/app/category/[slug]/loading.tsx",
+    "apps/blog/src/app/category/[slug]/page.tsx",
+    "apps/blog/src/app/error.tsx",
+    "apps/blog/src/app/icon.svg",
+    "apps/blog/src/app/layout.tsx",
+    "apps/blog/src/app/loading.tsx",
+    "apps/blog/src/app/not-found.tsx",
+    "apps/blog/src/app/page.tsx",
+    "apps/blog/src/app/posts/[slug]/loading.tsx",
+    "apps/blog/src/app/posts/[slug]/page.tsx",
+    "apps/blog/src/app/robots.ts",
+    "apps/blog/src/app/search/loading.tsx",
+    "apps/blog/src/app/search/page.tsx",
+    "apps/blog/src/app/sitemap.ts",
+    "apps/blog/src/components/layout/site-footer.tsx",
+    "apps/blog/src/components/layout/site-header.tsx",
+    "apps/blog/src/components/posts/article-card.tsx",
+    "apps/blog/src/components/posts/article-grid.tsx",
+    "apps/blog/src/components/posts/featured-article.tsx",
+    "apps/blog/src/components/posts/pagination.tsx",
+    "apps/blog/src/components/posts/post-meta.tsx",
+    "apps/blog/src/components/search/search-form.tsx",
+    "apps/blog/src/components/status/empty-state.tsx",
+    "apps/blog/src/components/status/route-error.tsx",
+    "apps/blog/src/components/status/route-loading.tsx",
+    "apps/blog/src/components/ui/button.tsx",
+    "apps/blog/src/components/ui/input.tsx",
+    "apps/blog/src/components/ui/waand-logo.tsx",
+    "apps/blog/src/lib/article-content.ts",
+    "apps/blog/src/lib/blog-api.ts",
+    "apps/blog/src/lib/format.ts",
+    "apps/blog/src/lib/route-params.ts",
+    "apps/blog/src/lib/site.ts",
+    "apps/blog/src/lib/utils.ts",
+    "apps/blog/src/styles/globals.css",
+    "apps/blog/tsconfig.json",
+    "apps/web/src/app/about/page.tsx",
+    "apps/web/src/app/contact/page.tsx",
+    "apps/web/src/app/faq/page.tsx",
+    "apps/web/src/app/how-it-works/page.tsx",
+    "apps/web/src/components/marketing/contact-form.tsx",
+    "apps/web/src/components/marketing/final-cta.tsx",
+    "apps/web/src/components/marketing/how-it-works-journey.tsx",
+    "apps/web/src/components/marketing/how-it-works-section.tsx",
+    "apps/web/src/components/marketing/public-footer.tsx",
+    "apps/web/src/components/marketing/public-navbar.tsx",
+    "apps/web/src/components/marketing/section-heading.tsx",
+    "apps/web/src/hooks/use-hydrated-reduced-motion.ts",
+    "apps/web/src/lib/faq.ts",
+    "apps/web/src/lib/pricing.ts",
+    "apps/web/src/lib/public-routes.ts",
+    "infrastructure/docker/blog.Dockerfile",
+    "package-lock.json"
   ],
   "affected_module_guides": [
     ".agents/guidance-map/guides/api/service.md",
-    ".agents/guidance-map/guides/web/marketing.md"
+    ".agents/guidance-map/guides/user-dashboard/identity.md",
+    ".agents/guidance-map/guides/user-dashboard/shell.md",
+    ".agents/guidance-map/guides/web/marketing.md",
+    ".agents/guidance-map/guides/workspace/tooling.md"
   ],
   "graphify": {
     "available": false,

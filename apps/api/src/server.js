@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { createApp } from './app.js';
 import { createAuthIndexes, verifyAuthIndexes } from './auth/indexes.js';
+import { createBlogIndexes, verifyBlogIndexes } from './blog/indexes.js';
 import { config } from './config/index.js';
 import { connectMongoDb, disconnectMongoDb } from './infrastructure/mongodb.js';
 import { connectRedis, disconnectRedis } from './infrastructure/redis.js';
@@ -72,8 +73,11 @@ export async function start() {
 
   try {
     await connectMongoDb(config.mongodbUri, logger);
-    if (config.nodeEnvironment === 'production') await verifyAuthIndexes();
-    else await createAuthIndexes();
+    if (config.nodeEnvironment === 'production') {
+      await Promise.all([verifyAuthIndexes(), verifyBlogIndexes()]);
+    } else {
+      await Promise.all([createAuthIndexes(), createBlogIndexes()]);
+    }
     redis = await connectRedis(config.redisUrl, logger);
 
     const server = createServer(createApp(redis));

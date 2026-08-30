@@ -9,7 +9,11 @@ const repositoryRoot = resolve(webDirectory, '../..');
 loadEnvConfig(repositoryRoot, process.env.NODE_ENV !== 'production', console, true);
 
 function publicHttpUrl(
-  name: 'NEXT_PUBLIC_API_URL' | 'NEXT_PUBLIC_SITE_URL' | 'NEXT_PUBLIC_USER_DASHBOARD_URL',
+  name:
+    | 'NEXT_PUBLIC_API_URL'
+    | 'NEXT_PUBLIC_BLOG_URL'
+    | 'NEXT_PUBLIC_SITE_URL'
+    | 'NEXT_PUBLIC_USER_DASHBOARD_URL',
 ) {
   const value = process.env[name];
 
@@ -31,12 +35,14 @@ function publicHttpUrl(
 }
 
 const apiUrl = publicHttpUrl('NEXT_PUBLIC_API_URL');
+const blogUrl = publicHttpUrl('NEXT_PUBLIC_BLOG_URL');
 const siteUrl = publicHttpUrl('NEXT_PUBLIC_SITE_URL');
 const userDashboardUrl = publicHttpUrl('NEXT_PUBLIC_USER_DASHBOARD_URL');
 
 const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: apiUrl,
+    NEXT_PUBLIC_BLOG_URL: blogUrl,
     NEXT_PUBLIC_SITE_URL: siteUrl,
     NEXT_PUBLIC_USER_DASHBOARD_URL: userDashboardUrl,
   },

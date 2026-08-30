@@ -10,6 +10,7 @@ import { RedisStore } from 'rate-limit-redis';
 import { createAuthRouter } from './auth/router.js';
 import { createAuthService } from './auth/service.js';
 import { createDeliverySenders } from './auth/delivery.js';
+import { createBlogRouter } from './blog/routes.js';
 import { config } from './config/index.js';
 import { createSessionMiddleware } from './config/session.js';
 import { createHealthRouter } from './health/router.js';
@@ -87,6 +88,7 @@ export function createApp(redis, options = {}) {
     }),
   );
   app.use(express.json({ limit: '32kb', strict: true }));
+  app.use('/api/v1/blog', createBlogRouter(options.blogService));
   app.use(sessionMiddleware);
   app.use(enforceAbsoluteSessionLifetime(settings));
 

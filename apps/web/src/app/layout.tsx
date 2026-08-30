@@ -1,13 +1,15 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 
+import { PublicFooter } from '@/components/marketing/public-footer';
+import { PublicNavbar } from '@/components/marketing/public-navbar';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
   metadataBase: SITE_URL,
   title: {
-    default: 'واند | اپلای دانشگاه با هوش مصنوعی',
+    default: 'وآند | اپلای دانشگاه با هوش مصنوعی',
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -32,12 +34,12 @@ export const metadata: Metadata = {
     locale: 'fa_IR',
     url: '/',
     siteName: SITE_NAME,
-    title: 'واند | اپلای دانشگاه با هوش مصنوعی',
+    title: 'وآند | اپلای دانشگاه با هوش مصنوعی',
     description: SITE_DESCRIPTION,
   },
   twitter: {
     card: 'summary',
-    title: 'واند | اپلای دانشگاه با هوش مصنوعی',
+    title: 'وآند | اپلای دانشگاه با هوش مصنوعی',
     description: SITE_DESCRIPTION,
   },
   robots: {
@@ -66,7 +68,14 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html dir="rtl" lang="fa">
-      <body>{children}</body>
+      <body>
+        <a className="skip-link" href="#main-content">
+          پرش به محتوای اصلی
+        </a>
+        <PublicNavbar />
+        {children}
+        <PublicFooter />
+      </body>
     </html>
   );
 }

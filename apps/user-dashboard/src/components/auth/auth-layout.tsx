@@ -10,7 +10,6 @@ export function AuthLayout() {
   const location = useLocation();
   const outlet = useOutlet();
 
-  const variant = location.pathname === '/signup' ? 'signup' : 'login';
   const pageTitle =
     {
       '/forgot-password': 'بازیابی رمز عبور',
@@ -41,7 +40,7 @@ export function AuthLayout() {
         "
         dir="ltr"
       >
-        <AuthIllustration variant={variant} />
+        <AuthIllustration />
 
         <section
           aria-label={pageTitle}

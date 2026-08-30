@@ -1,9 +1,6 @@
 import Image from 'next/image';
-import { FaInstagram, FaLinkedinIn, FaTelegramPlane, FaGithub, FaYoutube } from 'react-icons/fa';
-import { FaXTwitter } from 'react-icons/fa6';
+
 import {
-  Apple,
-  ArrowRight,
   Bell,
   CalendarDays,
   ChartNoAxesColumnIncreasing,
@@ -11,23 +8,20 @@ import {
   CheckCircle2,
   ChevronLeft,
   Download,
+  FileCheck2,
   FileText,
   Folder,
   Globe2,
   GraduationCap,
-  Landmark,
   LayoutDashboard,
+  ListChecks,
   LockKeyhole,
-  Mail,
-  MessageCircle,
-  Play,
+  ScanSearch,
   Send,
-  Server,
   Settings,
   Sparkles,
   UserRound,
 } from 'lucide-react';
-import { LandingNavbar } from '@/components/landing/landing-navbar';
 import { LineShadowText } from '@/components/ui/line-shadow-text';
 import {
   AppPromoCopy,
@@ -38,21 +32,20 @@ import {
   HeroLayer,
   HeroReveal,
   HeroScene,
-  FuturePortalMotion,
-  JourneyAmbientMotion,
-  JourneyCopyMotion,
-  JourneyDecorationMotion,
-  JourneyMilestoneMotion,
-  JourneyPathMotion,
-  JourneyScene,
-  JourneyStartMotion,
-  journeyPortalOutlineDelay,
+  PricingAccent,
+  PricingCard,
+  PricingCopy,
+  PricingScene,
+  ScrollJourneyHeading,
+  ScrollJourneyMilestone,
+  ScrollJourneyPath,
+  ScrollJourneyPoint,
+  ScrollJourneyScene,
+  ScrollJourneyStage,
+  ScrollJourneyStart,
   MotionLink,
   ProcessScene,
   ProcessStep,
-  Reveal,
-  RevealGroup,
-  RevealItem,
   WhyWaandAura,
   WhyWaandCopy,
   WhyWaandMountain,
@@ -60,57 +53,12 @@ import {
 } from '@/components/landing/motion';
 import { Testimonials } from '@/components/landing/testimonials';
 import { buttonVariants } from '@/components/ui/button';
+import { DASHBOARD_SIGNUP_URL } from '@/lib/public-routes';
 import { cn } from '@/lib/utils';
 import { WaandLogo } from '@/components/ui/waand-logo';
 
-const dashboardSignupUrl = new URL(
-  '/signup',
-  process.env.NEXT_PUBLIC_USER_DASHBOARD_URL as string,
-).toString();
-
-function StoreBadges({ compact = false }: { compact?: boolean }) {
-  return (
-    <div className="flex flex-wrap items-center gap-3" dir="ltr">
-      <span
-        aria-label="دریافت از اپ استور"
-        className={cn(
-          'inline-flex items-center gap-2 rounded-lg bg-[#111] px-3 text-white shadow-sm',
-          compact ? 'order-1' : 'order-2',
-          compact
-            ? 'h-10 min-w-[128px]'
-            : 'h-12 w-[146px] max-sm:h-11 max-sm:w-[136px] max-sm:min-w-0 max-sm:px-2',
-        )}
-      >
-        <Apple aria-hidden="true" className={compact ? 'size-5' : 'size-6'} />
-        <span className="text-left leading-none">
-          <small className="block text-[8px] text-white/70">Download on the</small>
-          <strong className={compact ? 'text-[13px]' : 'text-[15px]'}>App Store</strong>
-        </span>
-      </span>
-      <span
-        aria-label="دریافت از گوگل پلی"
-        className={cn(
-          'inline-flex items-center gap-2 rounded-lg bg-[#111] px-3 text-white shadow-sm',
-          compact ? 'order-2' : 'order-1',
-          compact
-            ? 'h-10 min-w-[128px]'
-            : 'h-12 w-[146px] max-sm:h-11 max-sm:w-[136px] max-sm:min-w-0 max-sm:px-2',
-        )}
-      >
-        <span className="grid size-6 place-items-center rounded-sm bg-[linear-gradient(145deg,#38d98b_0_34%,#ffd052_35%_58%,#ff5d5d_59%_78%,#56a8ff_79%)]">
-          <Play aria-hidden="true" className="size-3 fill-white text-white" />
-        </span>
-        <span className="text-left leading-none">
-          <small className="block text-[8px] text-white/70">GET IT ON</small>
-          <strong className={compact ? 'text-[13px]' : 'text-[15px]'}>Google Play</strong>
-        </span>
-      </span>
-    </div>
-  );
-}
-
 function StudentIllustration() {
-  return <Image src="/assets/student.png" height={280} width={330} alt="student"></Image>;
+  return <Image alt="" height={280} priority src="/assets/student.png" width={330} />;
 }
 
 function HeroVisual() {
@@ -463,7 +411,7 @@ function DashboardPreview() {
               </aside>
 
               <div className="min-w-0 flex-1 overflow-hidden">
-                <header className="flex h-[70px] items-center justify-between border-b border-[#eceef4] bg-[linear-gradient(90deg,#f8f9ff,#f4f5ff)] px-4">
+                <div className="flex h-[70px] items-center justify-between border-b border-[#eceef4] bg-[linear-gradient(90deg,#f8f9ff,#f4f5ff)] px-4">
                   <span>
                     <strong className="block text-[11px] font-extrabold">سلام نیما محمدی 👋</strong>
                     <small className="mt-1 block text-[7px] text-[#80838c]">
@@ -473,9 +421,9 @@ function DashboardPreview() {
                   <span className="grid size-7 place-items-center rounded-full border border-[#e5e7ef] bg-white text-[#687080]">
                     <Bell aria-hidden="true" className="size-3.5" />
                   </span>
-                </header>
+                </div>
 
-                <main className="p-3">
+                <div className="p-3">
                   <div className="mb-2 flex items-center justify-between">
                     <strong className="text-[9px]">نمای کلی</strong>
                     <span className="text-[7px] text-[#83868f]">به‌روز شده امروز</span>
@@ -575,7 +523,7 @@ function DashboardPreview() {
                       </span>
                     </section>
                   </div>
-                </main>
+                </div>
               </div>
             </div>
           </div>
@@ -633,41 +581,6 @@ function DashboardPreview() {
   );
 }
 
-function SecurityArt() {
-  return (
-    <svg aria-hidden="true" className="h-36 w-44" viewBox="0 0 210 170">
-      <defs>
-        <linearGradient id="folder" x1="0" x2="1" y1="0" y2="1">
-          <stop stopColor="#eef2ff" />
-          <stop offset="1" stopColor="#c8d2ff" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M28 53c0-10 8-18 18-18h46l17 18h54c10 0 18 8 18 18v61c0 10-8 18-18 18H46c-10 0-18-8-18-18Z"
-        fill="url(#folder)"
-      />
-      <path d="M65 73h81c10 0 18 9 16 19l-9 45H56l-8-45c-2-10 6-19 17-19Z" fill="#e4e9ff" />
-      <path
-        d="m105 69 34 13v29c0 22-15 36-34 43-19-7-34-21-34-43V82Z"
-        fill="#6382ec"
-        stroke="#fff"
-        strokeWidth="5"
-      />
-      <path
-        d="m91 111 10 10 19-22"
-        fill="none"
-        stroke="#fff"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="7"
-      />
-      <circle cx="177" cy="36" fill="#dfe5ff" r="6" />
-      <circle cx="192" cy="76" fill="#b6c3fb" r="4" />
-      <circle cx="26" cy="32" fill="#dfe5ff" r="5" />
-    </svg>
-  );
-}
-
 function HeroSection() {
   const capabilities = [
     'تحلیل هوشمند مدارک',
@@ -700,7 +613,7 @@ function HeroSection() {
             <div className="mt-7 flex flex-wrap justify-center gap-3 lg:justify-start">
               <MotionLink
                 className={buttonVariants({ className: 'min-w-36' })}
-                href={dashboardSignupUrl}
+                href={DASHBOARD_SIGNUP_URL}
               >
                 رایگان شروع کنید
                 <ChevronLeft
@@ -748,7 +661,7 @@ function HowItWorks() {
   return (
     <section
       aria-labelledby="how-title"
-      className="section-shell landing-section landing-section--spacious scroll-mt-24"
+      className="section-shell scroll-mt-24 pt-[64px] pb-[48px] sm:pt-[76px] sm:pb-[56px] lg:pt-[88px] lg:pb-[64px] xl:pt-[96px] xl:pb-[68px]"
       id="how-it-works"
     >
       <div className="mx-auto max-w-[620px] text-center">
@@ -780,7 +693,7 @@ function HowItWorks() {
                     'mt-6 h-9 w-fit rounded-full bg-white px-5 text-[11px] font-extrabold text-[#171717] shadow-none hover:bg-[#eeeeea]',
                   variant: 'secondary',
                 })}
-                href={dashboardSignupUrl}
+                href={DASHBOARD_SIGNUP_URL}
               >
                 شروع با مدارک
               </a>
@@ -876,7 +789,7 @@ function AppPromo() {
   return (
     <section
       aria-labelledby="app-title"
-      className="section-shell landing-section landing-section--compact scroll-mt-24"
+      className="section-shell scroll-mt-24 pt-[36px] pb-[44px] sm:pt-[44px] sm:pb-[52px] lg:pt-[48px] lg:pb-[56px]"
       id="app"
     >
       <AppPromoScene
@@ -969,7 +882,7 @@ function WhyWaand() {
   return (
     <section
       aria-labelledby="why-waand-title"
-      className="section-shell landing-section scroll-mt-24"
+      className="section-shell scroll-mt-24 pt-[36px] pb-[32px] sm:pt-[44px] sm:pb-[36px] lg:pt-[48px] lg:pb-[40px]"
       id="why-waand"
     >
       <WhyWaandScene
@@ -1087,7 +1000,7 @@ function WhyWaand() {
                 className={buttonVariants({
                   className: 'min-h-11 min-w-[150px]',
                 })}
-                href={dashboardSignupUrl}
+                href={DASHBOARD_SIGNUP_URL}
               >
                 مسیرت را شروع کن
                 <ChevronLeft
@@ -1202,997 +1115,682 @@ function WhyWaand() {
   );
 }
 
-function SecuritySection() {
-  const badges = [
-    { icon: LockKeyhole, label: 'رمزنگاری پیشرفته' },
-    { icon: Server, label: 'سرورهای امن' },
-    { icon: Globe2, label: 'سازگار با استانداردهای جهانی' },
-  ] as const;
-
-  return (
-    <section
-      aria-labelledby="security-title"
-      className="section-shell landing-section landing-section--compact scroll-mt-24"
-      id="security"
-    >
-      <Reveal>
-        <div className="grid min-h-[190px] items-center gap-7 rounded-[26px] bg-[#f7f7f5] px-7 py-8 md:grid-cols-[.8fr_1fr_1.5fr] lg:px-12">
-          <div className="flex justify-center">
-            <SecurityArt />
-          </div>
-          <div className="text-center md:text-right">
-            <h2 className="text-[24px] leading-[1.7] font-black text-[#242426]" id="security-title">
-              اطلاعات شما در امن‌ترین وضعیت ممکن نگهداری می‌شود.
-            </h2>
-          </div>
-          <RevealGroup
-            className="flex flex-wrap justify-center gap-3 md:justify-start"
-            stagger={0.07}
-          >
-            {badges.map((badge) => {
-              const Icon = badge.icon;
-              return (
-                <RevealItem key={badge.label}>
-                  <span className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-white px-4 text-[11px] font-semibold text-[#4d4d52] shadow-[0_4px_14px_rgba(0,0,0,0.03)]">
-                    <Icon aria-hidden="true" className="size-5 text-[#50545b]" strokeWidth={1.6} />
-                    {badge.label}
-                  </span>
-                </RevealItem>
-              );
-            })}
-          </RevealGroup>
-        </div>
-      </Reveal>
-    </section>
-  );
-}
-
-type JourneyPoint = {
-  bubbleX: number;
-  bubbleY: number;
-  x: number;
-  y: number;
-};
-
-const journeySteps = [
-  { accent: false, icon: UserRound, label: 'ساخت پروفایل' },
-  { accent: true, icon: Landmark, label: 'انتخاب دانشگاه' },
-  { accent: false, icon: FileText, label: 'آماده‌سازی درخواست' },
-  { accent: false, icon: Mail, label: 'دریافت پذیرش' },
+const journeyMilestones = [
+  {
+    number: '۰۱',
+    title: 'پروفایل شما',
+    description: 'اطلاعات تحصیلی، علایق، هدف‌ها و مدارک در یک نمای واحد جمع می‌شوند.',
+    icon: UserRound,
+    progress: 0.13,
+    x: 142,
+    y: 136,
+    mobileNodeClassName: 'right-[1px]',
+  },
+  {
+    number: '۰۲',
+    title: 'تحلیل هوشمند',
+    description: 'وآند سوابق و مدارک را تحلیل می‌کند و نقاط قوت، کمبودها و فرصت‌ها را روشن می‌کند.',
+    icon: ScanSearch,
+    progress: 0.29,
+    x: 215,
+    y: 229,
+    mobileNodeClassName: 'right-[21px]',
+  },
+  {
+    number: '۰۳',
+    title: 'تطبیق با دانشگاه‌ها',
+    description: 'پروفایل شما با دانشگاه‌ها و برنامه‌های مناسب مقایسه می‌شود.',
+    icon: GraduationCap,
+    progress: 0.44,
+    x: 128,
+    y: 326,
+    mobileNodeClassName: 'right-[1px]',
+  },
+  {
+    number: '۰۴',
+    title: 'انتخاب‌های دقیق‌تر',
+    description: 'پیشنهادها بر اساس شانس، تناسب و اولویت‌های شما مرتب می‌شوند.',
+    icon: ListChecks,
+    progress: 0.59,
+    x: 220,
+    y: 421,
+    mobileNodeClassName: 'right-[21px]',
+  },
+  {
+    number: '۰۵',
+    title: 'آماده‌سازی درخواست',
+    description: 'مدارک، ددلاین‌ها و مراحل هر اپلای در یک مسیر مشخص مدیریت می‌شوند.',
+    icon: FileCheck2,
+    progress: 0.74,
+    x: 140,
+    y: 516,
+    mobileNodeClassName: 'right-[1px]',
+  },
+  {
+    number: '۰۶',
+    title: 'ارسال درخواست',
+    description: 'وقتی همه‌چیز آماده است، مسیر شما از تصمیم به اقدام تبدیل می‌شود.',
+    icon: Send,
+    progress: 0.89,
+    x: 194,
+    y: 620,
+    mobileNodeClassName: 'right-[15px]',
+  },
 ] as const;
 
-const desktopJourneyPoints = [
-  { bubbleX: 446, bubbleY: 211, x: 446, y: 306 },
-  { bubbleX: 632, bubbleY: 198, x: 632, y: 286 },
-  { bubbleX: 812, bubbleY: 166, x: 812, y: 253 },
-  { bubbleX: 982, bubbleY: 143, x: 982, y: 226 },
-] as const satisfies readonly JourneyPoint[];
-
-const tabletJourneyPoints = [
-  { bubbleX: 265, bubbleY: 154, x: 265, y: 215 },
-  { bubbleX: 380, bubbleY: 137, x: 380, y: 198 },
-  { bubbleX: 500, bubbleY: 119, x: 500, y: 180 },
-  { bubbleX: 615, bubbleY: 104, x: 615, y: 165 },
-] as const satisfies readonly JourneyPoint[];
-
-const mobileJourneyPoints = [
-  { bubbleX: 94, bubbleY: 215, x: 190, y: 235 },
-  { bubbleX: 294, bubbleY: 335, x: 172, y: 355 },
-  { bubbleX: 96, bubbleY: 455, x: 218, y: 475 },
-  { bubbleX: 294, bubbleY: 565, x: 190, y: 585 },
-] as const satisfies readonly JourneyPoint[];
-
-const desktopJourneyMilestones = journeySteps.map((step, index) => ({
-  ...step,
-  ...desktopJourneyPoints[index]!,
-}));
-
-const tabletJourneyMilestones = journeySteps.map((step, index) => ({
-  ...step,
-  ...tabletJourneyPoints[index]!,
-}));
-
-const mobileJourneyMilestones = journeySteps.map((step, index) => ({
-  ...step,
-  ...mobileJourneyPoints[index]!,
-}));
-
 const desktopJourneyPath =
-  'M 312 356 C 352 356 398 334 446 306 C 500 275 550 271 594 280 C 611 284 622 289 632 286 C 690 282 746 272 812 253 C 870 231 926 220 982 226 C 1050 233 1125 244 1194 249';
-
-const tabletJourneyPath =
-  'M 170 245 C 205 245 235 229 265 215 C 310 194 342 194 380 198 C 425 202 463 188 500 180 C 545 166 580 160 615 165 C 652 170 680 176 706 176';
+  'M 170 50 C 170 88 142 100 142 136 C 142 180 215 184 215 229 C 215 273 128 281 128 326 C 128 370 220 378 220 421 C 220 466 140 470 140 516 C 140 563 194 575 194 620';
 
 const mobileJourneyPath =
-  'M 195 156 C 195 190 205 215 190 235 C 173 275 150 320 172 355 C 190 400 236 442 218 475 C 200 516 168 557 190 585 C 207 620 201 672 195 708';
+  'M 46 0 C 46 48 46 76 46 118 C 46 230 26 250 26 354 C 26 466 46 486 46 590 C 46 702 26 722 26 826 C 26 938 46 958 46 1062 C 46 1174 32 1194 32 1298 C 32 1350 32 1382 32 1416';
 
-function JourneyDefs({ prefix, vertical = false }: { prefix: string; vertical?: boolean }) {
-  return (
-    <defs>
-      <linearGradient
-        id={prefix + '-path-gradient'}
-        x1={vertical ? '50%' : '0%'}
-        x2={vertical ? '50%' : '100%'}
-        y1="0%"
-        y2={vertical ? '100%' : '0%'}
-      >
-        <stop offset="0%" stopColor="#143CFB" />
-        <stop offset="18%" stopColor="#143CFB" />
-        <stop offset="45%" stopColor="#6B84F7" />
-        <stop offset="74%" stopColor="#A5B4F4" />
-        <stop offset="100%" stopColor="#D0D7F2" />
-      </linearGradient>
-      <linearGradient id={prefix + '-arch-stroke'} x1="0%" x2="100%" y1="0%" y2="0%">
-        <stop offset="0%" stopColor="#353A4B" stopOpacity="0.42" />
-        <stop offset="48%" stopColor="#F8F9FC" />
-        <stop offset="100%" stopColor="#143CFB" stopOpacity="0.92" />
-      </linearGradient>
-      <linearGradient id={prefix + '-portal-shell'} x1="0%" x2="100%" y1="0%" y2="0%">
-        <stop offset="0%" stopColor="#E9EBF1" />
-        <stop offset="46%" stopColor="#FFFFFF" />
-        <stop offset="82%" stopColor="#F5F7FF" />
-        <stop offset="100%" stopColor="#D9E1FF" />
-      </linearGradient>
-      <radialGradient id={prefix + '-portal-interior'} cx="38%" cy="76%" r="78%">
-        <stop offset="0%" stopColor="#FFF2D9" stopOpacity="0.62" />
-        <stop offset="46%" stopColor="#FFFFFF" stopOpacity="0.98" />
-        <stop offset="100%" stopColor="#FAFBFF" />
-      </radialGradient>
-      <linearGradient id={prefix + '-beam'} x1="54%" x2="42%" y1="0%" y2="100%">
-        <stop offset="0%" stopColor="#FFF3DA" stopOpacity="0.38" />
-        <stop offset="48%" stopColor="#FFFFFF" stopOpacity="0.22" />
-        <stop offset="100%" stopColor="#DDE5FF" stopOpacity="0.02" />
-      </linearGradient>
-      <pattern height="10" id={prefix + '-dots'} patternUnits="userSpaceOnUse" width="10">
-        <circle cx="2" cy="2" fill="#143CFB" r="1.2" />
-      </pattern>
-      <filter
-        colorInterpolationFilters="sRGB"
-        height="180%"
-        id={prefix + '-path-glow'}
-        width="180%"
-        x="-40%"
-        y="-40%"
-      >
-        <feGaussianBlur stdDeviation="4" />
-      </filter>
-      <filter
-        colorInterpolationFilters="sRGB"
-        height="220%"
-        id={prefix + '-bubble-shadow'}
-        width="220%"
-        x="-60%"
-        y="-45%"
-      >
-        <feDropShadow dx="0" dy="5" floodColor="#52659A" floodOpacity="0.1" stdDeviation="5.5" />
-      </filter>
-      <filter
-        colorInterpolationFilters="sRGB"
-        height="220%"
-        id={prefix + '-portal-glow'}
-        width="220%"
-        x="-60%"
-        y="-60%"
-      >
-        <feGaussianBlur stdDeviation="13" />
-      </filter>
-      <filter
-        colorInterpolationFilters="sRGB"
-        height="180%"
-        id={prefix + '-beam-blur'}
-        width="180%"
-        x="-40%"
-        y="-35%"
-      >
-        <feGaussianBlur stdDeviation="6" />
-      </filter>
-    </defs>
-  );
-}
+type JourneyMilestone = (typeof journeyMilestones)[number];
 
-function JourneyStartCard() {
-  return (
-    <JourneyStartMotion className="relative h-[156px] w-[224px] rounded-[17px] border border-[#DCE4FF]/70 bg-white/96 p-4 shadow-[0_16px_44px_rgba(31,52,121,0.09)] backdrop-blur-md">
-      <span
-        aria-hidden="true"
-        className="absolute -bottom-4 left-1/2 h-8 w-[68%] -translate-x-1/2 rounded-full bg-[#143CFB]/9 blur-2xl"
-      />
-      <div className="relative flex items-center gap-2.5" dir="ltr">
-        <WaandLogo markClassName="size-7" showWordmark={false} />
-        <strong className="text-[18px] font-extrabold tracking-[-0.035em] text-[#252B45]">
-          Waand
-        </strong>
-      </div>
-      <div aria-hidden="true" className="relative mt-3 space-y-1.5">
-        <span className="block h-1.5 w-[70%] rounded-full bg-[#E9EDF7]" />
-        <span className="block h-1.5 w-[52%] rounded-full bg-[#EFF2F8]" />
-        <span className="block h-1.5 w-[36%] rounded-full bg-[#F3F5FA]" />
-      </div>
-      <MotionLink
-        aria-label="شروع رایگان مسیر اپلای در وآند"
-        className="group/journey-button relative mt-3 flex h-9 w-[72%] items-center justify-center overflow-hidden rounded-[10px] bg-[linear-gradient(90deg,#143CFB,#2452FF)] text-white shadow-[0_7px_18px_rgba(20,60,251,0.2)] transition-shadow duration-300 hover:shadow-[0_10px_22px_rgba(20,60,251,0.27)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#143CFB]"
-        hoverScale={1.01}
-        href={dashboardSignupUrl}
-        tapScale={0.985}
-      >
-        <span
-          aria-hidden="true"
-          className="absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-white/20 transition-transform duration-700 ease-out group-hover/journey-button:translate-x-[470%]"
-        />
-        <ArrowRight
-          aria-hidden="true"
-          className="relative size-4 transition-transform duration-300 group-hover/journey-button:translate-x-0.5"
-          strokeWidth={1.8}
-        />
-      </MotionLink>
-    </JourneyStartMotion>
-  );
-}
-
-type JourneyMilestoneItem = (typeof journeySteps)[number] & JourneyPoint;
-
-function JourneyMilestones({
-  items,
-  prefix,
-  radius = 29.5,
-}: {
-  items: ReadonlyArray<JourneyMilestoneItem>;
-  prefix: string;
-  radius?: number;
-}) {
-  const iconSize = radius * 0.76;
-
-  return items.map((milestone, index) => {
-    const Icon = milestone.icon;
-
-    return (
-      <JourneyMilestoneMotion
-        accent={milestone.accent}
-        bubbleX={milestone.bubbleX}
-        bubbleY={milestone.bubbleY}
-        filter={'url(#' + prefix + '-bubble-shadow)'}
-        index={index}
-        key={milestone.label}
-        radius={radius}
-        x={milestone.x}
-        y={milestone.y}
-      >
-        <Icon
-          aria-hidden="true"
-          color="#596176"
-          height={iconSize}
-          strokeWidth={1.5}
-          width={iconSize}
-          x={milestone.bubbleX - iconSize / 2}
-          y={milestone.bubbleY - iconSize / 2}
-        />
-      </JourneyMilestoneMotion>
-    );
-  });
-}
-
-type PortalGeometry = {
-  base: number;
-  beam: string;
-  center: number;
-  left: number;
-  pathX: number;
-  pathY: number;
-  right: number;
-  shoulder: number;
-  top: number;
-};
-
-const desktopPortal: PortalGeometry = {
-  base: 266,
-  beam: 'M 1192 254 L 1307 263 L 1436 425 L 760 480 Z',
-  center: 1248,
-  left: 1188,
-  pathX: 1194,
-  pathY: 249,
-  right: 1308,
-  shoulder: 164,
-  top: 76,
-};
-
-const tabletPortal: PortalGeometry = {
-  base: 190,
-  beam: 'M 704 177 L 808 188 L 820 296 L 430 320 Z',
-  center: 754,
-  left: 700,
-  pathX: 706,
-  pathY: 176,
-  right: 808,
-  shoulder: 105,
-  top: 45,
-};
-
-const mobilePortal: PortalGeometry = {
-  base: 752,
-  beam: 'M 151 714 L 239 714 L 286 759 L 104 759 Z',
-  center: 195,
-  left: 140,
-  pathX: 195,
-  pathY: 708,
-  right: 250,
-  shoulder: 687,
-  top: 635,
-};
-
-function portalOutline({
-  base,
-  center,
-  left,
-  right,
-  shoulder,
-  top,
-}: Pick<PortalGeometry, 'base' | 'center' | 'left' | 'right' | 'shoulder' | 'top'>) {
-  return [
-    'M',
-    left,
-    base,
-    'V',
-    shoulder,
-    'C',
-    left,
-    top + 26,
-    center - 28,
-    top,
-    center,
-    top,
-    'C',
-    center + 28,
-    top,
-    right,
-    top + 26,
-    right,
-    shoulder,
-    'V',
-    base,
-  ].join(' ');
-}
-
-function portalRightEdge({
-  base,
-  center,
-  right,
-  shoulder,
-  top,
-}: Pick<PortalGeometry, 'base' | 'center' | 'right' | 'shoulder' | 'top'>) {
-  return [
-    'M',
-    center,
-    top,
-    'C',
-    center + 28,
-    top,
-    right,
-    top + 26,
-    right,
-    shoulder,
-    'V',
-    base,
-  ].join(' ');
-}
-
-function FuturePortal({ geometry, prefix }: { geometry: PortalGeometry; prefix: string }) {
-  const outerOutline = portalOutline(geometry);
-  const innerGeometry = {
-    base: geometry.base,
-    center: geometry.center,
-    left: geometry.left + 15,
-    right: geometry.right - 15,
-    shoulder: geometry.shoulder + 3,
-    top: geometry.top + 17,
-  };
-  const innerOutline = portalOutline(innerGeometry);
-  const outerFill = outerOutline + ' H ' + geometry.left + ' Z';
-  const innerFill = innerOutline + ' H ' + innerGeometry.left + ' Z';
-  const rimFill = outerFill + ' ' + innerFill;
-  const rightEdge = portalRightEdge(geometry);
-  const portalHeight = geometry.base - geometry.top;
-  const portalWidth = geometry.right - geometry.left;
+function JourneyMilestoneCard({ className, step }: { className?: string; step: JourneyMilestone }) {
+  const Icon = step.icon;
+  const final = step.number === '۰۶';
 
   return (
-    <>
-      <FuturePortalMotion stage="beam">
-        <path
-          d={geometry.beam}
-          fill="#9DAFFF"
-          filter={'url(#' + prefix + '-beam-blur)'}
-          opacity="0.09"
-        />
-        <path
-          d={geometry.beam}
-          fill={'url(#' + prefix + '-beam)'}
-          filter={'url(#' + prefix + '-beam-blur)'}
-          opacity="0.56"
-        />
-      </FuturePortalMotion>
-      <FuturePortalMotion stage="glow">
-        <ellipse
-          cx={geometry.center + portalWidth * 0.18}
-          cy={geometry.top + portalHeight * 0.5}
-          fill="#143CFB"
-          filter={'url(#' + prefix + '-portal-glow)'}
-          opacity="0.08"
-          rx={portalWidth * 0.64}
-          ry={portalHeight * 0.58}
-        />
-        <ellipse
-          cx={geometry.center - portalWidth * 0.08}
-          cy={geometry.top + portalHeight * 0.58}
-          fill="#FFE1AE"
-          filter={'url(#' + prefix + '-portal-glow)'}
-          opacity="0.18"
-          rx={portalWidth * 0.44}
-          ry={portalHeight * 0.44}
-        />
-        <path
-          d={outerOutline}
-          fill="none"
-          filter={'url(#' + prefix + '-portal-glow)'}
-          opacity="0.18"
-          stroke="#143CFB"
-          strokeWidth="10"
-        />
-      </FuturePortalMotion>
-      <FuturePortalMotion stage="outline">
-        <path
-          d={rightEdge}
-          fill="none"
-          opacity="0.14"
-          stroke="#143CFB"
-          strokeLinecap="round"
-          strokeWidth="8"
-          transform="translate(5 2)"
-        />
-        <path
-          clipRule="evenodd"
-          d={rimFill}
-          fill={'url(#' + prefix + '-portal-shell)'}
-          fillRule="evenodd"
-        />
-        <path d={innerFill} fill={'url(#' + prefix + '-portal-interior)'} />
-      </FuturePortalMotion>
-      <JourneyPathMotion
-        d={outerOutline}
-        delay={journeyPortalOutlineDelay}
-        duration={1.02}
-        opacity={0.92}
-        stroke={'url(#' + prefix + '-arch-stroke)'}
-        strokeWidth={3.2}
-      />
-      <JourneyPathMotion
-        d={innerOutline}
-        delay={journeyPortalOutlineDelay + 0.12}
-        duration={0.8}
-        opacity={0.44}
-        stroke="#353A4B"
-        strokeWidth={1.35}
-      />
-      <JourneyPathMotion
-        d={rightEdge}
-        delay={journeyPortalOutlineDelay + 0.08}
-        duration={0.84}
-        opacity={0.84}
-        stroke="#143CFB"
-        strokeWidth={3.4}
-      />
-      <FuturePortalMotion stage="endpoint">
-        <circle
-          cx={geometry.pathX}
-          cy={geometry.pathY}
-          fill="#FFFFFF"
-          filter={'url(#' + prefix + '-bubble-shadow)'}
-          r="6"
-        />
-        <circle cx={geometry.pathX} cy={geometry.pathY} fill="#DCE5FF" r="2.8" />
-      </FuturePortalMotion>
-      <FuturePortalMotion stage="pulse">
-        <circle
-          cx={geometry.pathX}
-          cy={geometry.pathY}
-          fill="none"
-          r="10"
-          stroke="#143CFB"
-          strokeOpacity="0.42"
-          strokeWidth="1.6"
-        />
-      </FuturePortalMotion>
-      <FuturePortalMotion stage="sparkles">
-        <path
-          d={
-            'M ' +
-            (geometry.right + 30) +
-            ' ' +
-            (geometry.top + 36) +
-            ' l 3 6 6 3 -6 3 -3 6 -3 -6 -6 -3 6 -3 Z'
-          }
-          fill="#FFFFFF"
-          opacity="0.82"
-        />
-        <circle
-          cx={geometry.right + 48}
-          cy={geometry.shoulder + 14}
-          fill="#394052"
-          opacity="0.34"
-          r="2"
-        />
-        <path
-          d={
-            'M ' +
-            (geometry.left - 24) +
-            ' ' +
-            (geometry.top + 20) +
-            ' l 2 4 4 2 -4 2 -2 4 -2 -4 -4 -2 4 -2 Z'
-          }
-          fill="#CAD4FF"
-          opacity="0.42"
-        />
-      </FuturePortalMotion>
-    </>
-  );
-}
-
-function DesktopJourneyDecorations() {
-  return (
-    <>
-      <JourneyDecorationMotion depth={3.5} index={0}>
-        <path
-          d="M 360 105 C 360 94 369 86 380 86 C 386 73 405 73 412 88 C 425 87 433 96 433 106 Z"
-          fill="none"
-          opacity="0.2"
-          stroke="#9EB2FF"
-          strokeWidth="2"
-        />
-      </JourneyDecorationMotion>
-      <JourneyDecorationMotion depth={4} index={1}>
-        <circle cx="82" cy="242" fill="#F4C379" opacity="0.38" r="5" />
-      </JourneyDecorationMotion>
-      <JourneyDecorationMotion depth={2.5} index={2}>
-        <rect
-          fill="url(#desktop-journey-dots)"
-          height="56"
-          opacity="0.19"
-          width="76"
-          x="45"
-          y="348"
-        />
-        <rect
-          fill="url(#desktop-journey-dots)"
-          height="56"
-          opacity="0.24"
-          width="76"
-          x="1350"
-          y="350"
-        />
-      </JourneyDecorationMotion>
-      <JourneyDecorationMotion depth={3} index={3}>
-        <circle
-          cx="950"
-          cy="70"
-          fill="none"
-          opacity="0.3"
-          r="8"
-          stroke="#F2BC6E"
-          strokeWidth="1.5"
-        />
-        <path
-          d="M 1382 208 l 7 7 -7 7 -7 -7 Z"
-          fill="none"
-          opacity="0.24"
-          stroke="#143CFB"
-          strokeWidth="1.7"
-        />
-      </JourneyDecorationMotion>
-    </>
-  );
-}
-
-function MobileJourneyDecorations() {
-  return (
-    <>
-      <JourneyDecorationMotion depth={2} index={0}>
-        <path
-          d="M 34 286 l 7 7 -7 7 -7 -7 Z"
-          fill="none"
-          opacity="0.24"
-          stroke="#143CFB"
-          strokeWidth="1.5"
-        />
-        <circle cx="358" cy="444" fill="#F4C379" opacity="0.3" r="4" />
-      </JourneyDecorationMotion>
-      <JourneyDecorationMotion depth={2.5} index={1}>
-        <rect
-          fill="url(#mobile-journey-dots)"
-          height="46"
-          opacity="0.22"
-          width="56"
-          x="15"
-          y="655"
-        />
-      </JourneyDecorationMotion>
-    </>
-  );
-}
-
-function DesktopJourney() {
-  return (
-    <div className="relative hidden aspect-[3/1] w-full xl:block">
-      <JourneyCopyMotion className="absolute left-[6%] top-[3%] z-30 w-[24%] max-w-[360px] text-right [direction:rtl]">
-        <h2
-          className="text-[clamp(1.15rem,1.8vw,1.9rem)] font-black leading-[1.55] tracking-[-0.035em] text-[#171717]"
-          aria-hidden="true"
-        >
-          آینده تحصیلی شما
-          <span className="block text-[#143CFB]">از همین‌جا شروع می‌شود</span>
-        </h2>
-        <p className="mt-1.5 hidden text-[12px] leading-6 text-[#777B87] xl:block">
-          از اولین قدم تا پذیرش، مسیرتان روشن است.
-        </p>
-      </JourneyCopyMotion>
-
-      <svg
-        aria-hidden="true"
-        className="absolute inset-0 h-full w-full overflow-visible"
-        focusable="false"
-        preserveAspectRatio="xMidYMid meet"
-        viewBox="0 0 1440 480"
-      >
-        <JourneyDefs prefix="desktop-journey" />
-        <DesktopJourneyDecorations />
-        <FuturePortal geometry={desktopPortal} prefix="desktop-journey" />
-
-        <JourneyPathMotion
-          d={desktopJourneyPath}
-          filter="url(#desktop-journey-path-glow)"
-          opacity={0.1}
-          stroke="url(#desktop-journey-path-gradient)"
-          strokeWidth={11}
-        />
-        <JourneyPathMotion
-          d={desktopJourneyPath}
-          opacity={0.5}
-          stroke="#B8C6F7"
-          strokeWidth={5.6}
-        />
-        <JourneyPathMotion
-          d={desktopJourneyPath}
-          stroke="url(#desktop-journey-path-gradient)"
-          strokeWidth={3.2}
-        />
-
-        <circle cx="312" cy="356" fill="#FFFFFF" r="7.5" />
-        <circle cx="312" cy="356" fill="#FFFFFF" r="5.2" stroke="#143CFB" strokeWidth="2.7" />
-
-        <JourneyMilestones items={desktopJourneyMilestones} prefix="desktop-journey" />
-      </svg>
-
-      <div className="absolute right-[78.9%] top-[58.5%] z-30 origin-top-right scale-[0.68] xl:scale-[0.8] 2xl:scale-[0.84]">
-        <JourneyStartCard />
-      </div>
-    </div>
-  );
-}
-
-function TabletJourney() {
-  return (
-    <div className="relative mx-auto hidden aspect-[41/16] w-full max-w-[1000px] md:block xl:hidden">
-      <JourneyCopyMotion className="absolute left-[4.5%] top-[4%] z-30 w-[32%] max-w-[270px] text-right [direction:rtl]">
-        <h2
-          className="text-[clamp(1.1rem,2.7vw,1.4rem)] font-black leading-[1.52] tracking-[-0.035em] text-[#171717]"
-          aria-hidden="true"
-        >
-          آینده تحصیلی شما
-          <span className="block text-[#143CFB]">از همین‌جا شروع می‌شود</span>
-        </h2>
-        <p className="mt-1 text-[11px] leading-5 text-[#777B87]">
-          از اولین قدم تا پذیرش، مسیرتان روشن است.
-        </p>
-      </JourneyCopyMotion>
-
-      <svg
-        aria-hidden="true"
-        className="absolute inset-0 h-full w-full overflow-visible"
-        focusable="false"
-        preserveAspectRatio="xMidYMid meet"
-        viewBox="0 0 820 320"
-      >
-        <JourneyDefs prefix="tablet-journey" />
-        <JourneyDecorationMotion depth={2.5} index={0}>
-          <circle
-            cx="590"
-            cy="54"
-            fill="none"
-            opacity="0.22"
-            r="5.5"
-            stroke="#F2BC6E"
-            strokeWidth="1.2"
-          />
-        </JourneyDecorationMotion>
-        <JourneyDecorationMotion depth={2} index={1}>
-          <rect
-            fill="url(#tablet-journey-dots)"
-            height="36"
-            opacity="0.16"
-            width="44"
-            x="24"
-            y="268"
-          />
-        </JourneyDecorationMotion>
-        <FuturePortal geometry={tabletPortal} prefix="tablet-journey" />
-
-        <JourneyPathMotion
-          d={tabletJourneyPath}
-          filter="url(#tablet-journey-path-glow)"
-          opacity={0.09}
-          stroke="url(#tablet-journey-path-gradient)"
-          strokeWidth={10}
-        />
-        <JourneyPathMotion
-          d={tabletJourneyPath}
-          opacity={0.48}
-          stroke="#B8C6F7"
-          strokeWidth={5}
-        />
-        <JourneyPathMotion
-          d={tabletJourneyPath}
-          stroke="url(#tablet-journey-path-gradient)"
-          strokeWidth={3}
-        />
-
-        <circle cx="170" cy="245" fill="#FFFFFF" r="6.5" />
-        <circle cx="170" cy="245" fill="#FFFFFF" r="4.5" stroke="#143CFB" strokeWidth="2.4" />
-
-        <JourneyMilestones
-          items={tabletJourneyMilestones}
-          prefix="tablet-journey"
-          radius={25.5}
-        />
-      </svg>
-
-      <div className="absolute right-[80%] top-[51.5%] z-30 origin-top-right scale-[0.64] lg:scale-[0.72]">
-        <JourneyStartCard />
-      </div>
-    </div>
-  );
-}
-
-function MobileJourney() {
-  return (
-    <div className="md:hidden">
-      <JourneyCopyMotion className="relative z-30 mx-auto max-w-[350px] px-2 text-right [direction:rtl]">
-        <h2
-          className="text-[clamp(1.75rem,7.2vw,2.1rem)] font-black leading-[1.48] tracking-[-0.045em] text-[#171717]"
-          aria-hidden="true"
-        >
-          آینده تحصیلی شما
-          <span className="block text-[#143CFB]">از همین‌جا شروع می‌شود</span>
-        </h2>
-        <p className="mt-3 text-sm leading-7 text-[#747782]">
-          از اولین قدم تا پذیرش، مسیرتان روشن است.
-        </p>
-      </JourneyCopyMotion>
-
-      <div className="relative mx-auto mt-7 aspect-[39/76] w-full max-w-[390px]">
-        <svg
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full"
-          focusable="false"
-          preserveAspectRatio="xMidYMid meet"
-          viewBox="0 0 390 760"
-        >
-          <JourneyDefs prefix="mobile-journey" vertical />
-          <MobileJourneyDecorations />
-          <FuturePortal geometry={mobilePortal} prefix="mobile-journey" />
-
-          <JourneyPathMotion
-            d={mobileJourneyPath}
-            filter="url(#mobile-journey-path-glow)"
-            opacity={0.09}
-            stroke="url(#mobile-journey-path-gradient)"
-            strokeWidth={10}
-          />
-          <JourneyPathMotion
-            d={mobileJourneyPath}
-            opacity={0.48}
-            stroke="#BCC9FF"
-            strokeWidth={5}
-          />
-          <JourneyPathMotion
-            d={mobileJourneyPath}
-            stroke="url(#mobile-journey-path-gradient)"
-            strokeWidth={3}
-          />
-
-          <circle cx="195" cy="156" fill="#FFFFFF" r="8" />
-          <circle cx="195" cy="156" fill="#FFFFFF" r="5.3" stroke="#143CFB" strokeWidth="3" />
-
-          <JourneyMilestones items={mobileJourneyMilestones} prefix="mobile-journey" radius={27.5} />
-        </svg>
-
-        <div className="absolute left-1/2 top-0 z-30 origin-top -translate-x-1/2 scale-[0.79] min-[340px]:scale-[0.84] min-[360px]:scale-[0.89] min-[380px]:scale-[0.96] min-[407px]:scale-100">
-          <JourneyStartCard />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function FinalCta() {
-  return (
-    <section
-      aria-labelledby="final-cta-title"
-      className="relative isolate scroll-mt-24 overflow-hidden bg-background py-[clamp(3.75rem,7vw,6.25rem)] md:py-12 lg:py-[clamp(2.25rem,3.2vw,3.5rem)]"
-      id="final-cta"
+    <article
+      className={cn(
+        'relative flex flex-col overflow-hidden rounded-[24px] border p-5 shadow-[0_18px_50px_rgba(31,37,66,0.08)] sm:p-6',
+        final
+          ? 'border-[#171717] bg-[#171717] text-white'
+          : 'border-[#e4e7f1] bg-white text-[#242428]',
+        className,
+      )}
     >
-      <h2 className="sr-only" id="final-cta-title">
-        آینده تحصیلی شما از همین‌جا شروع می‌شود
-      </h2>
-
-      <JourneyScene
-        aria-label="مسیر اپلای از شروع با وآند تا ساخت پروفایل، انتخاب دانشگاه، آماده‌سازی درخواست، دریافت پذیرش و ورود به آینده"
-        className="relative mx-auto w-[min(96vw,1500px)]"
-        dir="ltr"
+      <div className="flex items-center justify-between gap-4">
+        <span
+          className={cn(
+            'font-mono text-[11px] font-bold',
+            final ? 'text-white/50' : 'text-[#143CFB]',
+          )}
+        >
+          {step.number}
+        </span>
+        <span
+          className={cn(
+            'grid size-10 place-items-center rounded-[14px]',
+            final ? 'bg-white/[0.08] text-[#8da2ff]' : 'bg-[#eef1ff] text-[#143CFB]',
+          )}
+        >
+          <Icon aria-hidden="true" className="size-5" strokeWidth={1.7} />
+        </span>
+      </div>
+      <h3 className="mt-5 text-[20px] leading-[1.65] font-black tracking-[-0.035em] sm:text-[22px]">
+        {step.title}
+      </h3>
+      <p
+        className={cn(
+          'mt-3 text-[12px] leading-[1.95] sm:text-[13px]',
+          final ? 'text-white/62' : 'text-[#6b6e77]',
+        )}
       >
-        <JourneyAmbientMotion className="pointer-events-none absolute inset-0 -z-10">
-          <span className="absolute inset-0 bg-[radial-gradient(circle_at_48%_52%,rgba(20,60,251,0.03),transparent_34%),radial-gradient(circle_at_84%_45%,rgba(250,219,174,0.08),transparent_24%),radial-gradient(circle_at_12%_18%,rgba(178,185,255,0.045),transparent_26%)]" />
-        </JourneyAmbientMotion>
+        {step.description}
+      </p>
+    </article>
+  );
+}
 
-        <DesktopJourney />
-        <TabletJourney />
-        <MobileJourney />
+function ApplicationJourneySection() {
+  return (
+    <section aria-labelledby="journey-title" className="scroll-mt-24" id="how-it-works-details">
+      <ScrollJourneyScene className="journey-scroll-space">
+        <div className="journey-sticky-stage">
+          <div className="section-shell grid w-full items-center gap-12 py-20 lg:grid-cols-[.82fr_1.18fr] lg:gap-10 lg:py-8 xl:gap-16">
+            <ScrollJourneyHeading className="relative z-10 text-center lg:text-right">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[#dfe4ff] bg-[#f6f7ff] px-4 py-2 text-[11px] font-bold text-[#143CFB]">
+                <Sparkles aria-hidden="true" className="size-4" />
+                از پروفایل تا اقدام
+              </span>
+              <h2
+                className="mt-6 text-[35px] leading-[1.55] font-black tracking-[-0.045em] text-[#171717] sm:text-[44px] lg:text-[46px] xl:text-[52px]"
+                id="journey-title"
+              >
+                یک مسیر روشن،
+                <br />
+                <span className="text-[#143CFB]">از شما تا درخواست.</span>
+              </h2>
+              <p className="mx-auto mt-6 max-w-[560px] text-[14px] leading-[2.05] text-[#696b73] sm:text-[15px] lg:mx-0">
+                از شناخت دقیق پروفایل شما تا انتخاب دانشگاه و آماده‌سازی درخواست، وآند هر مرحله را
+                به یک مسیر قابل‌فهم و قابل‌پیگیری تبدیل می‌کند.
+              </p>
+              <span className="mt-7 hidden items-center gap-2 text-[10px] font-semibold text-[#8a8d96] lg:inline-flex">
+                <span className="size-1.5 rounded-full bg-[#143CFB]" />
+                با حرکت صفحه، مسیر را جلو و عقب دنبال کنید
+              </span>
+            </ScrollJourneyHeading>
 
-        <ol className="sr-only" dir="rtl">
-          {journeySteps.map((step) => (
-            <li key={step.label}>{step.label}</li>
-          ))}
-        </ol>
-      </JourneyScene>
+            <ScrollJourneyStage className="journey-animated relative hidden lg:block">
+              <div
+                aria-hidden="true"
+                className="relative h-[min(72svh,680px)] min-h-[560px] overflow-hidden rounded-[30px] border border-[#e4e7f1] bg-[#fafafa] shadow-[0_30px_80px_rgba(31,37,66,0.07)]"
+                dir="ltr"
+              >
+                <span className="absolute left-8 top-8 size-24 opacity-50 [background-image:radial-gradient(circle,#cdd4f8_1.2px,transparent_1.2px)] [background-size:13px_13px]" />
+                <span className="absolute -bottom-32 -left-28 size-80 rounded-full border border-[#e6e9f5]" />
+                <svg className="absolute inset-0 size-full" viewBox="0 0 660 680">
+                  <defs>
+                    <filter height="160%" id="scroll-journey-glow" width="160%" x="-30%" y="-30%">
+                      <feGaussianBlur stdDeviation="5" />
+                    </filter>
+                  </defs>
+                  <path
+                    d={desktopJourneyPath}
+                    fill="none"
+                    stroke="#E4E7F0"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="11"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  <ScrollJourneyPath
+                    d={desktopJourneyPath}
+                    filter="url(#scroll-journey-glow)"
+                    opacity={0.24}
+                    stroke="#143CFB"
+                    strokeWidth={13}
+                  />
+                  <ScrollJourneyPath d={desktopJourneyPath} stroke="#143CFB" strokeWidth={4} />
+                  <ScrollJourneyStart>
+                    <circle cx="170" cy="50" fill="#171717" r="25" />
+                    <circle cx="170" cy="43" fill="#FFFFFF" r="6" />
+                    <path
+                      d="M158 61c2-8 22-8 24 0"
+                      fill="none"
+                      stroke="#FFFFFF"
+                      strokeLinecap="round"
+                      strokeWidth="3"
+                    />
+                    <text
+                      fill="#51545D"
+                      fontSize="12"
+                      fontWeight="800"
+                      textAnchor="start"
+                      x="208"
+                      y="55"
+                    >
+                      شما
+                    </text>
+                  </ScrollJourneyStart>
+                  {journeyMilestones.map((step) => (
+                    <ScrollJourneyPoint
+                      cx={step.x}
+                      cy={step.y}
+                      final={step.number === '۰۶'}
+                      key={step.number}
+                      number={step.number}
+                      progressAt={step.progress}
+                    />
+                  ))}
+                </svg>
+
+                <div className="absolute right-[4%] top-[22%] h-[56%] w-[55%]" dir="rtl">
+                  {journeyMilestones.map((step, index) => (
+                    <ScrollJourneyMilestone
+                      activeUntil={journeyMilestones[index + 1]?.progress ?? 1}
+                      className="absolute inset-0"
+                      final={step.number === '۰۶'}
+                      index={index}
+                      key={step.number}
+                      mode="desktop"
+                      progressAt={step.progress}
+                    >
+                      <JourneyMilestoneCard className="h-full justify-center" step={step} />
+                    </ScrollJourneyMilestone>
+                  ))}
+                </div>
+              </div>
+            </ScrollJourneyStage>
+
+            <ol className="journey-animated relative lg:hidden">
+              <svg
+                aria-hidden="true"
+                className="absolute inset-y-0 right-0 h-full w-[72px]"
+                preserveAspectRatio="none"
+                viewBox="0 0 72 1416"
+              >
+                <path
+                  d={mobileJourneyPath}
+                  fill="none"
+                  stroke="#E4E7F0"
+                  strokeLinecap="round"
+                  strokeWidth="10"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <ScrollJourneyPath
+                  d={mobileJourneyPath}
+                  opacity={0.18}
+                  stroke="#143CFB"
+                  strokeWidth={12}
+                />
+                <ScrollJourneyPath d={mobileJourneyPath} stroke="#143CFB" strokeWidth={3.5} />
+              </svg>
+              {journeyMilestones.map((step, index) => (
+                <li
+                  className="relative flex h-[236px] items-center pr-[78px] sm:h-[200px]"
+                  key={step.number}
+                >
+                  <svg
+                    aria-hidden="true"
+                    className={cn(
+                      'absolute top-1/2 size-12 -translate-y-1/2',
+                      step.mobileNodeClassName,
+                    )}
+                    viewBox="0 0 48 48"
+                  >
+                    <ScrollJourneyPoint
+                      cx={24}
+                      cy={24}
+                      final={step.number === '۰۶'}
+                      number={step.number}
+                      progressAt={step.progress}
+                    />
+                  </svg>
+                  <ScrollJourneyMilestone
+                    activeUntil={journeyMilestones[index + 1]?.progress ?? 1}
+                    className="w-full"
+                    final={step.number === '۰۶'}
+                    index={index}
+                    mode="mobile"
+                    progressAt={step.progress}
+                  >
+                    <JourneyMilestoneCard
+                      className="min-h-[184px] justify-center sm:min-h-[166px]"
+                      step={step}
+                    />
+                  </ScrollJourneyMilestone>
+                </li>
+              ))}
+            </ol>
+
+            <ol className="journey-animated sr-only hidden lg:block">
+              {journeyMilestones.map((step) => (
+                <li key={step.number}>
+                  {step.number} — {step.title}: {step.description}
+                </li>
+              ))}
+            </ol>
+
+            <ol className="journey-reduced-list gap-4 pt-4 sm:grid-cols-2 lg:col-span-2 lg:pt-10">
+              {journeyMilestones.map((step) => (
+                <li className="h-full" key={step.number}>
+                  <JourneyMilestoneCard className="h-full" step={step} />
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </ScrollJourneyScene>
     </section>
   );
 }
 
-function Footer() {
-  const product = [
-    ['ویژگی‌ها', '#how-it-works'],
-    ['قیمت‌گذاری', '/pricing'],
-    ['دانشگاه‌ها', '/universities'],
-  ] as const;
-  const resources = [
-    ['راهنما', '/guide'],
-    ['وبلاگ', '/blog'],
-    ['سوالات متداول', '/faq'],
-  ] as const;
+const pricingPlans = [
+  {
+    name: 'شروع',
+    description: 'برای ساخت پروفایل و شروع مسیر اپلای',
+    price: 'رایگان',
+    period: '',
+    featured: false,
+    cta: 'رایگان شروع کنید',
+    features: [
+      'ساخت و تکمیل پروفایل تحصیلی',
+      'تحلیل اولیه اطلاعات',
+      'پیشنهاد دانشگاه‌های متناسب',
+      'مدیریت اولیه مسیر اپلای',
+    ],
+  },
+  {
+    name: 'حرفه‌ای',
+    description: 'برای دانشجویانی که می‌خواهند جدی‌تر و هوشمندتر اپلای کنند',
+    price: '۲۹۹',
+    period: 'هزار تومان / ماه',
+    featured: true,
+    cta: 'شروع پلن حرفه‌ای',
+    features: [
+      'تحلیل کامل مدارک و سوابق',
+      'پیشنهادهای هوشمند دانشگاه',
+      'مدیریت مدارک و درخواست‌ها',
+      'پیگیری ددلاین‌ها',
+      'تحلیل و به‌روزرسانی مستمر پروفایل',
+    ],
+  },
+  {
+    name: 'کامل',
+    description: 'برای مدیریت چندین اپلای از یک فضای یکپارچه',
+    price: '۵۹۹',
+    period: 'هزار تومان / ماه',
+    featured: false,
+    cta: 'انتخاب پلن کامل',
+    features: [
+      'تمام امکانات پلن حرفه‌ای',
+      'مدیریت همزمان چند اپلای',
+      'پیگیری کامل وضعیت درخواست‌ها',
+      'سازمان‌دهی پیشرفته مدارک',
+      'گزارش کامل مسیر اپلای',
+    ],
+  },
+] as const;
 
+function PricingSection() {
   return (
-    <footer className="landing-footer border-t border-black/[0.04]" id="footer">
-      <div className="section-shell grid grid-cols-2 gap-8 lg:grid-cols-[1.35fr_.75fr_.75fr_.75fr_1.1fr] lg:gap-10">
-        <div className="col-span-2 lg:col-span-1">
-          <WaandLogo />
-          <p className="mt-4 max-w-[250px] text-[12px] leading-6 text-[#69696f]">
-            پلتفرم هوشمند اپلای دانشگاه
-          </p>
-          <div
-            aria-label="شبکه‌های اجتماعی وآند"
-            className="mt-5 flex items-center gap-4 text-[#38383b]"
-          >
-            <div className="flex items-center gap-4">
-              <a
-                href="https://x.com/waandapp"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Waand on X"
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <FaXTwitter className="size-5" />
-              </a>
+    <section
+      aria-labelledby="pricing-title"
+      className="section-shell scroll-mt-24 pt-[28px] pb-[72px] sm:pt-[34px] sm:pb-[84px] lg:pt-[40px] lg:pb-[96px] xl:pb-[104px]"
+      id="pricing"
+    >
+      <PricingScene className="relative">
+        {/* ambient accent */}
+        <PricingAccent
+          className="
+            pointer-events-none
+            absolute
+            left-1/2
+            top-[54%]
+            h-[420px]
+            w-[520px]
+            -translate-x-1/2
+            -translate-y-1/2
+            rounded-full
+            bg-[radial-gradient(circle,rgba(20,60,251,0.08)_0%,rgba(20,60,251,0.025)_42%,transparent_72%)]
+            blur-3xl
+          "
+        />
 
-              <a
-                href="https://instagram.com/waandapp"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Waand on Instagram"
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <FaInstagram className="size-5" />
-              </a>
+        {/* Heading */}
+        <div className="relative z-10 mx-auto max-w-[680px] text-center">
+          <PricingCopy stage="eyebrow">
+            <span
+              className="
+                inline-flex
+                items-center
+                gap-2
+                rounded-full
+                border
+                border-[#dfe4ff]
+                bg-[#f6f7ff]
+                px-4
+                py-2
+                text-[11px]
+                font-bold
+                text-[#143CFB]
+              "
+            >
+              <Sparkles aria-hidden="true" className="size-3.5" />
+              ساده و شفاف
+            </span>
+          </PricingCopy>
 
-              <a
-                href="https://github.com/waandapp"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Waand on GitHub"
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <FaGithub className="size-5" />
-              </a>
+          <PricingCopy stage="title">
+            <h2
+              className="
+                mt-5
+                text-[32px]
+                font-black
+                leading-[1.55]
+                tracking-[-0.04em]
+                text-[#171717]
+                sm:text-[38px]
+                lg:text-[44px]
+              "
+              id="pricing-title"
+            >
+              پلنی برای هر مرحله
+              <br />
+              <span className="text-[#143CFB]">از شروع تا پذیرش</span>
+            </h2>
+          </PricingCopy>
 
-              <a
-                href="https://youtube.com/@waandapp"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Waand on YouTube"
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <FaYoutube className="size-5" />
-              </a>
-
-              <a
-                href="https://t.me/waandapp"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Waand on Telegram"
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <FaTelegramPlane className="size-5" />
-              </a>
-            </div>
-          </div>
+          <PricingCopy stage="body">
+            <p
+              className="
+                mx-auto
+                mt-5
+                max-w-[570px]
+                text-[14px]
+                leading-8
+                text-[#696b72]
+                sm:text-[15px]
+              "
+            >
+              بدون پیچیدگی و هزینه‌های پنهان؛ امکاناتی را انتخاب کنید که با مسیر اپلای شما هماهنگ
+              است.
+            </p>
+          </PricingCopy>
         </div>
 
-        <div>
-          <strong className="footer-title">محصول</strong>
-          <ul className="footer-list">
-            {product.map(([label, href]) => (
-              <li key={label}>
-                <a href={href}>{label}</a>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {/* Cards */}
+        <div
+          className="
+            relative
+            z-10
+            mx-auto
+            mt-12
+            grid
+            max-w-[1120px]
+            items-stretch
+            gap-4
+            md:grid-cols-3
+            lg:mt-16
+            lg:gap-5
+          "
+        >
+          {pricingPlans.map((plan, index) => (
+            <PricingCard
+              featured={plan.featured}
+              index={index}
+              key={plan.name}
+              className={plan.featured ? 'md:-translate-y-5' : ''}
+            >
+              <article
+                className={cn(
+                  `
+                    group/pricing
+                    relative
+                    flex
+                    h-full
+                    min-h-[510px]
+                    flex-col
+                    overflow-hidden
+                    rounded-[26px]
+                    border
+                    p-7
+                    transition-[border-color,box-shadow]
+                    duration-300
+                    lg:p-8
+                  `,
+                  plan.featured
+                    ? `
+                        border-[#171717]
+                        bg-[#141414]
+                        text-white
+                        shadow-[0_24px_60px_rgba(15,18,32,0.16)]
+                      `
+                    : `
+                        border-[#e7e9ef]
+                        bg-white
+                        text-[#171717]
+                        shadow-[0_14px_34px_rgba(25,31,53,0.045)]
+                        hover:border-[#d9ddec]
+                        hover:shadow-[0_20px_48px_rgba(25,31,53,0.075)]
+                      `,
+                )}
+              >
+                {plan.featured && (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className="
+                        absolute
+                        -right-24
+                        -top-24
+                        size-52
+                        rounded-full
+                        bg-[#143CFB]/20
+                        blur-3xl
+                      "
+                    />
 
-        <div>
-          <strong className="footer-title">منابع</strong>
-          <ul className="footer-list">
-            {resources.map(([label, href]) => (
-              <li key={label}>
-                <a href={href}>{label}</a>
-              </li>
-            ))}
-          </ul>
-        </div>
+                    <div className="relative mb-6 flex justify-end">
+                      <span
+                        className="
+                          inline-flex
+                          items-center
+                          gap-1.5
+                          rounded-full
+                          border
+                          border-white/10
+                          bg-white/[0.07]
+                          px-3
+                          py-1.5
+                          text-[10px]
+                          font-bold
+                          text-white/85
+                        "
+                      >
+                        <Sparkles aria-hidden="true" className="size-3" />
+                        محبوب‌ترین انتخاب
+                      </span>
+                    </div>
+                  </>
+                )}
 
-        <div>
-          <strong className="footer-title">شرکت</strong>
-          <ul className="footer-list">
-            <li>
-              <a href="/about">درباره ما</a>
-            </li>
-            <li>
-              <a href="/contact">تماس با ما</a>
-            </li>
-            <li>
-              <a href="/careers">فرصت‌های شغلی</a>
-            </li>
-          </ul>
+                <div className="relative">
+                  <span
+                    className={cn(
+                      'text-[12px] font-bold',
+                      plan.featured ? 'text-white/55' : 'text-[#777a82]',
+                    )}
+                  >
+                    {plan.name}
+                  </span>
+
+                  <div className="mt-5 min-h-[82px]">
+                    <strong
+                      className={cn(
+                        'block font-black tracking-[-0.045em]',
+                        plan.price === 'رایگان' ? 'text-[37px]' : 'text-[44px]',
+                      )}
+                    >
+                      {plan.price}
+                    </strong>
+
+                    {plan.period && (
+                      <span
+                        className={cn(
+                          'mt-1 block text-[11px]',
+                          plan.featured ? 'text-white/45' : 'text-[#858891]',
+                        )}
+                      >
+                        {plan.period}
+                      </span>
+                    )}
+                  </div>
+
+                  <p
+                    className={cn(
+                      'mt-4 min-h-[58px] text-[12px] leading-6',
+                      plan.featured ? 'text-white/55' : 'text-[#6c6f76]',
+                    )}
+                  >
+                    {plan.description}
+                  </p>
+                </div>
+
+                <div
+                  className={cn(
+                    'my-7 h-px w-full',
+                    plan.featured ? 'bg-white/10' : 'bg-black/[0.06]',
+                  )}
+                />
+
+                <ul className="relative space-y-4">
+                  {plan.features.map((feature) => (
+                    <li className="flex items-start gap-3 text-[12px] leading-6" key={feature}>
+                      <span
+                        className={cn(
+                          'mt-0.5 grid size-5 shrink-0 place-items-center rounded-full',
+                          plan.featured
+                            ? 'bg-white/[0.08] text-[#8da2ff]'
+                            : 'bg-[#f0f3ff] text-[#143CFB]',
+                        )}
+                      >
+                        <Check aria-hidden="true" className="size-3" strokeWidth={2.4} />
+                      </span>
+
+                      <span className={plan.featured ? 'text-white/72' : 'text-[#51545b]'}>
+                        {feature}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="relative mt-auto pt-8">
+                  <MotionLink
+                    className={cn(
+                      `
+                        group/pricing-button
+                        flex
+                        min-h-11
+                        w-full
+                        items-center
+                        justify-center
+                        gap-2
+                        rounded-xl
+                        px-5
+                        text-[12px]
+                        font-extrabold
+                        transition-colors
+                      `,
+                      plan.featured
+                        ? `
+                            bg-white
+                            text-[#171717]
+                            hover:bg-[#f1f1ef]
+                          `
+                        : `
+                            bg-[#f3f4f7]
+                            text-[#242426]
+                            hover:bg-[#e9ebf1]
+                          `,
+                    )}
+                    href={DASHBOARD_SIGNUP_URL}
+                    hoverScale={1.01}
+                    tapScale={0.985}
+                  >
+                    {plan.cta}
+
+                    <ChevronLeft
+                      aria-hidden="true"
+                      className="
+                        size-4
+                        transition-transform
+                        duration-300
+                        group-hover/pricing-button:-translate-x-1
+                      "
+                    />
+                  </MotionLink>
+                </div>
+              </article>
+            </PricingCard>
+          ))}
         </div>
-      </div>
-      <p className="section-shell mt-4 border-t border-[#ededed] pt-3 text-center text-[11px] text-[#808087]">
-        © ۱۴۰۵ وآند. تمامی حقوق محفوظ است.
-      </p>
-    </footer>
+      </PricingScene>
+    </section>
   );
 }
-
 export function LandingPage() {
   return (
-    <>
-      <a className="skip-link" href="#main-content">
-        پرش به محتوای اصلی
-      </a>
-      <LandingNavbar />
-      <main id="main-content">
-        <HeroSection />
-        <HowItWorks />
-        <AppPromo />
-        <WhyWaand />
-        <SecuritySection />
-        <Testimonials />
-        <FinalCta />
-      </main>
-      <Footer />
-    </>
+    <main id="main-content">
+      <HeroSection />
+      <HowItWorks />
+      <AppPromo />
+      <WhyWaand />
+      <ApplicationJourneySection />
+      <Testimonials />
+      <PricingSection />
+    </main>
   );
 }

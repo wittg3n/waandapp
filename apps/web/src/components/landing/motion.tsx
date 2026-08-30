@@ -16,7 +16,6 @@ import {
   useAnimationFrame,
   useScroll,
   useMotionValue,
-  useReducedMotion,
   useSpring,
   useTransform,
   useVelocity,
@@ -25,6 +24,7 @@ import {
   type Variants,
 } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useHydratedReducedMotion } from '@/hooks/use-hydrated-reduced-motion';
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 
@@ -65,7 +65,7 @@ export function Reveal({
   amount?: number;
   y?: number;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   if (reducedMotion) {
     return <div className={className}>{children}</div>;
@@ -114,7 +114,7 @@ export function RevealGroup({
   stagger?: number;
   amount?: number;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   if (reducedMotion) {
     return <div className={className}>{children}</div>;
@@ -149,7 +149,7 @@ export function RevealGroup({
 /* -------------------------------------------------------------------------- */
 
 export function RevealItem({ children, className }: StaticDivProps) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   if (reducedMotion) {
     return <div className={className}>{children}</div>;
@@ -179,7 +179,7 @@ export function MotionLink({
   tapScale = 0.97,
   ...props
 }: MotionLinkProps) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   return (
     <motion.a
@@ -217,7 +217,7 @@ export function MotionLink({
 type InteractiveCardProps = Omit<HTMLMotionProps<'div'>, 'children' | 'className'> & StaticDivProps;
 
 export function InteractiveCard({ children, className, ...props }: InteractiveCardProps) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   return (
     <motion.div
@@ -267,11 +267,7 @@ export function HeroReveal({
 }: StaticDivProps & {
   stage: keyof typeof heroRevealDelay;
 }) {
-  const reducedMotion = useReducedMotion();
-
-  if (reducedMotion) {
-    return <div className={className}>{children}</div>;
-  }
+  const reducedMotion = useHydratedReducedMotion();
 
   return (
     <div className={stage === 'headline' ? 'overflow-hidden' : undefined}>
@@ -282,16 +278,24 @@ export function HeroReveal({
           filter: 'blur(0px)',
         }}
         className={className}
-        initial={{
-          opacity: 0,
-          y: stage === 'headline' ? 26 : 18,
-          filter: heroRevealBlur[stage],
-        }}
-        transition={{
-          delay: heroRevealDelay[stage],
-          duration: 0.58,
-          ease: easeOut,
-        }}
+        initial={
+          reducedMotion
+            ? false
+            : {
+                opacity: 0,
+                y: stage === 'headline' ? 26 : 18,
+                filter: heroRevealBlur[stage],
+              }
+        }
+        transition={
+          reducedMotion
+            ? { duration: 0 }
+            : {
+                delay: heroRevealDelay[stage],
+                duration: 0.58,
+                ease: easeOut,
+              }
+        }
       >
         {children}
       </motion.div>
@@ -313,7 +317,7 @@ const HeroSceneContext = createContext<HeroSceneValues | null>(null);
 const desktopPointer = '(hover: hover) and (pointer: fine) and (min-width: 1024px)';
 
 export function HeroScene({ children, className, ...props }: ComponentPropsWithoutRef<'div'>) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   const pointerX = useMotionValue(0);
   const pointerY = useMotionValue(0);
@@ -460,7 +464,7 @@ export function HeroLayer({
 }) {
   const scene = useContext(HeroSceneContext);
 
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   const fallbackX = useMotionValue(0);
   const fallbackY = useMotionValue(0);
@@ -538,7 +542,7 @@ export function HeroAnalysisSignal({
   className?: string;
   delay?: number;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   if (reducedMotion) {
     return null;
@@ -614,7 +618,7 @@ const ProcessSceneContext = createContext<ProcessSceneValues | null>(null);
  */
 export function ProcessScene({ children, className }: StaticDivProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -721,7 +725,7 @@ export function ProcessStep({
   motionPreset?: ProcessStepMotion;
 }) {
   const scene = useContext(ProcessSceneContext);
-  const localReducedMotion = useReducedMotion();
+  const localReducedMotion = useHydratedReducedMotion();
 
   /*
    * Makes ProcessStep safe even if accidentally used outside ProcessScene.
@@ -774,7 +778,7 @@ const AppPromoSceneContext = createContext<AppPromoSceneValues | null>(null);
 
 export function AppPromoScene({ children, className }: StaticDivProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -824,7 +828,7 @@ export function AppPromoScene({ children, className }: StaticDivProps) {
 
 export function AppPromoVisual({ children, className }: StaticDivProps) {
   const scene = useContext(AppPromoSceneContext);
-  const localReducedMotion = useReducedMotion();
+  const localReducedMotion = useHydratedReducedMotion();
 
   const fallbackProgress = useMotionValue(1);
   const progress = scene?.progress ?? fallbackProgress;
@@ -880,7 +884,7 @@ export function AppPromoCopy({
   stage: AppPromoCopyStage;
 }) {
   const scene = useContext(AppPromoSceneContext);
-  const localReducedMotion = useReducedMotion();
+  const localReducedMotion = useHydratedReducedMotion();
 
   const fallbackProgress = useMotionValue(1);
   const progress = scene?.progress ?? fallbackProgress;
@@ -955,7 +959,7 @@ const WhyWaandSceneContext = createContext<WhyWaandSceneValues | null>(null);
 
 export function WhyWaandScene({ children, className }: StaticDivProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -1002,7 +1006,7 @@ export function WhyWaandScene({ children, className }: StaticDivProps) {
 
 export function WhyWaandMountain({ children, className }: StaticDivProps) {
   const scene = useContext(WhyWaandSceneContext);
-  const localReducedMotion = useReducedMotion();
+  const localReducedMotion = useHydratedReducedMotion();
 
   const fallbackProgress = useMotionValue(1);
   const progress = scene?.progress ?? fallbackProgress;
@@ -1113,7 +1117,7 @@ export function WhyWaandCopy({
   stage: WhyWaandCopyStage;
 }) {
   const scene = useContext(WhyWaandSceneContext);
-  const localReducedMotion = useReducedMotion();
+  const localReducedMotion = useHydratedReducedMotion();
 
   const fallbackProgress = useMotionValue(1);
   const progress = scene?.progress ?? fallbackProgress;
@@ -1152,7 +1156,7 @@ export function WhyWaandCopy({
 
 export function WhyWaandAura({ className }: { className?: string }) {
   const scene = useContext(WhyWaandSceneContext);
-  const localReducedMotion = useReducedMotion();
+  const localReducedMotion = useHydratedReducedMotion();
 
   const fallbackProgress = useMotionValue(1);
   const progress = scene?.progress ?? fallbackProgress;
@@ -1204,7 +1208,7 @@ const TestimonialsSceneContext = createContext<TestimonialsSceneValues | null>(n
  */
 export function TestimonialsScene({ children, className }: StaticDivProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   /*
    * Section-local scroll progress.
@@ -1288,7 +1292,7 @@ export function TestimonialMarquee({
   lane?: number;
 }) {
   const scene = useContext(TestimonialsSceneContext);
-  const localReducedMotion = useReducedMotion();
+  const localReducedMotion = useHydratedReducedMotion();
 
   const reducedMotion = scene?.reducedMotion ?? Boolean(localReducedMotion);
 
@@ -1497,7 +1501,7 @@ export function TestimonialMotionCard({
   index?: number;
 }) {
   const scene = useContext(TestimonialsSceneContext);
-  const localReducedMotion = useReducedMotion();
+  const localReducedMotion = useHydratedReducedMotion();
 
   const reducedMotion = scene?.reducedMotion ?? Boolean(localReducedMotion);
 
@@ -1579,7 +1583,243 @@ export function TestimonialMotionCard({
     </motion.div>
   );
 }
+/* -------------------------------------------------------------------------- */
+/*                               Pricing Scene                                */
+/* -------------------------------------------------------------------------- */
 
+type PricingSceneValues = {
+  progress: MotionValue<number>;
+  reducedMotion: boolean;
+};
+
+const PricingSceneContext = createContext<PricingSceneValues | null>(null);
+
+export function PricingScene({ children, className }: StaticDivProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reducedMotion = useHydratedReducedMotion();
+
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start 94%', 'end 8%'],
+  });
+
+  const progress = useSpring(scrollYProgress, {
+    stiffness: 145,
+    damping: 30,
+    mass: 0.34,
+    restDelta: 0.001,
+  });
+
+  const value = useMemo(
+    () => ({
+      progress,
+      reducedMotion: Boolean(reducedMotion),
+    }),
+    [progress, reducedMotion],
+  );
+
+  return (
+    <div ref={ref} className={className}>
+      <PricingSceneContext.Provider value={value}>{children}</PricingSceneContext.Provider>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                               Pricing Copy                                 */
+/* -------------------------------------------------------------------------- */
+
+type PricingCopyStage = 'eyebrow' | 'title' | 'body';
+
+const pricingCopyRanges: Record<
+  PricingCopyStage,
+  {
+    input: number[];
+    opacity: number[];
+    y: number[];
+    scale: number[];
+  }
+> = {
+  eyebrow: {
+    input: [0, 0.08, 0.25, 0.78, 1],
+    opacity: [0, 0.4, 1, 1, 0],
+    y: [18, 10, 0, 0, -16],
+    scale: [0.97, 0.985, 1, 1, 0.99],
+  },
+
+  title: {
+    input: [0, 0.1, 0.3, 0.76, 1],
+    opacity: [0, 0.35, 1, 1, 0],
+    y: [34, 20, 0, 0, -24],
+    scale: [0.965, 0.98, 1, 1, 0.985],
+  },
+
+  body: {
+    input: [0, 0.16, 0.34, 0.73, 1],
+    opacity: [0, 0, 1, 1, 0],
+    y: [24, 24, 0, 0, -18],
+    scale: [0.98, 0.98, 1, 1, 0.99],
+  },
+};
+
+export function PricingCopy({
+  children,
+  className,
+  stage,
+}: StaticDivProps & {
+  stage: PricingCopyStage;
+}) {
+  const scene = useContext(PricingSceneContext);
+  const localReducedMotion = useHydratedReducedMotion();
+
+  const fallbackProgress = useMotionValue(0.5);
+  const progress = scene?.progress ?? fallbackProgress;
+
+  const reducedMotion = scene?.reducedMotion ?? Boolean(localReducedMotion);
+
+  const range = pricingCopyRanges[stage];
+
+  const opacity = useTransform(progress, range.input, range.opacity, { clamp: true });
+
+  const y = useTransform(progress, range.input, range.y, { clamp: true });
+
+  const scale = useTransform(progress, range.input, range.scale, { clamp: true });
+
+  if (reducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={className}
+      style={{
+        opacity,
+        y,
+        scale,
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                               Pricing Card                                 */
+/* -------------------------------------------------------------------------- */
+
+export function PricingCard({
+  children,
+  className,
+  index,
+  featured = false,
+}: StaticDivProps & {
+  index: number;
+  featured?: boolean;
+}) {
+  const scene = useContext(PricingSceneContext);
+  const localReducedMotion = useHydratedReducedMotion();
+
+  const fallbackProgress = useMotionValue(0.5);
+  const progress = scene?.progress ?? fallbackProgress;
+
+  const reducedMotion = scene?.reducedMotion ?? Boolean(localReducedMotion);
+
+  const entranceDelay = index * 0.035;
+
+  const input = [0, 0.12 + entranceDelay, 0.34 + entranceDelay, 0.74, 1];
+
+  const initialX = index === 0 ? 54 : index === 2 ? -54 : 0;
+
+  const exitX = index === 0 ? 22 : index === 2 ? -22 : 0;
+
+  const initialRotate = index === 0 ? 2.6 : index === 2 ? -2.6 : 0;
+
+  const x = useTransform(progress, input, [initialX, initialX * 0.5, 0, 0, exitX], { clamp: true });
+
+  const y = useTransform(progress, input, [featured ? 100 : 76, featured ? 68 : 48, 0, 0, -32], {
+    clamp: true,
+  });
+
+  const rotate = useTransform(
+    progress,
+    input,
+    [initialRotate, initialRotate * 0.5, 0, 0, initialRotate * 0.4],
+    { clamp: true },
+  );
+
+  const scale = useTransform(progress, input, [featured ? 0.94 : 0.965, 0.98, 1, 1, 0.985], {
+    clamp: true,
+  });
+
+  const opacity = useTransform(progress, input, [0, 0.22, 1, 1, 0], { clamp: true });
+
+  if (reducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      className={cn('relative h-full will-change-transform', className)}
+      style={{
+        opacity,
+        rotate,
+        scale,
+        x,
+        y,
+      }}
+    >
+      <motion.div
+        className="h-full"
+        transition={{
+          type: 'spring',
+          stiffness: 330,
+          damping: 25,
+        }}
+        whileHover={{
+          y: featured ? -7 : -9,
+          scale: featured ? 1.008 : 1.012,
+        }}
+      >
+        {children}
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Pricing Accent                                */
+/* -------------------------------------------------------------------------- */
+
+export function PricingAccent({ className }: { className?: string }) {
+  const scene = useContext(PricingSceneContext);
+  const localReducedMotion = useHydratedReducedMotion();
+
+  const fallbackProgress = useMotionValue(0.5);
+  const progress = scene?.progress ?? fallbackProgress;
+
+  const reducedMotion = scene?.reducedMotion ?? Boolean(localReducedMotion);
+
+  const opacity = useTransform(progress, [0, 0.2, 0.42, 0.78, 1], [0, 0.08, 1, 1, 0], {
+    clamp: true,
+  });
+
+  const scale = useTransform(progress, [0, 0.34, 0.72, 1], [0.65, 1, 1, 0.9], { clamp: true });
+
+  if (reducedMotion) {
+    return <div aria-hidden="true" className={className} />;
+  }
+
+  return (
+    <motion.div
+      aria-hidden="true"
+      className={className}
+      style={{
+        opacity,
+        scale,
+      }}
+    />
+  );
+}
 /* -------------------------------------------------------------------------- */
 /*                              Final Journey                                 */
 /* -------------------------------------------------------------------------- */
@@ -1620,7 +1860,7 @@ export function JourneyScene({
   'aria-label': string;
   dir: 'ltr' | 'rtl';
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
   const pointerX = useMotionValue(0);
   const pointerY = useMotionValue(0);
   const x = useSpring(pointerX, { stiffness: 92, damping: 24, mass: 0.52 });
@@ -1680,28 +1920,8 @@ export function JourneyScene({
   );
 }
 
-export function JourneyAmbientMotion({ children, className }: StaticDivProps) {
-  const reducedMotion = useReducedMotion();
-
-  if (reducedMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
-  return (
-    <motion.div
-      className={className}
-      variants={{
-        hidden: { opacity: 0 },
-        visible: { opacity: 1, transition: { duration: 0.62, ease: easeOut } },
-      }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
 export function JourneyCopyMotion({ children, className }: StaticDivProps) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   if (reducedMotion) {
     return <div className={className}>{children}</div>;
@@ -1726,7 +1946,7 @@ export function JourneyCopyMotion({ children, className }: StaticDivProps) {
 }
 
 export function JourneyStartMotion({ children, className }: StaticDivProps) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
   const parallax = useJourneyParallax(4, 3);
 
   if (reducedMotion) {
@@ -1773,7 +1993,7 @@ export function JourneyPathMotion({
   stroke?: string;
   strokeWidth?: number;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   if (reducedMotion) {
     return (
@@ -1834,7 +2054,7 @@ export function JourneyMilestoneMotion({
   x: number;
   y: number;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
   const parallax = useJourneyParallax(2.5, 2);
   const dx = x - bubbleX;
   const dy = y - bubbleY;
@@ -2048,7 +2268,7 @@ export function FuturePortalMotion({
   className,
   stage = 'outline',
 }: StaticDivProps & { stage?: PortalStage }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   if (reducedMotion) {
     return stage === 'pulse' ? null : <g className={className}>{children}</g>;
@@ -2071,7 +2291,7 @@ export function JourneyDecorationMotion({
   depth = 3,
   index = 0,
 }: StaticDivProps & { depth?: number; index?: number }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
   const parallax = useJourneyParallax(depth);
 
   if (reducedMotion) {
@@ -2098,12 +2318,301 @@ export function JourneyDecorationMotion({
     </motion.g>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/*                         Scroll-controlled journey                          */
+/* -------------------------------------------------------------------------- */
+
+type ScrollJourneySceneValues = {
+  progress: MotionValue<number>;
+  reducedMotion: boolean;
+};
+
+const ScrollJourneySceneContext = createContext<ScrollJourneySceneValues | null>(null);
+
+function useScrollJourneyMotion() {
+  const scene = useContext(ScrollJourneySceneContext);
+  const localReducedMotion = useHydratedReducedMotion();
+  const fallbackProgress = useMotionValue(1);
+
+  return {
+    progress: scene?.progress ?? fallbackProgress,
+    reducedMotion: scene?.reducedMotion ?? Boolean(localReducedMotion),
+  };
+}
+
+export function ScrollJourneyScene({ children, className }: StaticDivProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reducedMotion = useHydratedReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start start', 'end end'],
+  });
+  const progress = useSpring(scrollYProgress, {
+    stiffness: 108,
+    damping: 26,
+    mass: 0.3,
+    restDelta: 0.001,
+    restSpeed: 0.001,
+  });
+  const value = useMemo(
+    () => ({ progress, reducedMotion: Boolean(reducedMotion) }),
+    [progress, reducedMotion],
+  );
+
+  return (
+    <div className={className} ref={ref}>
+      <ScrollJourneySceneContext.Provider value={value}>
+        {children}
+      </ScrollJourneySceneContext.Provider>
+    </div>
+  );
+}
+
+export function ScrollJourneyHeading({ children, className }: StaticDivProps) {
+  const { progress, reducedMotion } = useScrollJourneyMotion();
+  const opacity = useTransform(progress, [0, 0.07, 0.88, 0.96, 1], [0.68, 1, 1, 0.9, 0.78]);
+  const y = useTransform(progress, [0, 0.08, 0.9, 1], [18, 0, 0, -12]);
+  const scale = useTransform(progress, [0, 0.08, 0.92, 1], [0.99, 1, 1, 0.99]);
+
+  if (reducedMotion) return <div className={className}>{children}</div>;
+
+  return (
+    <motion.div className={className} style={{ opacity, scale, y }}>
+      {children}
+    </motion.div>
+  );
+}
+
+export function ScrollJourneyStage({ children, className }: StaticDivProps) {
+  const { progress, reducedMotion } = useScrollJourneyMotion();
+  const opacity = useTransform(progress, [0, 0.06, 0.91, 1], [0.78, 1, 1, 0.84]);
+  const y = useTransform(progress, [0, 0.07, 0.92, 1], [12, 0, 0, -8]);
+  const scale = useTransform(progress, [0, 0.08, 0.92, 1], [0.994, 1, 1, 0.992]);
+
+  if (reducedMotion) return <div className={className}>{children}</div>;
+
+  return (
+    <motion.div className={className} style={{ opacity, scale, y }}>
+      {children}
+    </motion.div>
+  );
+}
+
+export function ScrollJourneyPath({
+  className,
+  d,
+  end = 0.92,
+  filter,
+  opacity = 1,
+  start = 0.06,
+  stroke = 'currentColor',
+  strokeWidth = 4,
+}: {
+  className?: string;
+  d: string;
+  end?: number;
+  filter?: string;
+  opacity?: number;
+  start?: number;
+  stroke?: string;
+  strokeWidth?: number;
+}) {
+  const { progress, reducedMotion } = useScrollJourneyMotion();
+  const pathLength = useTransform(progress, [0, start, end, 1], [0, 0, 1, 1], {
+    clamp: true,
+  });
+  const pathOpacity = useTransform(
+    progress,
+    [0, start, 0.94, 1],
+    [0, opacity, opacity, opacity * 0.68],
+    { clamp: true },
+  );
+  const props = {
+    className,
+    d,
+    fill: 'none',
+    filter,
+    stroke,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    strokeWidth,
+    vectorEffect: 'non-scaling-stroke' as const,
+  };
+
+  if (reducedMotion) return <path {...props} opacity={opacity} />;
+
+  return <motion.path {...props} style={{ opacity: pathOpacity, pathLength }} />;
+}
+
+export function ScrollJourneyStart({ children, className }: StaticDivProps) {
+  const { progress, reducedMotion } = useScrollJourneyMotion();
+  const opacity = useTransform(progress, [0, 0.03, 0.14, 1], [0.62, 1, 1, 0.8]);
+  const scale = useTransform(progress, [0, 0.08, 0.18, 1], [0.94, 1.06, 1, 1]);
+
+  if (reducedMotion) return <g className={className}>{children}</g>;
+
+  return (
+    <motion.g
+      className={className}
+      style={{ opacity, scale, transformBox: 'fill-box', transformOrigin: 'center' }}
+    >
+      {children}
+    </motion.g>
+  );
+}
+
+export function ScrollJourneyPoint({
+  cx,
+  cy,
+  final = false,
+  number,
+  progressAt,
+}: {
+  cx: number;
+  cy: number;
+  final?: boolean;
+  number: string;
+  progressAt: number;
+}) {
+  const { progress, reducedMotion } = useScrollJourneyMotion();
+  const arrivalStart = Math.max(0, progressAt - 0.055);
+  const settleAt = Math.min(1, progressAt + 0.075);
+  const opacity = useTransform(progress, [0, arrivalStart, progressAt, 1], [0.54, 0.54, 1, 1]);
+  const activeOpacity = useTransform(
+    progress,
+    [0, arrivalStart, progressAt, settleAt, 1],
+    [0, 0, 1, final ? 1 : 0.58, final ? 1 : 0.58],
+  );
+  const ringOpacity = useTransform(
+    progress,
+    [0, arrivalStart, progressAt, settleAt, 1],
+    [0, 0, 0.5, 0, 0],
+  );
+  const scale = useTransform(
+    progress,
+    [0, arrivalStart, progressAt, settleAt, 1],
+    [0.9, 0.9, 1.12, 1, 1],
+  );
+  const activeFill = final ? '#171717' : '#143CFB';
+
+  if (reducedMotion) {
+    return (
+      <g>
+        <circle cx={cx} cy={cy} fill={activeFill} fillOpacity={final ? 1 : 0.64} r="19" />
+        <text
+          dominantBaseline="middle"
+          fill="#FFFFFF"
+          fontSize="10"
+          fontWeight="800"
+          textAnchor="middle"
+          x={cx}
+          y={cy + 0.5}
+        >
+          {number}
+        </text>
+      </g>
+    );
+  }
+
+  return (
+    <motion.g style={{ opacity, scale, transformBox: 'fill-box', transformOrigin: 'center' }}>
+      <motion.circle
+        cx={cx}
+        cy={cy}
+        fill="#143CFB"
+        fillOpacity="0.12"
+        r="27"
+        style={{ opacity: ringOpacity }}
+      />
+      <circle cx={cx} cy={cy} fill="#FFFFFF" r="19" stroke="#DDE2F0" strokeWidth="1.5" />
+      <motion.circle cx={cx} cy={cy} fill={activeFill} r="19" style={{ opacity: activeOpacity }} />
+      <text
+        dominantBaseline="middle"
+        fill="#666A75"
+        fontSize="10"
+        fontWeight="800"
+        textAnchor="middle"
+        x={cx}
+        y={cy + 0.5}
+      >
+        {number}
+      </text>
+      <motion.text
+        dominantBaseline="middle"
+        fill="#FFFFFF"
+        fontSize="10"
+        fontWeight="800"
+        style={{ opacity: activeOpacity }}
+        textAnchor="middle"
+        x={cx}
+        y={cy + 0.5}
+      >
+        {number}
+      </motion.text>
+    </motion.g>
+  );
+}
+
+export function ScrollJourneyMilestone({
+  activeUntil,
+  children,
+  className,
+  final = false,
+  index,
+  mode,
+  progressAt,
+}: StaticDivProps & {
+  activeUntil: number;
+  final?: boolean;
+  index: number;
+  mode: 'desktop' | 'mobile';
+  progressAt: number;
+}) {
+  const { progress, reducedMotion } = useScrollJourneyMotion();
+  const enter = Math.max(0, progressAt - 0.075);
+  const mobileSettle = Math.min(0.98, progressAt + 0.09);
+  const exitStart = Math.min(0.97, activeUntil - 0.04);
+  const exitEnd = Math.min(0.985, activeUntil + 0.035);
+  const input =
+    mode === 'mobile'
+      ? [0, enter, progressAt, mobileSettle, 1]
+      : final
+        ? [0, enter, progressAt, 0.95, 1]
+        : [0, enter, progressAt, exitStart, exitEnd, 1];
+  const initialOpacity = index === 0 && mode === 'desktop' ? 0.72 : mode === 'mobile' ? 0.72 : 0;
+  const opacityValues =
+    mode === 'mobile'
+      ? [0.72, 0.78, 1, 0.88, 0.88]
+      : final
+        ? [0, 0, 1, 1, 0.86]
+        : [initialOpacity, initialOpacity, 1, 1, 0, 0];
+  const yValues =
+    mode === 'mobile' ? [16, 10, 0, -3, -3] : final ? [18, 8, 0, 0, -6] : [18, 8, 0, 0, -8, -8];
+  const scaleValues =
+    mode === 'mobile'
+      ? [0.985, 0.99, 1, 1, 1]
+      : final
+        ? [0.985, 0.99, 1, 1, 0.992]
+        : [0.985, 0.99, 1, 1, 0.992, 0.992];
+  const opacity = useTransform(progress, input, opacityValues, { clamp: true });
+  const y = useTransform(progress, input, yValues, { clamp: true });
+  const scale = useTransform(progress, input, scaleValues, { clamp: true });
+
+  if (reducedMotion) return <div className={className}>{children}</div>;
+
+  return (
+    <motion.div className={cn('will-change-transform', className)} style={{ opacity, scale, y }}>
+      {children}
+    </motion.div>
+  );
+}
 /* -------------------------------------------------------------------------- */
 /*                                   Float                                    */
 /* -------------------------------------------------------------------------- */
 
 export function Float({ children, className }: StaticDivProps) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useHydratedReducedMotion();
 
   return (
     <motion.div

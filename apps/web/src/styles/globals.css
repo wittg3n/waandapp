@@ -108,6 +108,7 @@
   }
 
   html {
+    overflow-x: clip;
     scroll-behavior: smooth;
   }
 
@@ -158,6 +159,15 @@
 
   .landing-section--spacious {
     padding-block: clamp(5.5rem, 9vw, 9rem);
+  }
+
+  .journey-scroll-space,
+  .journey-sticky-stage {
+    position: relative;
+  }
+
+  .journey-reduced-list {
+    display: none;
   }
 
   .landing-footer {
@@ -273,6 +283,19 @@
     min-height: clamp(760px, 88svh, 980px);
     padding-block: clamp(4.5rem, 8svh, 7rem);
   }
+
+  .journey-scroll-space {
+    height: 300svh;
+  }
+
+  .journey-sticky-stage {
+    position: sticky;
+    top: 4.5rem;
+    display: flex;
+    height: calc(100svh - 4.5rem);
+    min-height: 620px;
+    align-items: center;
+  }
 }
 
 @media (max-width: 639px) {
@@ -283,12 +306,32 @@
 }
 
 @supports not (overflow: clip) {
+  html,
   body {
     overflow-x: hidden;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .journey-scroll-space {
+    height: auto;
+  }
+
+  .journey-sticky-stage {
+    position: static;
+    display: block;
+    height: auto;
+    min-height: 0;
+  }
+
+  .journey-animated {
+    display: none !important;
+  }
+
+  .journey-reduced-list {
+    display: grid;
+  }
+
   html {
     scroll-behavior: auto;
   }

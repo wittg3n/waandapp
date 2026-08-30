@@ -12,6 +12,7 @@
     "dev": "node --watch src/server.js",
     "build": "node scripts/build.mjs",
     "db:indexes": "node scripts/sync-auth-indexes.mjs",
+    "db:seed:blog": "node scripts/seed-blog.mjs",
     "start": "node src/server.js",
     "test": "node --test && node --test src/auth/auth.integration.js",
     "test:unit": "node --test",
