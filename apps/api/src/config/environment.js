@@ -18,6 +18,14 @@ function integer(environment, key, minimum, maximum = Number.MAX_SAFE_INTEGER) {
   return value;
 }
 
+function databaseName(environment, key) {
+  const value = requiredString(environment, key);
+  if (!/^[A-Za-z0-9_-]{1,64}$/.test(value)) {
+    throw new Error(`${key} must contain only letters, numbers, underscores, or hyphens.`);
+  }
+  return value;
+}
+
 function secret(environment, key, nodeEnvironment) {
   const value = requiredString(environment, key);
 
@@ -152,16 +160,16 @@ function validateProductionDatastoreTransport(mongodbUri, redisUrl, nodeEnvironm
 function deliveryConfig(environment, nodeEnvironment) {
   const mode = requiredString(environment, 'AUTH_DELIVERY_MODE');
 
-  if (!['disabled', 'development', 'webhook'].includes(mode)) {
-    throw new Error('AUTH_DELIVERY_MODE must be disabled, development, or webhook.');
+  if (!['disabled', 'development', 'dev-no2step', 'webhook'].includes(mode)) {
+    throw new Error('AUTH_DELIVERY_MODE must be disabled, development, dev-no2step, or webhook.');
   }
 
   if (nodeEnvironment === 'production' && mode !== 'webhook') {
     throw new Error('AUTH_DELIVERY_MODE must be webhook in production.');
   }
 
-  if (mode === 'development' && nodeEnvironment !== 'development') {
-    throw new Error('AUTH_DELIVERY_MODE=development requires NODE_ENV=development.');
+  if (['development', 'dev-no2step'].includes(mode) && nodeEnvironment !== 'development') {
+    throw new Error(`AUTH_DELIVERY_MODE=${mode} requires NODE_ENV=development.`);
   }
 
   if (mode !== 'webhook') {
@@ -220,9 +228,12 @@ export function validateEnvironment(environment) {
 
   const port = integer(environment, 'PORT', 1, 65_535);
   const sessionSecret = secret(environment, 'SESSION_SECRET', nodeEnvironment);
+  const adminSessionSecret = secret(environment, 'ADMIN_SESSION_SECRET', nodeEnvironment);
   const authCodePepper = secret(environment, 'AUTH_CODE_PEPPER', nodeEnvironment);
-  if (sessionSecret === authCodePepper) {
-    throw new Error('SESSION_SECRET and AUTH_CODE_PEPPER must be different.');
+  if (new Set([sessionSecret, adminSessionSecret, authCodePepper]).size !== 3) {
+    throw new Error(
+      'SESSION_SECRET, ADMIN_SESSION_SECRET, and AUTH_CODE_PEPPER must be different.',
+    );
   }
 
   const sessionCookieName = requiredString(environment, 'SESSION_COOKIE_NAME');
@@ -233,11 +244,40 @@ export function validateEnvironment(environment) {
     throw new Error('SESSION_COOKIE_NAME must use the __Host- prefix in production.');
   }
 
+  const adminSessionCookieName = requiredString(environment, 'ADMIN_SESSION_COOKIE_NAME');
+  if (!/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(adminSessionCookieName)) {
+    throw new Error('ADMIN_SESSION_COOKIE_NAME contains invalid characters.');
+  }
+  if (adminSessionCookieName === sessionCookieName) {
+    throw new Error('ADMIN_SESSION_COOKIE_NAME must be different from SESSION_COOKIE_NAME.');
+  }
+  if (nodeEnvironment === 'production' && !adminSessionCookieName.startsWith('__Secure-')) {
+    throw new Error('ADMIN_SESSION_COOKIE_NAME must use the __Secure- prefix in production.');
+  }
+
   const sessionIdleTtlMs = integer(environment, 'SESSION_IDLE_TTL_MS', 300_000, 3_600_000);
   const sessionAbsoluteTtlMs = integer(environment, 'SESSION_ABSOLUTE_TTL_MS', 300_000, 86_400_000);
   if (sessionAbsoluteTtlMs < sessionIdleTtlMs) {
     throw new Error(
       'SESSION_ABSOLUTE_TTL_MS must be greater than or equal to SESSION_IDLE_TTL_MS.',
+    );
+  }
+
+  const adminSessionIdleTtlMs = integer(
+    environment,
+    'ADMIN_SESSION_IDLE_TTL_MS',
+    300_000,
+    3_600_000,
+  );
+  const adminSessionAbsoluteTtlMs = integer(
+    environment,
+    'ADMIN_SESSION_ABSOLUTE_TTL_MS',
+    300_000,
+    86_400_000,
+  );
+  if (adminSessionAbsoluteTtlMs < adminSessionIdleTtlMs) {
+    throw new Error(
+      'ADMIN_SESSION_ABSOLUTE_TTL_MS must be greater than or equal to ADMIN_SESSION_IDLE_TTL_MS.',
     );
   }
 
@@ -248,6 +288,11 @@ export function validateEnvironment(environment) {
   }
 
   const mongodbUri = url(environment, 'MONGODB_URI', ['mongodb:', 'mongodb+srv:']);
+  const mongodbCoreDatabase = databaseName(environment, 'MONGODB_CORE_DATABASE');
+  const mongodbCmsDatabase = databaseName(environment, 'MONGODB_CMS_DATABASE');
+  if (mongodbCoreDatabase === mongodbCmsDatabase) {
+    throw new Error('MONGODB_CORE_DATABASE and MONGODB_CMS_DATABASE must be different.');
+  }
   const redisUrl = url(environment, 'REDIS_URL', ['redis:', 'rediss:']);
   validateProductionDatastoreTransport(mongodbUri, redisUrl, nodeEnvironment);
 
@@ -255,6 +300,14 @@ export function validateEnvironment(environment) {
   const authMutationOrigins = origins(environment, 'AUTH_MUTATION_ORIGINS', nodeEnvironment);
   if (authMutationOrigins.some((origin) => !corsOrigins.includes(origin))) {
     throw new Error('AUTH_MUTATION_ORIGINS must be a subset of CORS_ORIGINS.');
+  }
+  const adminDashboardOrigin = exactOrigin(
+    requiredString(environment, 'ADMIN_DASHBOARD_ORIGIN'),
+    'ADMIN_DASHBOARD_ORIGIN',
+    nodeEnvironment,
+  );
+  if (authMutationOrigins.includes(adminDashboardOrigin)) {
+    throw new Error('ADMIN_DASHBOARD_ORIGIN must be distinct from AUTH_MUTATION_ORIGINS.');
   }
 
   const authTransactionTtlMs = integer(environment, 'AUTH_TRANSACTION_TTL_MS', 300_000, 3_600_000);
@@ -275,9 +328,15 @@ export function validateEnvironment(environment) {
     nodeEnvironment,
     port,
     mongodbUri,
+    mongodbCoreDatabase,
+    mongodbCmsDatabase,
+    cmsMediaRoot: requiredString(environment, 'CMS_MEDIA_ROOT'),
+    cmsMediaMaxBytes: integer(environment, 'CMS_MEDIA_MAX_BYTES', 1_024, 20_971_520),
+    cmsSchedulerIntervalMs: integer(environment, 'CMS_SCHEDULER_INTERVAL_MS', 10_000, 3_600_000),
     redisUrl,
     corsOrigins,
     authMutationOrigins,
+    adminDashboardOrigin,
     logLevel,
     rateLimitWindowMs: integer(environment, 'RATE_LIMIT_WINDOW_MS', 1_000, 86_400_000),
     rateLimitMax: integer(environment, 'RATE_LIMIT_MAX', 1, 100_000),
@@ -286,6 +345,10 @@ export function validateEnvironment(environment) {
     sessionCookieName,
     sessionIdleTtlMs,
     sessionAbsoluteTtlMs,
+    adminSessionSecret,
+    adminSessionCookieName,
+    adminSessionIdleTtlMs,
+    adminSessionAbsoluteTtlMs,
     authCodePepper,
     authCodeTtlMs,
     authTransactionTtlMs,

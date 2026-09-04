@@ -7,9 +7,15 @@ const validEnvironment = {
   NODE_ENV: 'test',
   PORT: '4000',
   MONGODB_URI: 'mongodb://localhost:27017/waandapp',
+  MONGODB_CORE_DATABASE: 'waandapp',
+  MONGODB_CMS_DATABASE: 'waand_cms',
+  CMS_MEDIA_ROOT: 'apps/api/storage/cms',
+  CMS_MEDIA_MAX_BYTES: '10485760',
+  CMS_SCHEDULER_INTERVAL_MS: '60000',
   REDIS_URL: 'redis://localhost:6379',
-  CORS_ORIGINS: 'http://localhost:3000,http://localhost:5173',
+  CORS_ORIGINS: 'http://localhost:3000,http://localhost:5173,http://localhost:3039',
   AUTH_MUTATION_ORIGINS: 'http://localhost:5173',
+  ADMIN_DASHBOARD_ORIGIN: 'http://localhost:3039',
   LOG_LEVEL: 'silent',
   RATE_LIMIT_WINDOW_MS: '60000',
   RATE_LIMIT_MAX: '100',
@@ -18,6 +24,10 @@ const validEnvironment = {
   SESSION_COOKIE_NAME: 'waand.sid',
   SESSION_IDLE_TTL_MS: '3600000',
   SESSION_ABSOLUTE_TTL_MS: '86400000',
+  ADMIN_SESSION_SECRET: 'a'.repeat(64),
+  ADMIN_SESSION_COOKIE_NAME: 'waand_admin_sid',
+  ADMIN_SESSION_IDLE_TTL_MS: '900000',
+  ADMIN_SESSION_ABSOLUTE_TTL_MS: '28800000',
   AUTH_CODE_PEPPER: 'p'.repeat(64),
   AUTH_CODE_TTL_MS: '300000',
   AUTH_TRANSACTION_TTL_MS: '900000',
@@ -48,10 +58,20 @@ test('validates and transforms the complete authentication environment', () => {
   const result = validateEnvironment(validEnvironment);
 
   assert.equal(result.port, 4000);
-  assert.deepEqual(result.corsOrigins, ['http://localhost:3000', 'http://localhost:5173']);
+  assert.equal(result.mongodbCoreDatabase, 'waandapp');
+  assert.equal(result.mongodbCmsDatabase, 'waand_cms');
+  assert.equal(result.cmsMediaMaxBytes, 10_485_760);
+  assert.deepEqual(result.corsOrigins, [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:3039',
+  ]);
   assert.deepEqual(result.authMutationOrigins, ['http://localhost:5173']);
+  assert.equal(result.adminDashboardOrigin, 'http://localhost:3039');
   assert.equal(result.sessionIdleTtlMs, 3_600_000);
   assert.equal(result.sessionAbsoluteTtlMs, 86_400_000);
+  assert.equal(result.adminSessionIdleTtlMs, 900_000);
+  assert.equal(result.adminSessionAbsoluteTtlMs, 28_800_000);
   assert.equal(result.authCodeTtlMs, 300_000);
   assert.equal(result.authTransactionTtlMs, 900_000);
   assert.equal(result.authStepUpTtlMs, 600_000);
@@ -74,8 +94,20 @@ test('validates and transforms the complete authentication environment', () => {
   });
   assert.equal(development.authDeliveryMode, 'development');
   assert.equal(development.authSmsWebhookUrl, null);
+
+  const noTwoStep = validateEnvironment({
+    ...validEnvironment,
+    NODE_ENV: 'development',
+    AUTH_DELIVERY_MODE: 'dev-no2step',
+  });
+  assert.equal(noTwoStep.authDeliveryMode, 'dev-no2step');
+  assert.equal(noTwoStep.authEmailWebhookUrl, null);
   assert.throws(
     () => validateEnvironment({ ...validEnvironment, AUTH_DELIVERY_MODE: 'development' }),
+    /requires NODE_ENV=development/,
+  );
+  assert.throws(
+    () => validateEnvironment({ ...validEnvironment, AUTH_DELIVERY_MODE: 'dev-no2step' }),
     /requires NODE_ENV=development/,
   );
 });
@@ -123,6 +155,17 @@ test('rejects invalid base service settings', () => {
   );
 });
 
+test('requires distinct safe Core and CMS database names', () => {
+  assert.throws(
+    () => validateEnvironment({ ...validEnvironment, MONGODB_CMS_DATABASE: 'waandapp' }),
+    /must be different/,
+  );
+  assert.throws(
+    () => validateEnvironment({ ...validEnvironment, MONGODB_CMS_DATABASE: 'bad.name' }),
+    /must contain only/,
+  );
+});
+
 test('requires exact canonical CORS and mutation origins', () => {
   assert.throws(
     () => validateEnvironment({ ...validEnvironment, CORS_ORIGINS: 'http://localhost:3000/path' }),
@@ -140,14 +183,33 @@ test('requires exact canonical CORS and mutation origins', () => {
     () =>
       validateEnvironment({
         ...validEnvironment,
+        ADMIN_DASHBOARD_ORIGIN: 'http://localhost:3039/path',
+      }),
+    /exact HTTP\(S\) origins/,
+  );
+  assert.throws(
+    () =>
+      validateEnvironment({
+        ...validEnvironment,
+        ADMIN_DASHBOARD_ORIGIN: 'http://localhost:5173',
+      }),
+    /must be distinct from AUTH_MUTATION_ORIGINS/,
+  );
+  assert.throws(
+    () =>
+      validateEnvironment({
+        ...validEnvironment,
         NODE_ENV: 'production',
         MONGODB_URI: 'mongodb://localhost:27017/waandapp?tls=true',
         REDIS_URL: 'rediss://localhost:6379',
         CORS_ORIGINS: 'http://example.com',
         AUTH_MUTATION_ORIGINS: 'http://example.com',
+        ADMIN_DASHBOARD_ORIGIN: 'http://admin.example.com',
         SESSION_SECRET: `prod-session-${'0123456789abcdef'.repeat(4)}`,
+        ADMIN_SESSION_SECRET: `prod-admin-${'02468ace13579bdf'.repeat(4)}`,
         AUTH_CODE_PEPPER: `prod-pepper-${'fedcba9876543210'.repeat(4)}`,
         SESSION_COOKIE_NAME: '__Host-waand.sid',
+        ADMIN_SESSION_COOKIE_NAME: '__Secure-waand.admin.sid',
         AUTH_DELIVERY_MODE: 'webhook',
         AUTH_EMAIL_WEBHOOK_URL: 'https://email.example.com/auth',
         AUTH_EMAIL_WEBHOOK_TOKEN: 'email-0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZ',
@@ -168,6 +230,22 @@ test('rejects weak, reused, and production-placeholder secrets', () => {
       validateEnvironment({
         ...validEnvironment,
         AUTH_CODE_PEPPER: validEnvironment.SESSION_SECRET,
+      }),
+    /must be different/,
+  );
+  assert.throws(
+    () =>
+      validateEnvironment({
+        ...validEnvironment,
+        ADMIN_SESSION_SECRET: validEnvironment.SESSION_SECRET,
+      }),
+    /must be different/,
+  );
+  assert.throws(
+    () =>
+      validateEnvironment({
+        ...validEnvironment,
+        ADMIN_SESSION_COOKIE_NAME: validEnvironment.SESSION_COOKIE_NAME,
       }),
     /must be different/,
   );
@@ -205,6 +283,19 @@ test('validates session, transaction, challenge, and hashing bounds', () => {
         SESSION_ABSOLUTE_TTL_MS: '300000',
       }),
     /SESSION_ABSOLUTE_TTL_MS must be greater/,
+  );
+  assert.throws(
+    () => validateEnvironment({ ...validEnvironment, ADMIN_SESSION_IDLE_TTL_MS: '299999' }),
+    /ADMIN_SESSION_IDLE_TTL_MS must be an integer between 300000/,
+  );
+  assert.throws(
+    () =>
+      validateEnvironment({
+        ...validEnvironment,
+        ADMIN_SESSION_IDLE_TTL_MS: '600000',
+        ADMIN_SESSION_ABSOLUTE_TTL_MS: '300000',
+      }),
+    /ADMIN_SESSION_ABSOLUTE_TTL_MS must be greater/,
   );
   assert.throws(
     () => validateEnvironment({ ...validEnvironment, AUTH_CODE_TTL_MS: '900001' }),
@@ -256,11 +347,14 @@ test('production requires a host cookie and fully configured HTTPS delivery webh
     NODE_ENV: 'production',
     MONGODB_URI: 'mongodb://localhost:27017/waandapp?tls=true',
     REDIS_URL: 'rediss://localhost:6379',
-    CORS_ORIGINS: 'https://app.example.com',
+    CORS_ORIGINS: 'https://app.example.com,https://admin.example.com',
     AUTH_MUTATION_ORIGINS: 'https://app.example.com',
+    ADMIN_DASHBOARD_ORIGIN: 'https://admin.example.com',
     SESSION_SECRET: `prod-session-${'0123456789abcdef'.repeat(4)}`,
+    ADMIN_SESSION_SECRET: `prod-admin-${'02468ace13579bdf'.repeat(4)}`,
     AUTH_CODE_PEPPER: `prod-pepper-${'fedcba9876543210'.repeat(4)}`,
     SESSION_COOKIE_NAME: '__Host-waand.sid',
+    ADMIN_SESSION_COOKIE_NAME: '__Secure-waand.admin.sid',
     AUTH_DELIVERY_MODE: 'webhook',
     AUTH_EMAIL_WEBHOOK_URL: 'https://email.example.com/auth',
     AUTH_EMAIL_WEBHOOK_TOKEN: 'email-0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZ',
@@ -283,11 +377,19 @@ test('production requires a host cookie and fully configured HTTPS delivery webh
     /must use the __Host- prefix/,
   );
   assert.throws(
+    () => validateEnvironment({ ...production, ADMIN_SESSION_COOKIE_NAME: 'waand_admin_sid' }),
+    /must use the __Secure- prefix/,
+  );
+  assert.throws(
     () => validateEnvironment({ ...production, AUTH_DELIVERY_MODE: 'disabled' }),
     /must be webhook in production/,
   );
   assert.throws(
     () => validateEnvironment({ ...production, AUTH_DELIVERY_MODE: 'development' }),
+    /must be webhook in production/,
+  );
+  assert.throws(
+    () => validateEnvironment({ ...production, AUTH_DELIVERY_MODE: 'dev-no2step' }),
     /must be webhook in production/,
   );
   assert.throws(
@@ -314,11 +416,14 @@ test('production requires encrypted MongoDB and Redis transport', () => {
     NODE_ENV: 'production',
     MONGODB_URI: 'mongodb+srv://cluster.example.com/waandapp',
     REDIS_URL: 'rediss://cache.example.com:6379',
-    CORS_ORIGINS: 'https://app.example.com',
+    CORS_ORIGINS: 'https://app.example.com,https://admin.example.com',
     AUTH_MUTATION_ORIGINS: 'https://app.example.com',
+    ADMIN_DASHBOARD_ORIGIN: 'https://admin.example.com',
     SESSION_SECRET: `prod-session-${'0123456789abcdef'.repeat(4)}`,
+    ADMIN_SESSION_SECRET: `prod-admin-${'02468ace13579bdf'.repeat(4)}`,
     AUTH_CODE_PEPPER: `prod-pepper-${'fedcba9876543210'.repeat(4)}`,
     SESSION_COOKIE_NAME: '__Host-waand.sid',
+    ADMIN_SESSION_COOKIE_NAME: '__Secure-waand.admin.sid',
     AUTH_DELIVERY_MODE: 'webhook',
     AUTH_EMAIL_WEBHOOK_URL: 'https://email.example.com/auth',
     AUTH_EMAIL_WEBHOOK_TOKEN: 'email-0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZ',

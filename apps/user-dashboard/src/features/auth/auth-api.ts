@@ -363,7 +363,11 @@ export function createAuthApi(baseUrl = import.meta.env.VITE_API_URL || DEFAULT_
         body: JSON.stringify(input),
         signal,
       });
-      return parseTransition(payload, ['SECOND_STEP_REQUIRED', 'VERIFICATION_REQUIRED']);
+      return parseTransition(payload, [
+        'SECOND_STEP_REQUIRED',
+        'VERIFICATION_REQUIRED',
+        'AUTHENTICATED',
+      ]);
     },
 
     requestRegistrationCode(channel: AuthChannel, signal?: AbortSignal) {
@@ -408,7 +412,7 @@ export function createAuthApi(baseUrl = import.meta.env.VITE_API_URL || DEFAULT_
         body: JSON.stringify({ identifier }),
         signal,
       });
-      return parseTransition(payload, ['RECOVERY_STARTED']);
+      return parseTransition(payload, ['RECOVERY_STARTED', 'READY_FOR_PASSWORD_RESET']);
     },
 
     requestRecoveryCode(channel: AuthChannel, signal?: AbortSignal) {
@@ -451,7 +455,7 @@ export function createAuthApi(baseUrl = import.meta.env.VITE_API_URL || DEFAULT_
         { method: 'POST', body: JSON.stringify(input) },
         { sessionBound: true },
       );
-      return parseTransition(payload, ['SECOND_STEP_REQUIRED']);
+      return parseTransition(payload, ['SECOND_STEP_REQUIRED', 'REAUTHENTICATED']);
     },
 
     async changePassword(input: {
@@ -466,10 +470,21 @@ export function createAuthApi(baseUrl = import.meta.env.VITE_API_URL || DEFAULT_
       return parseTransition(payload, ['PASSWORD_CHANGED']);
     },
 
-    requestContactChange(channel: AuthChannel, destination: string) {
+    async requestContactChange(
+      channel: AuthChannel,
+      destination: string,
+      signal?: AbortSignal,
+    ): Promise<CodeSentResult | AuthTransitionResult> {
       const segment = channel === 'sms' ? 'phone' : 'email';
       const body = channel === 'sms' ? { phone: destination } : { email: destination };
-      return requestCode(`/auth/${segment}/change/request`, body);
+      const payload = await request(
+        `/auth/${segment}/change/request`,
+        { method: 'POST', body: JSON.stringify(body), signal },
+        { sessionBound: true },
+      );
+      const codeSent = codeSentEnvelopeSchema.safeParse(payload);
+      if (codeSent.success) return codeSent.data.data as CodeSentResult;
+      return parseTransition(payload, [channel === 'sms' ? 'PHONE_CHANGED' : 'EMAIL_CHANGED']);
     },
 
     async verifyContactChange(channel: AuthChannel, code: string): Promise<AuthTransitionResult> {

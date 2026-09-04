@@ -12,6 +12,7 @@ export const AUTH_INDEX_NAMES = Object.freeze({
   eventUser: 'user_auth_events',
   eventType: 'auth_event_type',
   sessionTtl: 'expires_1',
+  adminSessionTtl: 'admin_expires_1',
 });
 
 const stringIdentity = (field) => ({ [field]: { $type: 'string' } });
@@ -97,6 +98,12 @@ export const AUTH_INDEX_DEFINITIONS = Object.freeze({
     {
       key: { expires: 1 },
       options: { expireAfterSeconds: 0, name: AUTH_INDEX_NAMES.sessionTtl },
+    },
+  ]),
+  adminSession: Object.freeze([
+    {
+      key: { expires: 1 },
+      options: { expireAfterSeconds: 0, name: AUTH_INDEX_NAMES.adminSessionTtl },
     },
   ]),
 });

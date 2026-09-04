@@ -21,11 +21,12 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
-function renderPanel(onRequest: () => Promise<CodeSentResult>) {
+function renderPanel(onRequest: () => Promise<CodeSentResult>, initialReceipt?: CodeSentResult) {
   render(
     <VerificationPanel
       channels={['email']}
       destinations={{ email: 's***@example.com' }}
+      initialReceipt={initialReceipt}
       lockedChannel="email"
       onRequest={onRequest}
       onVerify={vi.fn()}
@@ -36,6 +37,24 @@ function renderPanel(onRequest: () => Promise<CodeSentResult>) {
 afterEach(cleanup);
 
 describe('VerificationPanel', () => {
+  it('starts in the sent state when a delivery receipt is provided', () => {
+    const onRequest = vi.fn<() => Promise<CodeSentResult>>();
+    renderPanel(onRequest, {
+      status: 'CODE_SENT',
+      channel: 'email',
+      destinationMasked: 'n***@example.com',
+      expiresInSeconds: 300,
+      retryAfterSeconds: 60,
+    });
+
+    expect(screen.getByLabelText('کد تأیید شش‌رقمی')).toBeTruthy();
+    expect(screen.getByText('n***@example.com')).toBeTruthy();
+    expect(
+      screen.getByRole<HTMLButtonElement>('button', { name: /ارسال دوباره تا/ }).disabled,
+    ).toBe(true);
+    expect(onRequest).not.toHaveBeenCalled();
+  });
+
   it('shows the sent state and code input only after delivery resolves', async () => {
     const delivery = deferred<CodeSentResult>();
     renderPanel(() => delivery.promise);

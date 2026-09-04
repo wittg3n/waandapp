@@ -1,5 +1,12 @@
-import { Post } from './models/post.js';
-import { postInputSchema } from './validation.js';
+import { readingTimeForText, sanitizeCmsHtml, textFromCmsHtml } from '../cms/content.js';
+import {
+  CmsAuthor,
+  CmsCategory,
+  CmsPost,
+  CmsRevision,
+  CmsTag,
+} from '../cms/models.js';
+import { cmsPostSnapshot } from '../cms/post-service.js';
 
 const categories = {
   application: {
@@ -249,9 +256,9 @@ const rawPosts = [
   },
 ];
 
-export const BLOG_SEED_POSTS = Object.freeze(rawPosts.map((post) => postInputSchema.parse(post)));
+export const BLOG_SEED_POSTS = Object.freeze(rawPosts);
 
-const DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1_000;
+const DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
 
 function seedTimestamps(publishedAt) {
   const publicationTime = publishedAt.getTime();
@@ -261,25 +268,115 @@ function seedTimestamps(publishedAt) {
   };
 }
 
-export async function seedBlogDevelopmentData({ nodeEnvironment, postModel = Post } = {}) {
+function tagSlug(name) {
+  return name
+    .normalize('NFKC')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/gu, '-')
+    .replace(/[^\p{L}\p{N}-]/gu, '')
+    .replace(/-+/gu, '-');
+}
+
+export async function seedBlogDevelopmentData({ nodeEnvironment } = {}) {
   if (nodeEnvironment !== 'development') {
     throw new Error('Blog seed data may only be inserted when NODE_ENV=development.');
   }
 
-  const result = await postModel.bulkWrite(
-    BLOG_SEED_POSTS.map((post) => ({
-      updateOne: {
-        filter: { slug: post.slug },
-        update: { $setOnInsert: { ...post, ...seedTimestamps(post.publishedAt) } },
-        upsert: true,
-        timestamps: false,
+  const categoryValues = [...new Map(rawPosts.map((post) => [post.category.slug, post.category])).values()];
+  for (const category of categoryValues) {
+    await CmsCategory.updateOne(
+      { slug: category.slug },
+      { $setOnInsert: category },
+      { upsert: true, setDefaultsOnInsert: true },
+    );
+  }
+  const categories = await CmsCategory.find({
+    slug: { $in: categoryValues.map(({ slug }) => slug) },
+  }).lean();
+  const categoriesBySlug = new Map(categories.map((category) => [category.slug, category]));
+
+  await CmsAuthor.updateOne(
+    { slug: 'waand-editorial-team' },
+    {
+      $setOnInsert: {
+        ...author,
+        slug: 'waand-editorial-team',
+        bio: 'تحریریه وآند؛ راهنماهای روشن و قابل‌اجرا برای مسیر تحصیل بین‌المللی.',
       },
-    })),
-    { ordered: false },
+    },
+    { upsert: true, setDefaultsOnInsert: true },
   );
+  const cmsAuthor = await CmsAuthor.findOne({ slug: 'waand-editorial-team' }).lean();
+
+  const tagNames = [...new Set(rawPosts.flatMap((post) => post.tags))];
+  for (const name of tagNames) {
+    await CmsTag.updateOne(
+      { slug: tagSlug(name) },
+      { $setOnInsert: { name, slug: tagSlug(name), description: '' } },
+      { upsert: true, setDefaultsOnInsert: true },
+    );
+  }
+  const tags = await CmsTag.find({ slug: { $in: tagNames.map(tagSlug) } }).lean();
+  const tagsByName = new Map(tags.map((tag) => [tag.name, tag]));
+
+  let insertedCount = 0;
+  for (const source of rawPosts) {
+    const contentHtml = sanitizeCmsHtml(source.content);
+    const contentText = textFromCmsHtml(contentHtml);
+    const timestamps = seedTimestamps(source.publishedAt);
+    const result = await CmsPost.updateOne(
+      { slug: source.slug },
+      {
+        $setOnInsert: {
+          title: source.title,
+          slug: source.slug,
+          excerpt: source.excerpt,
+          contentHtml,
+          contentText,
+          coverMediaId: null,
+          categoryIds: [categoriesBySlug.get(source.category.slug)._id],
+          tagIds: source.tags.map((name) => tagsByName.get(name)._id),
+          authorId: cmsAuthor._id,
+          status: source.status === 'published' ? 'PUBLISHED' : 'DRAFT',
+          featured: source.featured,
+          readingTime: source.readingTime ?? readingTimeForText(contentText),
+          publishedAt: source.publishedAt,
+          seo: {
+            title: source.seo?.title ?? null,
+            description: source.seo?.description ?? null,
+            canonical: source.seo?.canonical ?? null,
+            noIndex: false,
+          },
+          revisionNumber: 1,
+          createdByUserId: 'SYSTEM',
+          updatedByUserId: 'SYSTEM',
+          ...timestamps,
+        },
+      },
+      { upsert: true, setDefaultsOnInsert: true, timestamps: false },
+    );
+    insertedCount += result.upsertedCount;
+    if (result.upsertedCount > 0) {
+      const post = await CmsPost.findOne({ slug: source.slug });
+      await CmsRevision.updateOne(
+        { postId: post._id, number: 1 },
+        {
+          $setOnInsert: {
+            postId: post._id,
+            number: 1,
+            snapshot: cmsPostSnapshot(post),
+            reason: 'Development seed',
+            actorUserId: 'SYSTEM',
+          },
+        },
+        { upsert: true, setDefaultsOnInsert: true },
+      );
+    }
+  }
 
   return {
-    insertedCount: result.upsertedCount,
-    existingCount: BLOG_SEED_POSTS.length - result.upsertedCount,
+    insertedCount,
+    existingCount: rawPosts.length - insertedCount,
   };
 }

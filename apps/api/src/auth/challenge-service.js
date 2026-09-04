@@ -9,7 +9,7 @@ import {
   hashAuthenticationCode,
   verifyAuthenticationCode,
 } from './code.js';
-import { DeliveryUnavailableError } from './delivery.js';
+import { DeliveryUnavailableError, isDevNoTwoStep } from './delivery.js';
 import { AuthChallenge } from './models/auth-challenge.js';
 import { AuthTransaction } from './models/auth-transaction.js';
 import { maskDestination } from './normalization.js';
@@ -127,6 +127,9 @@ export function createChallengeService({
     destinationMasked,
     detachedDelivery = false,
   }) {
+    if (isDevNoTwoStep(settings)) {
+      throw new ApiError(401, 'AUTH_PREAUTH_INVALID', 'Two-step verification is disabled.');
+    }
     const limitDestination =
       rateLimitSubject ?? (decoy ? `${transaction._id}:${channel}` : destination);
     const limitUser = rateLimitUserSubject ?? transaction.userId;
@@ -292,6 +295,9 @@ export function createChallengeService({
     rateLimitSubject,
     rateLimitUserSubject,
   }) {
+    if (isDevNoTwoStep(settings)) {
+      throw new ApiError(401, 'AUTH_PREAUTH_INVALID', 'Two-step verification is disabled.');
+    }
     if (transaction.failedSecondStepAttempts >= transaction.maxAttempts) {
       throw new ApiError(429, 'AUTH_TOO_MANY_ATTEMPTS', 'The transaction is locked.');
     }

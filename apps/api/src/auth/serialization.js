@@ -1,3 +1,7 @@
+import { permissionsForRoles } from '@waandapp/shared';
+
+import { administrativeRolesForUser } from '../admin/permissions.js';
+
 function profilePayload(profile) {
   if (!profile) return null;
   const value = profile.toObject ? profile.toObject({ versionKey: false }) : { ...profile };
@@ -10,6 +14,7 @@ function profilePayload(profile) {
 
 export function serializeAuthUser(user, profile) {
   const initialProfile = profilePayload(profile);
+  const adminRoles = administrativeRolesForUser(user);
   return {
     id: user._id.toString(),
     firstName: user.firstName,
@@ -20,6 +25,8 @@ export function serializeAuthUser(user, profile) {
     emailVerified: Boolean(user.emailVerifiedAt),
     phoneVerified: Boolean(user.phoneVerifiedAt),
     role: user.role,
+    adminRoles,
+    permissions: permissionsForRoles(adminRoles),
     status: user.status,
     onboardingStatus: initialProfile ? 'completed' : 'not_started',
     ...(initialProfile ? { initialProfile } : {}),

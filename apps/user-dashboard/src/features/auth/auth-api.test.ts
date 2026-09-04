@@ -122,6 +122,133 @@ describe('auth API client', () => {
     });
   });
 
+  it('accepts no-step login, reauthentication, and contact changes without losing rotated CSRF', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(anonymousBootstrap))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            status: 'AUTHENTICATED',
+            user: activeUser,
+            preauth: null,
+            csrfToken: 'login-csrf-token',
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            status: 'REAUTHENTICATED',
+            user: activeUser,
+            preauth: null,
+            purpose: 'change_email',
+            csrfToken: 'reauth-csrf-token',
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            status: 'CODE_SENT',
+            channel: 'email',
+            destinationMasked: 'n***@example.com',
+            retryAfterSeconds: 60,
+            expiresInSeconds: 300,
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            status: 'EMAIL_CHANGED',
+            user: { ...activeUser, email: 'new@example.com' },
+            preauth: null,
+            csrfToken: 'contact-csrf-token',
+          },
+        }),
+      )
+      .mockResolvedValueOnce(jsonResponse({ data: { success: true } }));
+    vi.stubGlobal('fetch', fetchMock);
+    const api = createAuthApi('/api/v1');
+
+    await api.getMe();
+    await expect(
+      api.login({ identifier: 'sara', password: 'correct password' }),
+    ).resolves.toMatchObject({
+      status: 'AUTHENTICATED',
+      snapshot: { user: activeUser, preauth: null },
+    });
+    await expect(
+      api.reauthenticate({ purpose: 'change_email', currentPassword: 'correct password' }),
+    ).resolves.toMatchObject({
+      status: 'REAUTHENTICATED',
+      purpose: 'change_email',
+      snapshot: { preauth: null, user: activeUser },
+    });
+    await expect(api.requestContactChange('email', 'new@example.com')).resolves.toMatchObject({
+      status: 'CODE_SENT',
+      destinationMasked: 'n***@example.com',
+    });
+    await expect(api.requestContactChange('email', 'new@example.com')).resolves.toMatchObject({
+      status: 'EMAIL_CHANGED',
+      snapshot: { user: { email: 'new@example.com' }, preauth: null },
+    });
+    await api.logout();
+
+    const csrfHeaders = fetchMock.mock.calls
+      .slice(1)
+      .map(([, init]) => new Headers((init as RequestInit).headers).get('X-CSRF-Token'));
+    expect(csrfHeaders).toEqual([
+      'anonymous-csrf-token',
+      'login-csrf-token',
+      'reauth-csrf-token',
+      'reauth-csrf-token',
+      'contact-csrf-token',
+    ]);
+  });
+
+  it('accepts no-step recovery readiness and uses its rotated CSRF for reset', async () => {
+    const recoveryReady = {
+      type: 'password_reset',
+      stage: 'ready_for_password_reset',
+      allowedChannels: ['email', 'sms'],
+      completedChannels: ['email', 'sms'],
+      destinations: { email: 's***@example.com', sms: '+98*****67' },
+      expiresAt: '2026-08-22T13:00:00.000Z',
+    };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(anonymousBootstrap))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            status: 'READY_FOR_PASSWORD_RESET',
+            user: null,
+            preauth: recoveryReady,
+            csrfToken: 'recovery-ready-csrf-token',
+          },
+        }),
+      )
+      .mockResolvedValueOnce(jsonResponse({ data: { success: true } }));
+    vi.stubGlobal('fetch', fetchMock);
+    const api = createAuthApi('/api/v1');
+
+    await api.getMe();
+    await expect(api.forgotPassword('sara')).resolves.toMatchObject({
+      status: 'READY_FOR_PASSWORD_RESET',
+      snapshot: { preauth: recoveryReady, user: null },
+    });
+    await api.resetPassword({
+      password: 'new correct horse battery staple',
+      passwordConfirmation: 'new correct horse battery staple',
+    });
+
+    expect(
+      new Headers((fetchMock.mock.calls[2]?.[1] as RequestInit).headers).get('X-CSRF-Token'),
+    ).toBe('recovery-ready-csrf-token');
+  });
+
   it('does not mistake invalid credentials for session expiry or discard CSRF', async () => {
     const fetchMock = vi
       .fn()

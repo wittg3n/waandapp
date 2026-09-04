@@ -13,7 +13,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "web": "pnpm --filter @waandapp/web dev",
-    "blog": "pnpm --filter @waandapp/blog dev",
+    "admin-dashboard": "pnpm --filter @waandapp/admin-dashboard dev",
     "user-dashboard": "pnpm --filter @waandapp/user-dashboard dev",
     "api": "pnpm --filter @waandapp/api dev",
     "format": "prettier --write .",
@@ -23,8 +23,5 @@
   "devDependencies": {
     "prettier": "^3.0.0",
     "turbo": "^2.10.9"
-  },
-  "dependencies": {
-    "vite-plugin-checker": "^0.14.5"
   }
 }

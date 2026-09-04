@@ -12,6 +12,7 @@ import { FormError } from '@/components/errors/form-error';
 import { Button } from '@/components/ui/button';
 import { authApi } from '@/features/auth/auth-api';
 import { useAuth } from '@/features/auth/auth-context';
+import { destinationForAuthState } from '@/features/auth/auth-routing';
 import { useAppError } from '@/hooks/use-app-error';
 import { cn } from '@/lib/utils';
 import { loginSchema, type LoginFormValues } from '@/schemas/auth.schema';
@@ -37,8 +38,10 @@ export function LoginPage() {
     clearError();
     try {
       const result = await authApi.login(values);
-      applySnapshot(result.snapshot);
-      navigate('/verify', { replace: true });
+      const nextState = applySnapshot(result.snapshot);
+      if (nextState.status !== 'loading') {
+        navigate(destinationForAuthState(nextState), { replace: true });
+      }
     } catch (cause) {
       const error = handleError(cause, {
         source: 'authentication',

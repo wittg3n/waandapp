@@ -22,6 +22,7 @@ const contextSchema = new mongoose.Schema(
       match: /^[a-f0-9]{64}$/,
       select: false,
     },
+    twoStepBypassed: { type: Boolean, default: false, select: false },
     sessionVersionAtStart: { type: Number, min: 0, required: true, select: false },
   },
   { _id: false, strict: 'throw' },
@@ -34,6 +35,7 @@ const authTransactionSchema = new mongoose.Schema(
       enum: [
         'signup',
         'login',
+        'admin_login',
         'password_reset',
         'change_password',
         'change_email',

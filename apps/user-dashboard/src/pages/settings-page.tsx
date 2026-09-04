@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AtSign, KeyRound, LockKeyhole, ShieldCheck, Smartphone } from 'lucide-react';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -11,9 +11,10 @@ import { FormError } from '@/components/errors/form-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ERROR_CODES } from '@/errors/error-codes';
-import { authApi } from '@/features/auth/auth-api';
+import { authApi, type AuthTransitionResult } from '@/features/auth/auth-api';
 import { useAuth } from '@/features/auth/auth-context';
-import type { AuthChannel, SecurityPurpose } from '@/features/auth/types';
+import { createAuthOperationGate } from '@/features/auth/auth-flow';
+import type { AuthChannel, CodeSentResult, SecurityPurpose } from '@/features/auth/types';
 import { useAppError } from '@/hooks/use-app-error';
 import { cn } from '@/lib/utils';
 import {
@@ -30,6 +31,10 @@ const purposes = [
   { value: 'change_email', label: 'تغییر ایمیل', icon: AtSign },
   { value: 'change_phone', label: 'تغییر موبایل', icon: Smartphone },
 ] as const;
+const contactChangeDestinations = {
+  email: { email: 'ایمیل جدید' },
+  sms: { sms: 'شماره جدید' },
+} as const;
 
 function ReauthForm({ onComplete, purpose }: { onComplete: () => void; purpose: SecurityPurpose }) {
   const { applySnapshot, refreshSession } = useAuth();
@@ -50,7 +55,7 @@ function ReauthForm({ onComplete, purpose }: { onComplete: () => void; purpose: 
     try {
       const result = await authApi.reauthenticate({ purpose, ...values });
       applySnapshot(result.snapshot);
-      onComplete();
+      if (result.status === 'REAUTHENTICATED') onComplete();
     } catch (cause) {
       const error = handleError(cause, {
         source: 'authentication',
@@ -81,7 +86,7 @@ function ReauthForm({ onComplete, purpose }: { onComplete: () => void; purpose: 
       />
       <FormError error={errors.root?.message} />
       <Button aria-busy={isSubmitting} disabled={isSubmitting} type="submit">
-        {isSubmitting ? 'در حال بررسی…' : 'ادامه و انتخاب روش تأیید'}
+        {isSubmitting ? 'در حال بررسی…' : 'ادامه'}
       </Button>
     </form>
   );
@@ -166,9 +171,22 @@ function ContactChangeForm({
   const { clearError, error, handleError } = useAppError();
   const [destination, setDestination] = useState(channel === 'sms' ? '+98' : '');
   const [pendingDestination, setPendingDestination] = useState<string | null>(null);
+  const [initialReceipt, setInitialReceipt] = useState<CodeSentResult>();
   const [fieldError, setFieldError] = useState<string>();
+  const [requesting, setRequesting] = useState(false);
+  const operationGateRef = useRef<ReturnType<typeof createAuthOperationGate> | null>(null);
+  operationGateRef.current ??= createAuthOperationGate();
+  const operationGate = operationGateRef.current;
 
-  function continueToVerification(event: FormEvent<HTMLFormElement>) {
+  useEffect(() => () => operationGate.cancel(), [operationGate]);
+
+  function completeChange(result: AuthTransitionResult) {
+    applySnapshot(result.snapshot);
+    toast.success(channel === 'email' ? 'ایمیل تغییر کرد.' : 'شماره موبایل تغییر کرد.');
+    onDone();
+  }
+
+  async function continueToVerification(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     clearError();
     const parsed = (channel === 'email' ? authEmailSchema : authPhoneSchema).safeParse(destination);
@@ -177,23 +195,54 @@ function ContactChangeForm({
       return;
     }
     setFieldError(undefined);
-    setPendingDestination(parsed.data);
+    const operation = operationGate.start();
+    setRequesting(true);
+    try {
+      const result = await authApi.requestContactChange(channel, parsed.data, operation.signal);
+      if (!operationGate.isCurrent(operation)) return;
+      if (result.status === 'CODE_SENT') {
+        setPendingDestination(parsed.data);
+        setInitialReceipt(result);
+      } else {
+        completeChange(result);
+      }
+    } catch (cause) {
+      if (!operationGate.isCurrent(operation)) return;
+      const requestError = handleError(cause, {
+        source: 'authentication',
+        context: { operation: 'request-contact-change', channel },
+      });
+      if (
+        requestError.code === ERROR_CODES.AUTH_REAUTH_REQUIRED ||
+        requestError.code === ERROR_CODES.AUTH_PREAUTH_INVALID
+      ) {
+        onExpired();
+      }
+    } finally {
+      if (operationGate.isCurrent(operation)) {
+        operationGate.finish(operation);
+        setRequesting(false);
+      }
+    }
   }
 
   if (pendingDestination) {
     return (
       <VerificationPanel
         channels={[channel]}
-        destinations={{ [channel]: channel === 'email' ? 'ایمیل جدید' : 'شماره جدید' }}
+        destinations={contactChangeDestinations[channel]}
+        initialReceipt={initialReceipt}
         lockedChannel={channel}
         onInvalid={onExpired}
-        onRequest={() => authApi.requestContactChange(channel, pendingDestination)}
+        onRequest={async (_, signal) => {
+          const result = await authApi.requestContactChange(channel, pendingDestination, signal);
+          if (result.status === 'CODE_SENT') return result;
+          completeChange(result);
+        }}
         onVerify={async (selected, code) => {
           try {
             const result = await authApi.verifyContactChange(selected, code);
-            applySnapshot(result.snapshot);
-            toast.success(channel === 'email' ? 'ایمیل تغییر کرد.' : 'شماره موبایل تغییر کرد.');
-            onDone();
+            completeChange(result);
           } catch (cause) {
             handleError(cause, {
               source: 'authentication',
@@ -212,14 +261,13 @@ function ContactChangeForm({
       <p className="text-sm leading-7 text-muted-foreground">
         {previousDestination ? (
           <>
-            برای ارسال دوباره کد به{' '}
-            <bdi className="font-bold text-foreground">{previousDestination}</bdi>، همان{' '}
-            {isEmail ? 'ایمیل' : 'شماره'} را دوباره وارد کنید.
+            برای ادامه با <bdi className="font-bold text-foreground">{previousDestination}</bdi>،
+            همان {isEmail ? 'ایمیل' : 'شماره'} را دوباره وارد کنید.
           </>
         ) : isEmail ? (
-          'کد تأیید به ایمیل جدید ارسال می‌شود.'
+          'ایمیل جدید را وارد کنید؛ در صورت نیاز کد تأیید ارسال می‌شود.'
         ) : (
-          'شماره را با کد کشور وارد کنید؛ کد تأیید به شماره جدید ارسال می‌شود.'
+          'شماره جدید را با کد کشور وارد کنید؛ در صورت نیاز کد تأیید ارسال می‌شود.'
         )}
       </p>
       <AuthField
@@ -241,7 +289,9 @@ function ContactChangeForm({
         value={destination}
       />
       <FormError error={error} />
-      <Button type="submit">ادامه و دریافت کد</Button>
+      <Button aria-busy={requesting} disabled={requesting} type="submit">
+        {requesting ? 'در حال بررسی…' : 'ادامه'}
+      </Button>
     </form>
   );
 }
@@ -367,7 +417,7 @@ export function SettingsPage() {
               />
             )
           ) : (
-            <ReauthForm onComplete={() => undefined} purpose={purpose} />
+            <ReauthForm onComplete={() => setReadyPurpose(purpose)} purpose={purpose} />
           )}
         </CardContent>
       </Card>

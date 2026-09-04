@@ -1,20 +1,32 @@
 import { Router } from 'express';
 
-import { pingMongoDb } from '../infrastructure/mongodb.js';
+import { pingCmsMongoDb, pingCoreMongoDb } from '../infrastructure/mongodb.js';
 
-export function createHealthRouter(redis, pingMongo = pingMongoDb) {
+export function createHealthRouter(
+  redis,
+  pingCore = pingCoreMongoDb,
+  pingCms = pingCmsMongoDb,
+) {
   const router = Router();
 
   router.get('/', async (_request, response) => {
     response.setHeader('Cache-Control', 'no-store');
-    const [mongodb, redisResult] = await Promise.allSettled([pingMongo(), redis.ping()]);
-    const healthy = mongodb.status === 'fulfilled' && redisResult.status === 'fulfilled';
+    const [core, cms, redisResult] = await Promise.allSettled([
+      pingCore(),
+      pingCms(),
+      redis.ping(),
+    ]);
+    const healthy =
+      core.status === 'fulfilled' &&
+      cms.status === 'fulfilled' &&
+      redisResult.status === 'fulfilled';
 
     response.status(healthy ? 200 : 503).json({
       data: {
         status: healthy ? 'ok' : 'degraded',
         dependencies: {
-          mongodb: mongodb.status === 'fulfilled' ? 'up' : 'down',
+          coreMongoDb: core.status === 'fulfilled' ? 'up' : 'down',
+          cmsMongoDb: cms.status === 'fulfilled' ? 'up' : 'down',
           redis: redisResult.status === 'fulfilled' ? 'up' : 'down',
         },
       },

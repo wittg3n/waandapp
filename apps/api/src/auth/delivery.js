@@ -76,6 +76,13 @@ export function createDeliverySenders(settings, fetchImpl = fetch, write = conso
     };
   }
 
+  if (settings.authDeliveryMode === 'dev-no2step') {
+    if (!isDevNoTwoStep(settings)) {
+      throw new Error('Two-step bypass is only available in development.');
+    }
+    return { emailSender: disabledSender(), smsSender: disabledSender() };
+  }
+
   if (settings.authDeliveryMode !== 'webhook') {
     throw new Error('Unsupported authentication delivery mode.');
   }
@@ -96,4 +103,8 @@ export function createDeliverySenders(settings, fetchImpl = fetch, write = conso
         })
       : disabledSender(),
   };
+}
+
+export function isDevNoTwoStep(settings) {
+  return settings.nodeEnvironment === 'development' && settings.authDeliveryMode === 'dev-no2step';
 }

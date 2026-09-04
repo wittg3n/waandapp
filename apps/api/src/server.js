@@ -2,9 +2,11 @@ import { createServer } from 'node:http';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { createAdminIndexes, verifyAdminIndexes } from './admin/indexes.js';
 import { createApp } from './app.js';
 import { createAuthIndexes, verifyAuthIndexes } from './auth/indexes.js';
-import { createBlogIndexes, verifyBlogIndexes } from './blog/indexes.js';
+import { createCmsIndexes, verifyCmsIndexes } from './cms/indexes.js';
+import { startCmsScheduler } from './cms/scheduler.js';
 import { config } from './config/index.js';
 import { connectMongoDb, disconnectMongoDb } from './infrastructure/mongodb.js';
 import { connectRedis, disconnectRedis } from './infrastructure/redis.js';
@@ -29,7 +31,7 @@ function closeServer(server) {
   });
 }
 
-function registerShutdown(server, redis) {
+function registerShutdown(server, redis, stopCmsScheduler) {
   let shuttingDown = false;
 
   const shutdown = async (reason, error) => {
@@ -51,6 +53,7 @@ function registerShutdown(server, redis) {
     timeout.unref();
 
     try {
+      stopCmsScheduler();
       await closeServer(server);
       await Promise.all([disconnectRedis(redis), disconnectMongoDb()]);
       logger.info('Shutdown complete');
@@ -70,15 +73,23 @@ function registerShutdown(server, redis) {
 
 export async function start() {
   let redis;
+  let stopCmsScheduler = () => {};
 
   try {
-    await connectMongoDb(config.mongodbUri, logger);
+    await connectMongoDb(config.mongodbUri, logger, {
+      coreDatabase: config.mongodbCoreDatabase,
+      cmsDatabase: config.mongodbCmsDatabase,
+    });
     if (config.nodeEnvironment === 'production') {
-      await Promise.all([verifyAuthIndexes(), verifyBlogIndexes()]);
+      await Promise.all([verifyAuthIndexes(), verifyAdminIndexes(), verifyCmsIndexes()]);
     } else {
-      await Promise.all([createAuthIndexes(), createBlogIndexes()]);
+      await Promise.all([createAuthIndexes(), createAdminIndexes(), createCmsIndexes()]);
     }
     redis = await connectRedis(config.redisUrl, logger);
+    stopCmsScheduler = startCmsScheduler({
+      intervalMs: config.cmsSchedulerIntervalMs,
+      logger,
+    });
 
     const server = createServer(createApp(redis));
     server.requestTimeout = 15_000;
@@ -87,7 +98,7 @@ export async function start() {
     server.maxHeadersCount = 100;
 
     await listen(server);
-    registerShutdown(server, redis);
+    registerShutdown(server, redis, stopCmsScheduler);
     logger.info(
       {
         port: config.port,
@@ -98,6 +109,7 @@ export async function start() {
       'Waandapp API listening',
     );
   } catch (error) {
+    stopCmsScheduler();
     await Promise.allSettled([disconnectRedis(redis), disconnectMongoDb()]);
     logger.fatal({ err: error }, 'API failed to start');
     process.exitCode = 1;

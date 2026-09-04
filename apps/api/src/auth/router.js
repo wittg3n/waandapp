@@ -241,7 +241,7 @@ export function createAuthRouter({ redis, settings, service, requireTrustedMutat
         channel: 'email',
         destination: request.validatedBody.email,
       });
-      response.json({ data });
+      response.json(withCsrf(request, data));
     },
   );
   router.post(
@@ -271,7 +271,7 @@ export function createAuthRouter({ redis, settings, service, requireTrustedMutat
         channel: 'sms',
         destination: request.validatedBody.phone,
       });
-      response.json({ data });
+      response.json(withCsrf(request, data));
     },
   );
   router.post(

@@ -10,6 +10,7 @@ import {
 import { recordAuthEvent } from './audit.js';
 import { createChallengeService } from './challenge-service.js';
 import { keyedDigest } from './code.js';
+import { isDevNoTwoStep } from './delivery.js';
 import { ApplicantProfile } from './models/applicant-profile.js';
 import { AuthTransaction } from './models/auth-transaction.js';
 import { LegalAcceptance } from './models/legal-acceptance.js';
@@ -53,7 +54,7 @@ function securitySelection(query) {
 
 function transactionSelection(query) {
   return query.select(
-    '+context.decoy +context.newDestination +context.recoverySubjectDigest +context.sessionVersionAtStart',
+    '+context.decoy +context.newDestination +context.recoverySubjectDigest +context.sessionVersionAtStart +context.twoStepBypassed',
   );
 }
 
@@ -89,13 +90,19 @@ async function activateVerifiedPendingUser(userId, sessionVersion, now = new Dat
   return isModernActiveUser(user) ? user : null;
 }
 
-async function rotateAuthenticatedSession(request, user, now = new Date()) {
+async function rotateAuthenticatedSession(
+  request,
+  user,
+  now = new Date(),
+  twoStepBypassed = false,
+) {
   await regenerateSession(request);
   ensureSessionState(request);
   request.session.userId = user._id.toString();
   request.session.sessionVersion = user.sessionVersion;
   request.session.authTime = now.getTime();
   request.session.secondStepAt = now.getTime();
+  request.session.twoStepBypassed = twoStepBypassed;
   await saveSession(request);
 }
 
@@ -123,6 +130,7 @@ async function createTransaction({
   decoy = false,
   recoverySubjectDigest = null,
   sessionVersionAtStart = 0,
+  twoStepBypassed = false,
   publicPreauth = true,
 }) {
   await invalidateBoundPreauth(request);
@@ -147,6 +155,7 @@ async function createTransaction({
       decoy,
       recoverySubjectDigest,
       sessionVersionAtStart,
+      twoStepBypassed,
     },
   });
   request.session.preauth = { transactionId: transaction._id.toString() };
@@ -154,7 +163,10 @@ async function createTransaction({
   return transaction;
 }
 
-async function boundTransaction(request, { types, stages, authenticatedUser } = {}) {
+async function boundTransaction(
+  request,
+  { types, stages, authenticatedUser, devNoTwoStep = false } = {},
+) {
   const transactionId = request.session?.preauth?.transactionId;
   if (!transactionId) throw transactionError();
   const transaction = await transactionSelection(AuthTransaction.findById(transactionId));
@@ -163,6 +175,7 @@ async function boundTransaction(request, { types, stages, authenticatedUser } = 
     transaction &&
     !transaction.consumedAt &&
     transaction.expiresAt > now &&
+    (!transaction.context.twoStepBypassed || devNoTwoStep) &&
     (!types || types.includes(transaction.type)) &&
     (!stages || stages.includes(transaction.stage)) &&
     (!authenticatedUser || transaction.userId.equals(authenticatedUser._id));
@@ -241,7 +254,60 @@ export function createAuthService({
     codeVerifier,
     codeGenerator,
   });
+  const noTwoStep = isDevNoTwoStep(settings);
   const dummyHashPromise = hashPassword('Waand timing-only password value 2026', settings);
+
+  async function activateWithoutTwoStep(user) {
+    const now = new Date();
+    const activated = await securitySelection(
+      User.findOneAndUpdate(
+        {
+          _id: user._id,
+          status: 'pending_verification',
+          sessionVersion: user.sessionVersion,
+        },
+        {
+          $set: {
+            status: 'active',
+            emailVerifiedAt: now,
+            phoneVerifiedAt: now,
+          },
+        },
+        { returnDocument: 'after', runValidators: true },
+      ),
+    );
+    return isModernActiveUser(activated) ? activated : null;
+  }
+
+  async function finishAuthentication(request, user, error) {
+    await invalidateBoundPreauth(request);
+    const now = new Date();
+    const authenticated = await securitySelection(
+      User.findOneAndUpdate(
+        {
+          _id: user._id,
+          status: 'active',
+          sessionVersion: user.sessionVersion,
+        },
+        { $set: { lastLoginAt: now } },
+        { returnDocument: 'after', runValidators: true },
+      ),
+    );
+    if (!isModernActiveUser(authenticated)) throw error;
+    await rotateAuthenticatedSession(request, authenticated, now, true);
+    await recordAuthEvent({
+      settings,
+      request,
+      type: 'LOGIN_SUCCESS',
+      userId: authenticated._id,
+      reason: 'dev_no2step',
+    });
+    return {
+      status: 'AUTHENTICATED',
+      user: await userPayload(authenticated),
+      preauth: null,
+    };
+  }
 
   async function notifySecurityChange(user, event, extra = []) {
     const notifications = [
@@ -281,6 +347,59 @@ export function createAuthService({
     }
   }
 
+  async function verifyPrimaryCredentials({ request, identifier, password }) {
+    await enforceCredentialLimit(request, 'login:identifier', identifier);
+    const user = await securitySelection(User.findOne(identityFilter(identifier)));
+    const passwordHash = user?.passwordHash ?? (await dummyHashPromise);
+    const passwordValid = await verifyPassword(passwordHash, password);
+    const locked = user?.security?.lockedUntil && user.security.lockedUntil > new Date();
+
+    if (!user || !passwordValid || locked || ['suspended', 'deleted'].includes(user.status)) {
+      if (user) {
+        const failed = await User.findByIdAndUpdate(
+          user._id,
+          {
+            $inc: { 'security.failedLoginCount': 1 },
+            $set: { 'security.lastFailedLoginAt': new Date() },
+          },
+          { returnDocument: 'after' },
+        );
+        if (failed?.security?.failedLoginCount >= 10) {
+          await User.updateOne(
+            { _id: user._id },
+            { $set: { 'security.lockedUntil': new Date(Date.now() + 5 * 60_000) } },
+          );
+        }
+      }
+      await recordAuthEvent({
+        settings,
+        request,
+        type: 'PRIMARY_AUTH_FAILED',
+        userId: user?._id,
+        reason: user?.status === 'suspended' ? 'unavailable' : 'invalid_credentials',
+      });
+      throw INVALID_CREDENTIALS;
+    }
+
+    await User.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          'security.failedLoginCount': 0,
+          'security.lastFailedLoginAt': null,
+          'security.lockedUntil': null,
+        },
+      },
+    );
+    await recordAuthEvent({
+      settings,
+      request,
+      type: 'PRIMARY_AUTH_SUCCESS',
+      userId: user._id,
+    });
+    return user;
+  }
+
   async function register({ request, input }) {
     const duplicateFilter = mongoose.trusted({
       $or: [
@@ -314,6 +433,17 @@ export function createAuthService({
         userId: resumable._id,
         termsVersion: input.termsVersion,
       });
+      if (noTwoStep) {
+        const activated = await activateWithoutTwoStep(resumable);
+        if (!activated) throw transactionError();
+        await recordAuthEvent({
+          settings,
+          request,
+          type: 'REGISTER_RESUMED',
+          userId: activated._id,
+        });
+        return finishAuthentication(request, activated, transactionError());
+      }
       if (resumable.emailVerifiedAt && resumable.phoneVerifiedAt) {
         await invalidateBoundPreauth(request);
         const activated = await activateVerifiedPendingUser(
@@ -392,6 +522,12 @@ export function createAuthService({
       userId: user._id,
       termsVersion: input.termsVersion,
     });
+    if (noTwoStep) {
+      const activated = await activateWithoutTwoStep(user);
+      if (!activated) throw transactionError();
+      await recordAuthEvent({ settings, request, type: 'REGISTER_CREATED', userId: activated._id });
+      return finishAuthentication(request, activated, transactionError());
+    }
     const transaction = await createTransaction({
       request,
       settings,
@@ -402,57 +538,14 @@ export function createAuthService({
   }
 
   async function login({ request, identifier, password }) {
-    await enforceCredentialLimit(request, 'login:identifier', identifier);
-    const user = await securitySelection(User.findOne(identityFilter(identifier)));
-    const passwordHash = user?.passwordHash ?? (await dummyHashPromise);
-    const passwordValid = await verifyPassword(passwordHash, password);
-    const locked = user?.security?.lockedUntil && user.security.lockedUntil > new Date();
-
-    if (!user || !passwordValid || locked || ['suspended', 'deleted'].includes(user.status)) {
-      if (user) {
-        const failed = await User.findByIdAndUpdate(
-          user._id,
-          {
-            $inc: { 'security.failedLoginCount': 1 },
-            $set: { 'security.lastFailedLoginAt': new Date() },
-          },
-          { returnDocument: 'after' },
-        );
-        if (failed?.security?.failedLoginCount >= 10) {
-          await User.updateOne(
-            { _id: user._id },
-            { $set: { 'security.lockedUntil': new Date(Date.now() + 5 * 60_000) } },
-          );
-        }
-      }
-      await recordAuthEvent({
-        settings,
-        request,
-        type: 'PRIMARY_AUTH_FAILED',
-        userId: user?._id,
-        reason: user?.status === 'suspended' ? 'unavailable' : 'invalid_credentials',
-      });
-      throw INVALID_CREDENTIALS;
-    }
-
-    await User.updateOne(
-      { _id: user._id },
-      {
-        $set: {
-          'security.failedLoginCount': 0,
-          'security.lastFailedLoginAt': null,
-          'security.lockedUntil': null,
-        },
-      },
-    );
-    await recordAuthEvent({
-      settings,
-      request,
-      type: 'PRIMARY_AUTH_SUCCESS',
-      userId: user._id,
-    });
+    let user = await verifyPrimaryCredentials({ request, identifier, password });
 
     if (user.status === 'pending_verification') {
+      if (noTwoStep) {
+        user = await activateWithoutTwoStep(user);
+        if (!user) throw INVALID_CREDENTIALS;
+        return finishAuthentication(request, user, INVALID_CREDENTIALS);
+      }
       const transaction = await createTransaction({
         request,
         settings,
@@ -461,6 +554,7 @@ export function createAuthService({
       return responseWithPreauth('VERIFICATION_REQUIRED', transaction);
     }
     if (!isModernActiveUser(user)) throw INVALID_CREDENTIALS;
+    if (noTwoStep) return finishAuthentication(request, user, INVALID_CREDENTIALS);
 
     const transaction = await createTransaction({
       request,
@@ -491,12 +585,14 @@ export function createAuthService({
       settings,
       type: 'password_reset',
       userId: user?._id ?? new mongoose.Types.ObjectId(),
-      stage: 'recovery_verification',
+      stage: noTwoStep ? 'ready_for_password_reset' : 'recovery_verification',
       allowedChannels: ['email', 'sms'],
+      completedChannels: noTwoStep ? ['email', 'sms'] : [],
       destinationMasks: { email: '***', sms: '***' },
       decoy: !user,
       recoverySubjectDigest,
       sessionVersionAtStart: user?.sessionVersion ?? 0,
+      twoStepBypassed: noTwoStep,
     });
     await recordAuthEvent({
       settings,
@@ -505,7 +601,10 @@ export function createAuthService({
       userId: user?._id,
     });
     return {
-      ...responseWithPreauth('RECOVERY_STARTED', transaction),
+      ...responseWithPreauth(
+        noTwoStep ? 'READY_FOR_PASSWORD_RESET' : 'RECOVERY_STARTED',
+        transaction,
+      ),
       message: GENERIC_RECOVERY_MESSAGE,
     };
   }
@@ -514,6 +613,7 @@ export function createAuthService({
     const transaction = await boundTransaction(request, {
       types: ['signup'],
       stages: ['verify_contacts'],
+      devNoTwoStep: noTwoStep,
     });
     if (transaction.completedChannels.includes(channel)) {
       throw new ApiError(409, 'AUTH_CHANNEL_ALREADY_VERIFIED', 'The channel is already verified.');
@@ -602,6 +702,7 @@ export function createAuthService({
     const transaction = await boundTransaction(request, {
       types: ['login', 'step_up', 'change_password', 'change_email', 'change_phone'],
       stages: ['second_step'],
+      devNoTwoStep: noTwoStep,
       ...(authenticatedUser ? { authenticatedUser } : {}),
     });
     if (!transaction.allowedChannels.includes(channel)) {
@@ -627,6 +728,54 @@ export function createAuthService({
       purpose: transaction.type === 'login' ? 'login_second_step' : 'step_up',
       destination: channel === 'email' ? user.emailNormalized : user.phoneNormalized,
     });
+  }
+
+  async function authorizeStepUp(request, transaction, user, channel) {
+    const now = new Date();
+    const authorized = await transactionSelection(
+      AuthTransaction.findOneAndUpdate(
+        {
+          _id: transaction._id,
+          type: transaction.type,
+          stage: 'second_step',
+          consumedAt: null,
+          expiresAt: mongoose.trusted({ $gt: now }),
+          failedSecondStepAttempts: mongoose.trusted({ $lt: transaction.maxAttempts }),
+        },
+        {
+          $set: {
+            stage: 'reauthenticated',
+            authorizedAt: now,
+            expiresAt: new Date(now.getTime() + settings.authStepUpTtlMs),
+          },
+          ...(channel ? { $addToSet: { completedChannels: channel } } : {}),
+        },
+        { returnDocument: 'after' },
+      ),
+    );
+    if (!authorized) throw transactionError();
+    delete request.session.preauth;
+    request.session.stepUp = {
+      transactionId: authorized._id.toString(),
+      purpose: authorized.context.purpose,
+      authorizedAt: now.getTime(),
+    };
+    request.session.secondStepAt = now.getTime();
+    await saveSession(request);
+    await recordAuthEvent({
+      settings,
+      request,
+      type: 'REAUTH_SUCCESS',
+      userId: user._id,
+      ...(channel ? {} : { reason: 'dev_no2step' }),
+    });
+    return {
+      status: 'REAUTHENTICATED',
+      purpose: authorized.context.purpose,
+      expiresAt: authorized.expiresAt.toISOString(),
+      user: await userPayload(user),
+      preauth: null,
+    };
   }
 
   async function verifySecondStep({ request, channel, code, authenticatedUser }) {
@@ -659,48 +808,15 @@ export function createAuthService({
       };
     }
 
-    const authorized = await transactionSelection(
-      AuthTransaction.findOneAndUpdate(
-        {
-          _id: transaction._id,
-          type: transaction.type,
-          stage: 'second_step',
-          consumedAt: null,
-          expiresAt: mongoose.trusted({ $gt: now }),
-          failedSecondStepAttempts: mongoose.trusted({ $lt: transaction.maxAttempts }),
-        },
-        {
-          $set: {
-            stage: 'reauthenticated',
-            authorizedAt: now,
-            expiresAt: new Date(now.getTime() + settings.authStepUpTtlMs),
-          },
-          $addToSet: { completedChannels: channel },
-        },
-        { returnDocument: 'after' },
-      ),
-    );
-    if (!authorized) throw transactionError();
-    delete request.session.preauth;
-    request.session.stepUp = {
-      transactionId: authorized._id.toString(),
-      purpose: authorized.context.purpose,
-      authorizedAt: now.getTime(),
-    };
-    request.session.secondStepAt = now.getTime();
-    await saveSession(request);
-    await recordAuthEvent({ settings, request, type: 'REAUTH_SUCCESS', userId: user._id });
-    return {
-      status: 'REAUTHENTICATED',
-      purpose: authorized.context.purpose,
-      expiresAt: authorized.expiresAt.toISOString(),
-      user: await userPayload(user),
-      preauth: null,
-    };
+    return authorizeStepUp(request, transaction, user, channel);
   }
 
   async function recoveryContext(request, channel, stages = ['recovery_verification']) {
-    const transaction = await boundTransaction(request, { types: ['password_reset'], stages });
+    const transaction = await boundTransaction(request, {
+      types: ['password_reset'],
+      stages,
+      devNoTwoStep: noTwoStep,
+    });
     if (!transaction.allowedChannels.includes(channel)) throw transactionError();
     if (channel === 'sms' && !transaction.completedChannels.includes('email')) {
       throw new ApiError(
@@ -809,8 +925,14 @@ export function createAuthService({
     const transaction = await boundTransaction(request, {
       types: ['password_reset'],
       stages: ['ready_for_password_reset'],
+      devNoTwoStep: noTwoStep,
     });
-    if (transaction.context.decoy) throw transactionError();
+    if (transaction.context.decoy) {
+      if (!noTwoStep) throw transactionError();
+      await consumeTransaction(transaction, 'ready_for_password_reset');
+      await destroySession(request);
+      return { success: true };
+    }
     const passwordHash = await hashPassword(password, settings);
     const consumed = await consumeTransaction(transaction, 'ready_for_password_reset');
     if (!consumed) throw transactionError();
@@ -873,8 +995,10 @@ export function createAuthService({
         sms: maskDestination('sms', securedUser.phone),
       },
       sessionVersionAtStart: securedUser.sessionVersion,
+      twoStepBypassed: noTwoStep,
     });
     await recordAuthEvent({ settings, request, type: 'REAUTH_STARTED', userId: securedUser._id });
+    if (noTwoStep) return authorizeStepUp(request, transaction, securedUser);
     return responseWithPreauth('SECOND_STEP_REQUIRED', transaction);
   }
 
@@ -893,6 +1017,7 @@ export function createAuthService({
       transaction.expiresAt <= now ||
       !transaction.authorizedAt ||
       now - transaction.authorizedAt > settings.authStepUpTtlMs ||
+      (transaction.context.twoStepBypassed && !noTwoStep) ||
       !transaction.userId.equals(user._id) ||
       transaction.context.sessionVersionAtStart !== user.sessionVersion ||
       transaction.context.purpose !== purpose
@@ -905,7 +1030,7 @@ export function createAuthService({
   }
 
   async function refreshCurrentSession(request, user, now = new Date()) {
-    await rotateAuthenticatedSession(request, user, now);
+    await rotateAuthenticatedSession(request, user, now, noTwoStep);
   }
 
   async function changePassword({ request, user, password }) {
@@ -934,57 +1059,9 @@ export function createAuthService({
     return { status: 'PASSWORD_CHANGED', user: await userPayload(changed), preauth: null };
   }
 
-  async function requestContactChange({ request, user, channel, destination }) {
-    const purpose = channel === 'email' ? 'change_email' : 'change_phone';
-    const transaction = await stepUpGrant(request, user, purpose, [
-      'reauthenticated',
-      'new_contact_verification',
-    ]);
-    const normalizedField = channel === 'email' ? 'emailNormalized' : 'phoneNormalized';
-    const current = channel === 'email' ? user.email : user.phone;
-    if (destination === current) {
-      throw new ApiError(409, 'AUTH_CONTACT_UNCHANGED', 'The new contact must be different.');
-    }
-    if (await User.exists({ [normalizedField]: destination })) {
-      throw new ApiError(409, 'AUTH_IDENTITY_CONFLICT', 'The contact is unavailable.');
-    }
-    if (
-      transaction.stage === 'new_contact_verification' &&
-      transaction.context.newDestination !== destination
-    ) {
-      throw reauthError();
-    }
-    const updated = await transactionSelection(
-      AuthTransaction.findOneAndUpdate(
-        { _id: transaction._id, consumedAt: null, stage: transaction.stage },
-        {
-          $set: {
-            stage: 'new_contact_verification',
-            allowedChannels: [channel],
-            completedChannels: [],
-            'context.newDestination': destination,
-            'context.destinationMasks': { [channel]: maskDestination(channel, destination) },
-          },
-        },
-        { returnDocument: 'after' },
-      ),
-    );
-    if (!updated) throw reauthError();
-    return challenges.send({
-      request,
-      transaction: updated,
-      channel,
-      purpose,
-      destination,
-    });
-  }
-
-  async function verifyContactChange({ request, user, channel, code }) {
-    const purpose = channel === 'email' ? 'change_email' : 'change_phone';
-    const transaction = await stepUpGrant(request, user, purpose, ['new_contact_verification']);
+  async function completeContactChange({ request, user, channel, transaction }) {
     const destination = transaction.context.newDestination;
     if (!destination) throw reauthError();
-    await challenges.verify({ request, transaction, channel, purpose, code });
     const consumed = await consumeTransaction(transaction, 'new_contact_verification');
     if (!consumed) throw reauthError();
 
@@ -1024,6 +1101,7 @@ export function createAuthService({
       request,
       type: channel === 'email' ? 'EMAIL_CHANGED' : 'PHONE_CHANGED',
       userId: changed._id,
+      ...(noTwoStep ? { reason: 'dev_no2step' } : {}),
     });
     const previousNotification =
       channel === 'email'
@@ -1044,12 +1122,74 @@ export function createAuthService({
     };
   }
 
+  async function requestContactChange({ request, user, channel, destination }) {
+    const purpose = channel === 'email' ? 'change_email' : 'change_phone';
+    const transaction = await stepUpGrant(request, user, purpose, [
+      'reauthenticated',
+      'new_contact_verification',
+    ]);
+    const normalizedField = channel === 'email' ? 'emailNormalized' : 'phoneNormalized';
+    const current = channel === 'email' ? user.email : user.phone;
+    if (destination === current) {
+      throw new ApiError(409, 'AUTH_CONTACT_UNCHANGED', 'The new contact must be different.');
+    }
+    if (await User.exists({ [normalizedField]: destination })) {
+      throw new ApiError(409, 'AUTH_IDENTITY_CONFLICT', 'The contact is unavailable.');
+    }
+    if (
+      transaction.stage === 'new_contact_verification' &&
+      transaction.context.newDestination !== destination
+    ) {
+      throw reauthError();
+    }
+    const updated = await transactionSelection(
+      AuthTransaction.findOneAndUpdate(
+        { _id: transaction._id, consumedAt: null, stage: transaction.stage },
+        {
+          $set: {
+            stage: 'new_contact_verification',
+            allowedChannels: [channel],
+            completedChannels: [],
+            'context.newDestination': destination,
+            'context.destinationMasks': { [channel]: maskDestination(channel, destination) },
+          },
+        },
+        { returnDocument: 'after' },
+      ),
+    );
+    if (!updated) throw reauthError();
+    if (noTwoStep) {
+      return completeContactChange({ request, user, channel, transaction: updated });
+    }
+    return challenges.send({
+      request,
+      transaction: updated,
+      channel,
+      purpose,
+      destination,
+    });
+  }
+
+  async function verifyContactChange({ request, user, channel, code }) {
+    const purpose = channel === 'email' ? 'change_email' : 'change_phone';
+    const transaction = await stepUpGrant(request, user, purpose, ['new_contact_verification']);
+    const destination = transaction.context.newDestination;
+    if (!destination) throw reauthError();
+    await challenges.verify({ request, transaction, channel, purpose, code });
+    return completeContactChange({ request, user, channel, transaction });
+  }
+
   async function getMe({ request, user }) {
     let preauth = null;
     const transactionId = request.session?.preauth?.transactionId;
     if (transactionId) {
       const transaction = await transactionSelection(AuthTransaction.findById(transactionId));
-      if (transaction && !transaction.consumedAt && transaction.expiresAt > new Date()) {
+      const keepNoTwoStepRecovery =
+        transaction?.type === 'password_reset' && transaction.stage === 'ready_for_password_reset';
+      const bypassIsDisabled = transaction?.context.twoStepBypassed && !noTwoStep;
+      if (bypassIsDisabled || (noTwoStep && transaction && !keepNoTwoStepRecovery)) {
+        await invalidateBoundPreauth(request);
+      } else if (transaction && !transaction.consumedAt && transaction.expiresAt > new Date()) {
         preauth = serializePreauth(transaction);
       } else {
         delete request.session.preauth;
@@ -1061,7 +1201,15 @@ export function createAuthService({
         AuthTransaction.findById(request.session.stepUp.transactionId),
       );
       const now = new Date();
-      if (
+      const bypassIsDisabled = transaction?.context.twoStepBypassed && !noTwoStep;
+      if (bypassIsDisabled || (noTwoStep && transaction?.stage === 'new_contact_verification')) {
+        await AuthTransaction.updateOne(
+          { _id: transaction._id, consumedAt: null },
+          { $set: { stage: 'completed', consumedAt: now } },
+        );
+        delete request.session.stepUp;
+        await saveSession(request);
+      } else if (
         transaction &&
         ['step_up', 'change_password', 'change_email', 'change_phone'].includes(transaction.type) &&
         ['reauthenticated', 'new_contact_verification'].includes(transaction.stage) &&
@@ -1106,6 +1254,7 @@ export function createAuthService({
     requestSecondStep,
     resetPassword,
     updateProfile,
+    verifyPrimaryCredentials,
     verifyContactChange,
     verifyRecoveryCode,
     verifyRegistrationCode,

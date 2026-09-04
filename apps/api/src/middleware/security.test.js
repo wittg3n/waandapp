@@ -6,9 +6,15 @@ Object.assign(process.env, {
   NODE_ENV: 'test',
   PORT: '4000',
   MONGODB_URI: 'mongodb://localhost:27017/waandapp_security_test',
+  MONGODB_CORE_DATABASE: 'waandapp_security_test',
+  MONGODB_CMS_DATABASE: 'waandapp_security_test_cms',
+  CMS_MEDIA_ROOT: 'apps/api/storage/cms-security-test',
+  CMS_MEDIA_MAX_BYTES: '10485760',
+  CMS_SCHEDULER_INTERVAL_MS: '60000',
   REDIS_URL: 'redis://localhost:6379',
-  CORS_ORIGINS: 'http://localhost:3001',
+  CORS_ORIGINS: 'http://localhost:3001,http://localhost:3039',
   AUTH_MUTATION_ORIGINS: 'http://localhost:3001',
+  ADMIN_DASHBOARD_ORIGIN: 'http://localhost:3039',
   LOG_LEVEL: 'silent',
   RATE_LIMIT_WINDOW_MS: '60000',
   RATE_LIMIT_MAX: '100',
@@ -17,6 +23,10 @@ Object.assign(process.env, {
   SESSION_COOKIE_NAME: 'waand.sid',
   SESSION_IDLE_TTL_MS: '3600000',
   SESSION_ABSOLUTE_TTL_MS: '86400000',
+  ADMIN_SESSION_SECRET: 'security-test-admin-session-secret-0000000000000000000000000',
+  ADMIN_SESSION_COOKIE_NAME: 'waand_admin_sid',
+  ADMIN_SESSION_IDLE_TTL_MS: '900000',
+  ADMIN_SESSION_ABSOLUTE_TTL_MS: '28800000',
   AUTH_CODE_PEPPER: 'security-test-code-pepper-000000000000000000000000000000',
   AUTH_CODE_TTL_MS: '300000',
   AUTH_TRANSACTION_TTL_MS: '900000',
@@ -46,11 +56,22 @@ Object.assign(process.env, {
 const { ownedByCurrentUserFilter, requireRole } = await import('../auth/authorization.js');
 const { createApp } = await import('../app.js');
 const { config } = await import('../config/index.js');
-const { createSessionMiddleware, sessionCookieOptions } = await import('../config/session.js');
+const {
+  adminSessionCookieOptions,
+  createAdminSessionMiddleware,
+  createSessionMiddleware,
+  sessionCookieOptions,
+} = await import('../config/session.js');
 const { redactSensitiveValues } = await import('../logger.js');
 const { ApiError, errorHandler } = await import('./errors.js');
-const { enforceAbsoluteSessionLifetime, ensureSessionState, requireTrustedMutation } =
-  await import('./session.js');
+const {
+  enforceAbsoluteSessionLifetime,
+  enforceAdminAbsoluteSessionLifetime,
+  ensureAdminSessionState,
+  ensureSessionState,
+  requireAdminTrustedMutation,
+  requireTrustedMutation,
+} = await import('./session.js');
 
 function runMiddleware(middleware, request, response = {}) {
   return new Promise((resolve) => {
@@ -95,8 +116,14 @@ function appRedis() {
 function testApp(redis) {
   return createApp(redis, {
     settings: config,
+    adminAuthService: {},
     authService: {},
     senders: { emailSender: {}, smsSender: {} },
+    adminSessionMiddleware(request, _response, next) {
+      request.session = {};
+      request.adminSession = request.session;
+      next();
+    },
     sessionMiddleware(request, _response, next) {
       request.session = {};
       next();
@@ -140,6 +167,30 @@ test('CSRF token is stable within a session and exact origin plus token are requ
   request.get = (name) =>
     ({ 'sec-fetch-site': 'same-origin', 'x-csrf-token': token })[name.toLowerCase()];
   assert.equal((await runMiddleware(middleware, request)).code, 'AUTH_CSRF_INVALID');
+});
+
+test('consumer and admin CSRF tokens are bound to separate sessions and origins', async () => {
+  const request = { session: {}, adminSession: {} };
+  const consumerToken = ensureSessionState(request);
+  const adminToken = ensureAdminSessionState(request);
+  assert.notEqual(adminToken, consumerToken);
+
+  const adminMutation = requireAdminTrustedMutation({
+    adminDashboardOrigin: 'http://localhost:3039',
+  });
+  request.get = (name) =>
+    ({ origin: 'http://localhost:3039', 'x-csrf-token': consumerToken })[name.toLowerCase()];
+  assert.equal((await runMiddleware(adminMutation, request)).code, 'AUTH_CSRF_INVALID');
+  request.get = (name) =>
+    ({ origin: 'http://localhost:3039', 'x-csrf-token': adminToken })[name.toLowerCase()];
+  assert.equal(await runMiddleware(adminMutation, request), undefined);
+
+  const consumerMutation = requireTrustedMutation({
+    authMutationOrigins: ['http://localhost:3001'],
+  });
+  request.get = (name) =>
+    ({ origin: 'http://localhost:3001', 'x-csrf-token': adminToken })[name.toLowerCase()];
+  assert.equal((await runMiddleware(consumerMutation, request)).code, 'AUTH_CSRF_INVALID');
 });
 
 test('role and ownership helpers use only the server-loaded authenticated user', async () => {
@@ -190,7 +241,50 @@ test('absolute session expiry regenerates state and production cookies are host-
   assert.equal(sessionCookieOptions(settings).maxAge, 60_000);
 });
 
-test('session middleware leaves TTL index creation to the awaited startup lifecycle', async () => {
+test('admin absolute expiry rotates state and clears the path-scoped strict cookie', async () => {
+  const request = {
+    adminSession: {
+      createdAt: Date.now() - 10_000,
+      userId: 'admin-1',
+      regenerate(done) {
+        request.session = {};
+        done();
+      },
+    },
+  };
+  let cleared;
+  const response = {
+    clearCookie(name, options) {
+      cleared = { name, options };
+    },
+  };
+  const settings = {
+    nodeEnvironment: 'production',
+    adminSessionCookieName: '__Secure-waand.admin.sid',
+    adminSessionIdleTtlMs: 60_000,
+    adminSessionAbsoluteTtlMs: 1_000,
+  };
+
+  assert.equal(
+    await runMiddleware(enforceAdminAbsoluteSessionLifetime(settings), request, response),
+    undefined,
+  );
+  assert.equal(request.adminSessionInvalidReason, 'expired');
+  assert.equal(request.adminSession, request.session);
+  assert.deepEqual(cleared, {
+    name: '__Secure-waand.admin.sid',
+    options: {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      path: '/api/v1/admin',
+    },
+  });
+  assert.equal(adminSessionCookieOptions(settings).maxAge, 60_000);
+  assert.equal('domain' in adminSessionCookieOptions(settings), false);
+});
+
+test('consumer and admin session middleware leave TTL indexes to startup', async () => {
   let createIndexCalls = 0;
   const mongoClient = {
     db() {
@@ -208,6 +302,7 @@ test('session middleware leaves TTL index creation to the awaited startup lifecy
   };
 
   createSessionMiddleware(config, mongoClient);
+  createAdminSessionMiddleware(config, mongoClient);
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(createIndexCalls, 0);
 });
@@ -234,6 +329,91 @@ test('an authenticated session inside its absolute lifetime keeps its security f
   );
   assert.deepEqual(session, snapshot);
   assert.equal(cleared, false);
+});
+
+test('bypass-authenticated consumer and admin sessions survive only while dev-no2step is active', async () => {
+  const activeBypassSession = {
+    createdAt: Date.now() - 1_000,
+    userId: 'user-1',
+    twoStepBypassed: true,
+    regenerate() {
+      throw new Error('Active bypass session should not be regenerated.');
+    },
+  };
+  const activeRequest = { session: activeBypassSession };
+  let activeCookieCleared = false;
+  await runMiddleware(
+    enforceAbsoluteSessionLifetime({
+      nodeEnvironment: 'development',
+      authDeliveryMode: 'dev-no2step',
+      sessionAbsoluteTtlMs: 60_000,
+    }),
+    activeRequest,
+    { clearCookie: () => (activeCookieCleared = true) },
+  );
+  assert.equal(activeRequest.authSessionInvalidReason, undefined);
+  assert.equal(activeCookieCleared, false);
+
+  const consumerRequest = {
+    session: {
+      createdAt: Date.now() - 1_000,
+      userId: 'user-1',
+      twoStepBypassed: true,
+      regenerate(done) {
+        consumerRequest.session = {};
+        done();
+      },
+    },
+  };
+  let consumerCookie;
+  await runMiddleware(
+    enforceAbsoluteSessionLifetime({
+      nodeEnvironment: 'development',
+      authDeliveryMode: 'development',
+      sessionCookieName: 'waand.sid',
+      sessionIdleTtlMs: 60_000,
+      sessionAbsoluteTtlMs: 60_000,
+    }),
+    consumerRequest,
+    {
+      clearCookie(name) {
+        consumerCookie = name;
+      },
+    },
+  );
+  assert.equal(consumerRequest.authSessionInvalidReason, 'revoked');
+  assert.equal(consumerCookie, 'waand.sid');
+
+  const adminRequest = {
+    adminSession: {
+      createdAt: Date.now() - 1_000,
+      userId: 'admin-1',
+      twoStepBypassed: true,
+      regenerate(done) {
+        adminRequest.session = {};
+        done();
+      },
+    },
+  };
+  let adminCookie;
+  await runMiddleware(
+    enforceAdminAbsoluteSessionLifetime({
+      nodeEnvironment: 'development',
+      authDeliveryMode: 'development',
+      adminSessionCookieName: 'waand_admin_sid',
+      adminSessionIdleTtlMs: 60_000,
+      adminSessionAbsoluteTtlMs: 60_000,
+    }),
+    adminRequest,
+    {
+      clearCookie(name) {
+        adminCookie = name;
+      },
+    },
+  );
+  assert.equal(adminRequest.adminSessionInvalidReason, 'revoked');
+  assert.equal(adminRequest.adminSession, adminRequest.session);
+  assert.equal(adminCookie, 'waand_admin_sid');
 });
 
 test('structured log sanitization recursively removes credentials, identity, and identifiers', () => {

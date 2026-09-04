@@ -33,7 +33,6 @@ const navigation = [
     link: '#why-waand',
     name: 'دانشگاه‌ها',
   },
-  { link: '#pricing', name: 'قیمت‌گذاری' },
   { link: BLOG_URL, name: 'وبلاگ' },
   {
     link: '/about',

@@ -42,6 +42,10 @@ const userSchema = new mongoose.Schema(
       default: 'applicant',
       required: true,
     },
+    adminRoles: {
+      type: [{ type: String, enum: ['SUPPORT', 'CONTENT_MANAGER', 'BLOG_EDITOR', 'OPERATIONS_ADMIN', 'ADMIN', 'SUPER_ADMIN'] }],
+      default: [],
+    },
     status: {
       type: String,
       enum: ['pending_verification', 'active', 'suspended', 'deleted'],
@@ -59,6 +63,11 @@ const userSchema = new mongoose.Schema(
 
 // Deleted identities deliberately remain covered by these unique indexes.
 for (const { key, options } of AUTH_INDEX_DEFINITIONS.user) userSchema.index(key, options);
+userSchema.index(
+  { adminRoles: 1, status: 1, createdAt: -1 },
+  { name: 'admin_user_roles_status' },
+);
+userSchema.index({ status: 1, createdAt: -1 }, { name: 'admin_user_status_created' });
 
 userSchema.pre('validate', function normalizeIdentities() {
   if (this.username) this.usernameNormalized = normalizeUsername(this.username);

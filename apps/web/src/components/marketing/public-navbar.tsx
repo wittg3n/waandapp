@@ -15,17 +15,12 @@ import {
   NavItems,
 } from '@/components/ui/resizable-navbar';
 import { WaandLogo } from '@/components/ui/waand-logo';
-import {
-  DASHBOARD_LOGIN_URL,
-  DASHBOARD_SIGNUP_URL,
-  LANDING_NAVIGATION,
-  PUBLIC_NAVIGATION,
-} from '@/lib/public-routes';
+import { DASHBOARD_LOGIN_URL, DASHBOARD_SIGNUP_URL, PUBLIC_NAVIGATION } from '@/lib/public-routes';
 
 export function PublicNavbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const navigationItems = pathname === '/' ? LANDING_NAVIGATION : PUBLIC_NAVIGATION;
+  const navigationItems = PUBLIC_NAVIGATION;
   const navigation = navigationItems.map((item) => ({
     ...item,
     active: !item.href.startsWith('#') && pathname === item.href,

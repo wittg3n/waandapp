@@ -19,8 +19,9 @@ import { authCodeSchema } from '@/schemas/auth.schema';
 type VerificationPanelProps = {
   channels: readonly AuthChannel[];
   destinations: Partial<Record<AuthChannel, string>>;
+  initialReceipt?: CodeSentResult;
   lockedChannel?: AuthChannel;
-  onRequest: (channel: AuthChannel, signal: AbortSignal) => Promise<CodeSentResult>;
+  onRequest: (channel: AuthChannel, signal: AbortSignal) => Promise<CodeSentResult | void>;
   onVerify: (channel: AuthChannel, code: string, signal: AbortSignal) => Promise<void>;
   onInvalid?: () => void;
 };
@@ -33,6 +34,7 @@ const channelDetails = {
 export function VerificationPanel({
   channels,
   destinations,
+  initialReceipt,
   lockedChannel,
   onRequest,
   onVerify,
@@ -45,9 +47,22 @@ export function VerificationPanel({
   const [selectedChannel, setSelectedChannel] = useState<AuthChannel>(
     lockedChannel ?? availableChannels[0] ?? 'email',
   );
-  const [sentChannel, setSentChannel] = useState<AuthChannel | null>(null);
-  const [maskedDestinations, setMaskedDestinations] = useState(destinations);
-  const [deadlines, setDeadlines] = useState<Partial<Record<AuthChannel, number>>>({});
+  const [sentChannel, setSentChannel] = useState<AuthChannel | null>(
+    initialReceipt?.channel ?? null,
+  );
+  const [maskedDestinations, setMaskedDestinations] = useState(() => ({
+    ...destinations,
+    ...(initialReceipt
+      ? { [initialReceipt.channel]: initialReceipt.destinationMasked }
+      : undefined),
+  }));
+  const [deadlines, setDeadlines] = useState<Partial<Record<AuthChannel, number>>>(() =>
+    initialReceipt
+      ? {
+          [initialReceipt.channel]: cooldownDeadline(Date.now(), initialReceipt.retryAfterSeconds),
+        }
+      : {},
+  );
   const [code, setCode] = useState('');
   const [fieldError, setFieldError] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -74,8 +89,14 @@ export function VerificationPanel({
   }, [availableChannels, channel, lockedChannel]);
 
   useEffect(() => {
-    setMaskedDestinations((current) => ({ ...current, ...destinations }));
-  }, [destinations]);
+    setMaskedDestinations((current) => ({
+      ...current,
+      ...destinations,
+      ...(initialReceipt
+        ? { [initialReceipt.channel]: initialReceipt.destinationMasked }
+        : undefined),
+    }));
+  }, [destinations, initialReceipt]);
 
   useEffect(() => {
     if (remainingSeconds <= 0) return;
@@ -106,7 +127,7 @@ export function VerificationPanel({
     clearError();
     try {
       const result = await onRequest(channel, operation.signal);
-      if (!operationGate.isCurrent(operation)) return;
+      if (!operationGate.isCurrent(operation) || !result) return;
       const currentTime = Date.now();
       setNow(currentTime);
       setDeadlines((current) => ({

@@ -2,6 +2,7 @@
 node_modules/
 .pnpm-store/
 AUTHENTICATION.md
+!AUTHENTICATION.md
 # Build output and caches
 .next/
 dist/
@@ -42,7 +43,8 @@ out/
 coverage/
 .cache/
 .turbo/
-
+.agents
+researches
 # Logs
 *.log
 npm-debug.log*
@@ -80,3 +82,8 @@ volumes/
 # Temporary files
 tmp/
 temp/
+# Sanjesh importer
+tools/importers/sanjesh/pdf/*.pdf
+tools/importers/sanjesh/sanjesh_universities.json
+tools/importers/sanjesh/__pycache__/
+tools/importers/sanjesh/*.pyc

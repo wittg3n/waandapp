@@ -18,6 +18,7 @@ const requiredIndexes = [
   { definitions: AUTH_INDEX_DEFINITIONS.legal, model: LegalAcceptance },
   { definitions: AUTH_INDEX_DEFINITIONS.event, model: AuthEvent },
   { collectionName: 'sessions', definitions: AUTH_INDEX_DEFINITIONS.session },
+  { collectionName: 'admin_sessions', definitions: AUTH_INDEX_DEFINITIONS.adminSession },
 ];
 
 function collectionFor({ collectionName, model }) {

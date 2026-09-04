@@ -16,14 +16,6 @@ export const PUBLIC_NAVIGATION = [
   { href: '/contact', label: 'تماس با ما' },
 ] as const;
 
-export const LANDING_NAVIGATION = [
-  { href: '#how-it-works', label: 'ویژگی‌ها' },
-  { href: '#why-waand', label: 'دانشگاه‌ها' },
-  { href: '#pricing', label: 'قیمت‌گذاری' },
-  { href: blogOrigin, label: 'وبلاگ' },
-  { href: '/about', label: 'درباره ما' },
-] as const;
-
 export const BLOG_URL = blogOrigin;
 
 export const DASHBOARD_LOGIN_URL = new URL('/login', dashboardOrigin).toString();

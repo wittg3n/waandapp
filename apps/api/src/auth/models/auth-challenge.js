@@ -16,6 +16,7 @@ const authChallengeSchema = new mongoose.Schema(
         'signup_verify_email',
         'signup_verify_phone',
         'login_second_step',
+        'admin_login_second_step',
         'password_reset_email',
         'password_reset_sms',
         'step_up',

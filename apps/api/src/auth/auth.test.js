@@ -11,6 +11,7 @@ import {
   createDeliverySenders,
   createWebhookSender,
   DeliveryUnavailableError,
+  isDevNoTwoStep,
 } from './delivery.js';
 import {
   normalizeCode,
@@ -378,6 +379,29 @@ test('delivery mode selection fails closed and development delivery is explicit'
     () =>
       createDeliverySenders({
         authDeliveryMode: 'development',
+        nodeEnvironment: 'production',
+      }),
+    /only available in development/,
+  );
+
+  const noTwoStepSettings = {
+    authDeliveryMode: 'dev-no2step',
+    nodeEnvironment: 'development',
+  };
+  assert.equal(isDevNoTwoStep(noTwoStepSettings), true);
+  const noTwoStep = createDeliverySenders(noTwoStepSettings);
+  await assert.rejects(
+    noTwoStep.emailSender.sendAuthenticationCode({
+      destination: 'user@example.com',
+      code: '123456',
+      expiresInSeconds: 300,
+    }),
+    DeliveryUnavailableError,
+  );
+  assert.throws(
+    () =>
+      createDeliverySenders({
+        authDeliveryMode: 'dev-no2step',
         nodeEnvironment: 'production',
       }),
     /only available in development/,

@@ -8,14 +8,21 @@ const databaseName = `waandapp_auth_test_${suffix}`;
 const mongoUri = `mongodb://127.0.0.1:27017/${databaseName}`;
 const redisUrl = process.env.API_TEST_REDIS_URL ?? 'redis://127.0.0.1:6380/15';
 const allowedOrigin = 'http://localhost:3001';
+const adminOrigin = 'http://localhost:3039';
 
 Object.assign(process.env, {
   NODE_ENV: 'test',
   PORT: '4000',
   MONGODB_URI: mongoUri,
+  MONGODB_CORE_DATABASE: databaseName,
+  MONGODB_CMS_DATABASE: databaseName + '_cms',
+  CMS_MEDIA_ROOT: 'apps/api/storage/cms-integration-test',
+  CMS_MEDIA_MAX_BYTES: '10485760',
+  CMS_SCHEDULER_INTERVAL_MS: '60000',
   REDIS_URL: redisUrl,
-  CORS_ORIGINS: `${allowedOrigin},http://localhost:3000`,
+  CORS_ORIGINS: `${allowedOrigin},${adminOrigin},http://localhost:3000`,
   AUTH_MUTATION_ORIGINS: allowedOrigin,
+  ADMIN_DASHBOARD_ORIGIN: adminOrigin,
   LOG_LEVEL: 'silent',
   RATE_LIMIT_WINDOW_MS: '60000',
   RATE_LIMIT_MAX: '10000',
@@ -24,6 +31,10 @@ Object.assign(process.env, {
   SESSION_COOKIE_NAME: 'waand.sid',
   SESSION_IDLE_TTL_MS: '3600000',
   SESSION_ABSOLUTE_TTL_MS: '86400000',
+  ADMIN_SESSION_SECRET: 'integration-admin-session-secret-000000000000000000000000000',
+  ADMIN_SESSION_COOKIE_NAME: 'waand_admin_sid',
+  ADMIN_SESSION_IDLE_TTL_MS: '900000',
+  ADMIN_SESSION_ABSOLUTE_TTL_MS: '28800000',
   AUTH_CODE_PEPPER: 'integration-code-pepper-00000000000000000000000000000000',
   AUTH_CODE_TTL_MS: '120000',
   AUTH_TRANSACTION_TTL_MS: '600000',
@@ -52,6 +63,8 @@ Object.assign(process.env, {
 
 const [
   { createApp },
+  { AuditLog },
+  { DEVELOPMENT_ADMIN_IDENTITY, seedDevelopmentSuperAdmin },
   { ApplicantProfile },
   { AuthChallenge },
   { AuthEvent },
@@ -60,6 +73,7 @@ const [
   { createAuthIndexes, verifyAuthIndexes },
   { verifyAuthenticationCode },
   { createDeliverySenders, DeliveryUnavailableError },
+  { hashPassword, verifyPassword },
   { LegalAcceptance },
   { User },
   { config },
@@ -68,6 +82,8 @@ const [
   { default: mongoose },
 ] = await Promise.all([
   import('../app.js'),
+  import('../admin/models/audit-log.js'),
+  import('../admin/seed.js'),
   import('./models/applicant-profile.js'),
   import('./models/auth-challenge.js'),
   import('./models/auth-event.js'),
@@ -76,6 +92,7 @@ const [
   import('./indexes.js'),
   import('./code.js'),
   import('./delivery.js'),
+  import('./password.js'),
   import('./models/legal-acceptance.js'),
   import('./models/user.js'),
   import('../config/index.js'),
@@ -152,20 +169,35 @@ function close(httpServer) {
 }
 
 class ApiClient {
-  cookie = '';
-  csrfToken = '';
+  cookies = new Map();
+  consumerCsrfToken = '';
+  adminCsrfToken = '';
 
   constructor(origin = baseUrl) {
     this.origin = origin;
   }
 
+  get cookie() {
+    return this.cookies.get(testSettings.sessionCookieName) ?? '';
+  }
+
+  get adminCookie() {
+    return this.cookies.get(testSettings.adminSessionCookieName) ?? '';
+  }
+
+  get csrfToken() {
+    return this.consumerCsrfToken;
+  }
+
   async request(path, options = {}) {
     const method = options.method ?? 'GET';
+    const adminRequest = path.startsWith('/api/v1/admin/');
     const headers = { ...options.headers };
-    if (this.cookie) headers.cookie = this.cookie;
+    if (this.cookies.size > 0) headers.cookie = [...this.cookies.values()].join('; ');
     if (method !== 'GET' && method !== 'HEAD') {
-      headers.origin = options.origin ?? allowedOrigin;
-      headers['x-csrf-token'] = options.csrfToken ?? this.csrfToken;
+      headers.origin = options.origin ?? (adminRequest ? adminOrigin : allowedOrigin);
+      headers['x-csrf-token'] =
+        options.csrfToken ?? (adminRequest ? this.adminCsrfToken : this.consumerCsrfToken);
       if (options.fetchSite) headers['sec-fetch-site'] = options.fetchSite;
     } else if (options.origin) {
       headers.origin = options.origin;
@@ -181,14 +213,20 @@ class ApiClient {
     }
 
     const response = await fetch(`${this.origin}${path}`, { method, headers, body });
-    const setCookie = response.headers.getSetCookie?.()[0] ?? response.headers.get('set-cookie');
-    if (setCookie) {
-      const value = setCookie.split(';', 1)[0];
-      this.cookie = value.endsWith('=') ? '' : value;
+    const setCookies = response.headers.getSetCookie?.() ?? [response.headers.get('set-cookie')];
+    for (const setCookie of setCookies.filter(Boolean)) {
+      const pair = setCookie.split(';', 1)[0];
+      const separator = pair.indexOf('=');
+      const name = pair.slice(0, separator);
+      if (pair.slice(separator + 1)) this.cookies.set(name, pair);
+      else this.cookies.delete(name);
     }
     const text = await response.text();
     const payload = text ? JSON.parse(text) : null;
-    if (payload?.data?.csrfToken) this.csrfToken = payload.data.csrfToken;
+    if (payload?.data?.csrfToken) {
+      if (adminRequest) this.adminCsrfToken = payload.data.csrfToken;
+      else this.consumerCsrfToken = payload.data.csrfToken;
+    }
     return { response, payload };
   }
 
@@ -198,6 +236,19 @@ class ApiClient {
     assert.equal(typeof result.payload.data.csrfToken, 'string');
     return result;
   }
+
+  async adminBootstrap() {
+    const result = await this.request('/api/v1/admin/auth/me', { origin: adminOrigin });
+    assert.equal(result.response.status, 200, JSON.stringify(result.payload));
+    assert.equal(typeof result.payload.data.csrfToken, 'string');
+    return result;
+  }
+}
+
+function signedSessionId(cookie) {
+  const value = decodeURIComponent(cookie.slice(cookie.indexOf('=') + 1));
+  assert.match(value, /^s:/u);
+  return value.slice(2).split('.', 1)[0];
 }
 
 async function registerPending(client, account) {
@@ -263,6 +314,35 @@ async function loginFully(client, account, channel = 'email') {
   return verified;
 }
 
+async function adminLoginPrimary(client, account) {
+  await client.adminBootstrap();
+  return client.request('/api/v1/admin/auth/login', {
+    method: 'POST',
+    body: { identifier: account.username, password: account.password },
+  });
+}
+
+async function adminLoginFully(client, account, channel = 'email') {
+  const primary = await adminLoginPrimary(client, account);
+  assert.equal(primary.response.status, 200, JSON.stringify(primary.payload));
+  assert.equal(primary.payload.data.status, 'SECOND_STEP_REQUIRED');
+  assert.equal(primary.payload.data.user, null);
+  const normalizedChannel = channel === 'phone' ? 'sms' : channel;
+  const destination = channel === 'phone' ? account.phone : account.email;
+  const requested = await client.request('/api/v1/admin/auth/second-step/request', {
+    method: 'POST',
+    body: { channel: normalizedChannel },
+  });
+  assert.equal(requested.response.status, 200, JSON.stringify(requested.payload));
+  const verified = await client.request('/api/v1/admin/auth/second-step/verify', {
+    method: 'POST',
+    body: { channel: normalizedChannel, code: codes.get(destination) },
+  });
+  assert.equal(verified.response.status, 200, JSON.stringify(verified.payload));
+  assert.equal(verified.payload.data.status, 'AUTHENTICATED');
+  return verified;
+}
+
 async function waitForCooldown() {
   await new Promise((resolve) => setTimeout(resolve, testSettings.authResendCooldownMs + 10));
 }
@@ -321,6 +401,11 @@ test('indexes, anonymous state, exact CORS, Fetch Metadata, CSRF, payload, and m
       ({ name }) => name === AUTH_INDEX_NAMES.sessionTtl,
     ),
   );
+  assert.ok(
+    (await mongoose.connection.db.collection('admin_sessions').indexes()).some(
+      ({ name }) => name === AUTH_INDEX_NAMES.adminSessionTtl,
+    ),
+  );
   await AuthEvent.collection.dropIndex(AUTH_INDEX_NAMES.eventType);
   await assert.rejects(verifyAuthIndexes(), /missing or invalid/);
   await createAuthIndexes();
@@ -374,6 +459,388 @@ test('indexes, anonymous state, exact CORS, Fetch Metadata, CSRF, payload, and m
   });
   assert.equal(oversized.response.status, 413);
   assert.equal(await User.countDocuments({ usernameNormalized: account.username }), 0);
+});
+
+test('development admin seed is guarded, login-ready, idempotent, and safely audited', async () => {
+  const firstPassword = 'First local seed password 29!';
+  const secondPassword = 'Second local seed password 47!';
+  await assert.rejects(
+    () =>
+      seedDevelopmentSuperAdmin({
+        settings: { ...testSettings, nodeEnvironment: 'production' },
+        password: firstPassword,
+      }),
+    /development/iu,
+  );
+
+  const settings = { ...testSettings, nodeEnvironment: 'development' };
+  const loadCollision = (id) =>
+    User.findById(id).select(
+      '+passwordHash +sessionVersion +usernameNormalized +emailNormalized +phoneNormalized',
+    );
+  const collisionSnapshot = (user) => ({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    username: user.username,
+    usernameNormalized: user.usernameNormalized,
+    email: user.email,
+    emailNormalized: user.emailNormalized,
+    phone: user.phone,
+    phoneNormalized: user.phoneNormalized,
+    passwordHash: user.passwordHash,
+    passwordChangedAt: user.passwordChangedAt.toISOString(),
+    emailVerifiedAt: user.emailVerifiedAt,
+    phoneVerifiedAt: user.phoneVerifiedAt,
+    role: user.role,
+    adminRoles: [...user.adminRoles],
+    status: user.status,
+    sessionVersion: user.sessionVersion,
+  });
+  const seedAuditFilter = { action: 'DEVELOPMENT_SUPER_ADMIN_SEEDED' };
+
+  for (const field of ['username', 'email', 'phone']) {
+    const account = {
+      ...identity(`seed-${field}`),
+      [field]: DEVELOPMENT_ADMIN_IDENTITY[field],
+    };
+    const conflictingUser = await User.create({
+      firstName: account.firstName,
+      lastName: account.lastName,
+      username: account.username,
+      usernameNormalized: account.username,
+      email: account.email,
+      emailNormalized: account.email,
+      phone: account.phone,
+      phoneNormalized: account.phone,
+      passwordHash: await hashPassword(account.password, settings),
+      role: 'staff',
+      adminRoles: ['SUPPORT'],
+      status: 'suspended',
+      sessionVersion: 7,
+    });
+    const before = await loadCollision(conflictingUser._id);
+    const auditCount = await AuditLog.countDocuments(seedAuditFilter);
+
+    await assert.rejects(
+      () => seedDevelopmentSuperAdmin({ settings, password: firstPassword }),
+      /conflicts/iu,
+    );
+
+    const after = await loadCollision(conflictingUser._id);
+    assert.deepEqual(collisionSnapshot(after), collisionSnapshot(before));
+    assert.equal(await verifyPassword(after.passwordHash, account.password), true);
+    assert.equal(await AuditLog.countDocuments(seedAuditFilter), auditCount);
+    await User.deleteOne({ _id: conflictingUser._id });
+  }
+
+  const firstResult = await seedDevelopmentSuperAdmin({ settings, password: firstPassword });
+  assert.equal(firstResult.created, true);
+
+  let user = await User.findOne({ emailNormalized: DEVELOPMENT_ADMIN_IDENTITY.email }).select(
+    '+passwordHash +sessionVersion +usernameNormalized +emailNormalized +phoneNormalized',
+  );
+  assert.ok(user);
+  assert.equal(user.usernameNormalized, DEVELOPMENT_ADMIN_IDENTITY.username);
+  assert.equal(user.emailNormalized, DEVELOPMENT_ADMIN_IDENTITY.email);
+  assert.equal(user.phoneNormalized, DEVELOPMENT_ADMIN_IDENTITY.phone);
+  assert.equal(user.role, 'admin');
+  assert.deepEqual(user.adminRoles, ['SUPER_ADMIN']);
+  assert.equal(user.status, 'active');
+  assert.ok(user.emailVerifiedAt instanceof Date);
+  assert.ok(user.phoneVerifiedAt instanceof Date);
+  assert.match(user.passwordHash, /^\$argon2id\$/u);
+  assert.equal(await verifyPassword(user.passwordHash, firstPassword), true);
+
+  const userId = user.id;
+  const firstSessionVersion = user.sessionVersion;
+  const secondResult = await seedDevelopmentSuperAdmin({ settings, password: secondPassword });
+  assert.equal(secondResult.created, false);
+
+  user = await User.findOne({ emailNormalized: DEVELOPMENT_ADMIN_IDENTITY.email }).select(
+    '+passwordHash +sessionVersion',
+  );
+  assert.equal(user.id, userId);
+  assert.equal(await User.countDocuments({ emailNormalized: DEVELOPMENT_ADMIN_IDENTITY.email }), 1);
+  assert.equal(user.sessionVersion, firstSessionVersion + 1);
+  assert.equal(await verifyPassword(user.passwordHash, firstPassword), false);
+  assert.equal(await verifyPassword(user.passwordHash, secondPassword), true);
+
+  const audits = await AuditLog.find({
+    actorType: 'SYSTEM',
+    action: 'DEVELOPMENT_SUPER_ADMIN_SEEDED',
+    resourceType: 'USER',
+    resourceId: userId,
+  })
+    .sort({ createdAt: 1 })
+    .lean();
+  assert.equal(audits.length, 2);
+  assert.equal(audits[0].before, null);
+  for (const audit of audits) {
+    assert.equal(audit.reason, 'Explicit development seed command');
+    const serialized = JSON.stringify({ before: audit.before, after: audit.after });
+    assert.doesNotMatch(serialized, /password|argon2/iu);
+    assert.equal(serialized.includes(firstPassword), false);
+    assert.equal(serialized.includes(secondPassword), false);
+  }
+});
+
+test('admin authentication has isolated credentials, MFA, cookies, CSRF, origin, logout, and revocation', async () => {
+  assert.notEqual(testSettings.sessionCookieName, testSettings.adminSessionCookieName);
+  assert.notEqual(testSettings.sessionSecret, testSettings.adminSessionSecret);
+
+  const ordinaryClient = new ApiClient();
+  const { account: ordinaryAccount } = await registerActive(ordinaryClient, identity('ordinary'));
+  const ordinaryAdminAccess = await ordinaryClient.request('/api/v1/admin/roles', {
+    origin: adminOrigin,
+  });
+  assert.equal(ordinaryAdminAccess.response.status, 401);
+  assert.equal(ordinaryClient.adminCookie, '');
+
+  const consumerLogout = await ordinaryClient.request('/api/v1/auth/logout', {
+    method: 'POST',
+    body: {},
+  });
+  assert.equal(consumerLogout.response.status, 200, JSON.stringify(consumerLogout.payload));
+  assert.equal(ordinaryClient.adminCookie, '');
+
+  const rejectedAdminClient = new ApiClient();
+  await rejectedAdminClient.adminBootstrap();
+  const transactionsBefore = await AuthTransaction.countDocuments({ type: 'admin_login' });
+  const invalid = await rejectedAdminClient.request('/api/v1/admin/auth/login', {
+    method: 'POST',
+    body: {
+      identifier: ordinaryAccount.username,
+      password: ordinaryAccount.password + ' نامعتبر',
+    },
+  });
+  assert.equal(invalid.response.status, 401);
+  assert.equal(invalid.payload.error.code, 'AUTH_INVALID_CREDENTIALS');
+  assert.equal(await AuthTransaction.countDocuments({ type: 'admin_login' }), transactionsBefore);
+  const rejectedAfterInvalid = await rejectedAdminClient.adminBootstrap();
+  assert.equal(rejectedAfterInvalid.payload.data.user, null);
+  assert.equal(rejectedAfterInvalid.payload.data.preauth, null);
+
+  const nonAdmin = await rejectedAdminClient.request('/api/v1/admin/auth/login', {
+    method: 'POST',
+    body: { identifier: ordinaryAccount.username, password: ordinaryAccount.password },
+  });
+  assert.equal(nonAdmin.response.status, 401);
+  assert.equal(nonAdmin.payload.error.code, invalid.payload.error.code);
+  assert.equal(nonAdmin.payload.error.message, invalid.payload.error.message);
+  assert.equal(await AuthTransaction.countDocuments({ type: 'admin_login' }), transactionsBefore);
+  const rejectedAfterNonAdmin = await rejectedAdminClient.adminBootstrap();
+  assert.equal(rejectedAfterNonAdmin.payload.data.user, null);
+  assert.equal(rejectedAfterNonAdmin.payload.data.preauth, null);
+
+  const client = new ApiClient();
+  const { account } = await registerActive(client, identity('superadmin'));
+  await User.updateOne(
+    { usernameNormalized: account.username },
+    { $set: { adminRoles: ['SUPER_ADMIN'] }, $inc: { sessionVersion: 1 } },
+  );
+
+  const invalidAdminClient = new ApiClient();
+  await invalidAdminClient.adminBootstrap();
+  const invalidAdmin = await invalidAdminClient.request('/api/v1/admin/auth/login', {
+    method: 'POST',
+    body: { identifier: account.username, password: account.password + ' نامعتبر' },
+  });
+  assert.equal(invalidAdmin.response.status, 401);
+  assert.equal(invalidAdmin.payload.error.code, nonAdmin.payload.error.code);
+  assert.equal(invalidAdmin.payload.error.message, nonAdmin.payload.error.message);
+  assert.equal(await AuthTransaction.countDocuments({ type: 'admin_login' }), transactionsBefore);
+
+  await loginFully(client, account);
+  const consumerCookie = client.cookie;
+  const consumerCsrfToken = client.consumerCsrfToken;
+  assert.ok(consumerCookie.startsWith(testSettings.sessionCookieName + '='));
+
+  const consumerSuperAdminAccess = await client.request('/api/v1/admin/roles', {
+    origin: adminOrigin,
+  });
+  assert.equal(consumerSuperAdminAccess.response.status, 401);
+  assert.equal(client.adminCookie, '');
+
+  const renamedConsumerCookie = new ApiClient();
+  renamedConsumerCookie.cookies.set(
+    testSettings.adminSessionCookieName,
+    consumerCookie.replace(
+      testSettings.sessionCookieName + '=',
+      testSettings.adminSessionCookieName + '=',
+    ),
+  );
+  assert.equal(
+    (
+      await renamedConsumerCookie.request('/api/v1/admin/roles', {
+        origin: adminOrigin,
+      })
+    ).response.status,
+    401,
+  );
+
+  const openedAdminDashboard = await client.adminBootstrap();
+  assert.equal(openedAdminDashboard.payload.data.user, null);
+  assert.equal(openedAdminDashboard.payload.data.preauth, null);
+  assert.ok(client.adminCookie.startsWith(testSettings.adminSessionCookieName + '='));
+  assert.equal(client.cookie, consumerCookie);
+
+  const anonymousAdminCookie = client.adminCookie;
+  const primary = await client.request('/api/v1/admin/auth/login', {
+    method: 'POST',
+    body: { identifier: account.username, password: account.password },
+  });
+  assert.equal(primary.response.status, 200, JSON.stringify(primary.payload));
+  assert.equal(primary.payload.data.status, 'SECOND_STEP_REQUIRED');
+  assert.equal(primary.payload.data.user, null);
+  assert.equal(primary.payload.data.preauth.type, 'admin_login');
+  assert.notEqual(client.adminCookie, anonymousAdminCookie);
+  const preauthCsrfToken = client.adminCsrfToken;
+
+  const beforeMfa = await client.request('/api/v1/admin/roles', { origin: adminOrigin });
+  assert.equal(beforeMfa.response.status, 401);
+
+  const consumerCsrfOnAdmin = await client.request('/api/v1/admin/auth/second-step/request', {
+    method: 'POST',
+    csrfToken: consumerCsrfToken,
+    body: { channel: 'email' },
+  });
+  assert.equal(consumerCsrfOnAdmin.response.status, 403);
+  assert.equal(consumerCsrfOnAdmin.payload.error.code, 'AUTH_CSRF_INVALID');
+
+  const requested = await client.request('/api/v1/admin/auth/second-step/request', {
+    method: 'POST',
+    body: { channel: 'email' },
+  });
+  assert.equal(requested.response.status, 200, JSON.stringify(requested.payload));
+  assert.equal(requested.payload.data.status, 'CODE_SENT');
+  const verified = await client.request('/api/v1/admin/auth/second-step/verify', {
+    method: 'POST',
+    body: { channel: 'email', code: codes.get(account.email) },
+  });
+  assert.equal(verified.response.status, 200, JSON.stringify(verified.payload));
+  assert.equal(verified.payload.data.status, 'AUTHENTICATED');
+  assert.equal(verified.payload.data.user.adminRoles.includes('SUPER_ADMIN'), true);
+  assert.equal(Array.isArray(verified.payload.data.user.permissions), true);
+  assert.equal(verified.payload.data.user.passwordHash, undefined);
+  assert.notEqual(client.adminCsrfToken, preauthCsrfToken);
+  assert.equal(client.cookie, consumerCookie);
+
+  const mfaSetCookies = verified.response.headers.getSetCookie();
+  assert.equal(
+    mfaSetCookies.some((value) => value.startsWith(testSettings.sessionCookieName + '=')),
+    false,
+  );
+  const adminSetCookie = mfaSetCookies.find((value) =>
+    value.startsWith(testSettings.adminSessionCookieName + '='),
+  );
+  assert.ok(adminSetCookie);
+  assert.match(adminSetCookie, /HttpOnly/iu);
+  assert.match(adminSetCookie, /SameSite=Strict/iu);
+  assert.match(adminSetCookie, /Path=\/api\/v1\/admin/iu);
+  assert.doesNotMatch(adminSetCookie, /Domain=/iu);
+  assert.doesNotMatch(adminSetCookie, /Secure/iu);
+
+  const consumerSessionId = signedSessionId(client.cookie);
+  const adminSessionId = signedSessionId(client.adminCookie);
+  const consumerSessions = mongoose.connection.db.collection('sessions');
+  const adminSessions = mongoose.connection.db.collection('admin_sessions');
+  assert.ok(await consumerSessions.findOne({ _id: consumerSessionId }));
+  assert.equal(await consumerSessions.findOne({ _id: adminSessionId }), null);
+  assert.ok(await adminSessions.findOne({ _id: adminSessionId }));
+  assert.equal(await adminSessions.findOne({ _id: consumerSessionId }), null);
+
+  const renamedAdminCookie = new ApiClient();
+  renamedAdminCookie.cookies.set(
+    testSettings.sessionCookieName,
+    client.adminCookie.replace(
+      testSettings.adminSessionCookieName + '=',
+      testSettings.sessionCookieName + '=',
+    ),
+  );
+  assert.equal((await renamedAdminCookie.request('/api/v1/auth/me')).payload.data.user, null);
+
+  const staleAdminCsrf = await client.request('/api/v1/admin/auth/logout', {
+    method: 'POST',
+    csrfToken: preauthCsrfToken,
+    body: {},
+  });
+  assert.equal(staleAdminCsrf.response.status, 403);
+  assert.equal(staleAdminCsrf.payload.error.code, 'AUTH_CSRF_INVALID');
+
+  const adminCsrfOnConsumer = await client.request('/api/v1/auth/logout', {
+    method: 'POST',
+    csrfToken: client.adminCsrfToken,
+    body: {},
+  });
+  assert.equal(adminCsrfOnConsumer.response.status, 403);
+  assert.equal(adminCsrfOnConsumer.payload.error.code, 'AUTH_CSRF_INVALID');
+  assert.equal(
+    (await client.request('/api/v1/auth/me')).payload.data.user.username,
+    account.username,
+  );
+
+  const roles = await client.request('/api/v1/admin/roles', { origin: adminOrigin });
+  assert.equal(roles.response.status, 200, JSON.stringify(roles.payload));
+  const rejectedOrigin = await client.request('/api/v1/admin/auth/me', {
+    origin: allowedOrigin,
+  });
+  assert.equal(rejectedOrigin.response.status, 403);
+  assert.equal(rejectedOrigin.response.headers.get('access-control-allow-origin'), null);
+  const allowedAdminOrigin = await client.request('/api/v1/admin/auth/me', {
+    origin: adminOrigin,
+  });
+  assert.equal(allowedAdminOrigin.response.status, 200);
+  assert.equal(allowedAdminOrigin.response.headers.get('access-control-allow-origin'), adminOrigin);
+  assert.equal(allowedAdminOrigin.response.headers.get('access-control-allow-credentials'), 'true');
+
+  const adminLogout = await client.request('/api/v1/admin/auth/logout', {
+    method: 'POST',
+    body: {},
+  });
+  assert.equal(adminLogout.response.status, 200, JSON.stringify(adminLogout.payload));
+  assert.equal(client.adminCookie, '');
+  assert.equal(client.cookie, consumerCookie);
+  assert.equal(
+    (await client.request('/api/v1/auth/me')).payload.data.user.username,
+    account.username,
+  );
+
+  await waitForCooldown();
+  await adminLoginFully(client, account);
+  const authenticatedAdminCookie = client.adminCookie;
+  const consumerOnlyLogout = await client.request('/api/v1/auth/logout', {
+    method: 'POST',
+    body: {},
+  });
+  assert.equal(consumerOnlyLogout.response.status, 200);
+  assert.equal(client.cookie, '');
+  assert.equal(client.adminCookie, authenticatedAdminCookie);
+  assert.equal(
+    (await client.request('/api/v1/admin/roles', { origin: adminOrigin })).response.status,
+    200,
+  );
+
+  await User.updateOne(
+    { usernameNormalized: account.username },
+    { $set: { adminRoles: [] }, $inc: { sessionVersion: 1 } },
+  );
+  const roleRevoked = await client.request('/api/v1/admin/roles', { origin: adminOrigin });
+  assert.equal(roleRevoked.response.status, 401);
+  assert.equal(roleRevoked.payload.error.code, 'AUTH_SESSION_EXPIRED');
+
+  await User.updateOne(
+    { usernameNormalized: account.username },
+    { $set: { adminRoles: ['SUPER_ADMIN'], status: 'active' }, $inc: { sessionVersion: 1 } },
+  );
+  await waitForCooldown();
+  await adminLoginFully(client, account);
+  await User.updateOne(
+    { usernameNormalized: account.username },
+    { $set: { status: 'suspended' }, $inc: { sessionVersion: 1 } },
+  );
+  const suspended = await client.request('/api/v1/admin/roles', { origin: adminOrigin });
+  assert.equal(suspended.response.status, 403);
+  assert.equal(suspended.payload.error.code, 'AUTH_ACCOUNT_SUSPENDED');
 });
 
 test('signup is pending, password-backed, email-before-SMS, race-safe, and creates a full rotated session only after both proofs', async () => {
@@ -558,6 +1025,374 @@ test('development delivery makes the fixed bound code visible through its inject
     assert.equal(phone.payload.data.status, 'AUTHENTICATED');
   } finally {
     await close(developmentServer);
+  }
+});
+
+test('dev-no2step bypasses consumer and admin verification while preserving passwords, step-up purpose, sessions, and RBAC', async () => {
+  const noTwoStepSettings = {
+    ...testSettings,
+    nodeEnvironment: 'development',
+    authDeliveryMode: 'dev-no2step',
+    authRateLimitPrefix: `${testSettings.authRateLimitPrefix}no-two-step:`,
+    adminAuthRateLimitPrefix: `waandapp:test:${suffix}:admin-auth:no-two-step:`,
+    globalRateLimitPrefix: `${testSettings.globalRateLimitPrefix}no-two-step:`,
+  };
+  const authenticationDeliveries = [];
+  const noTwoStepSender = {
+    async sendAuthenticationCode(delivery) {
+      authenticationDeliveries.push(delivery);
+    },
+    async sendSecurityNotification() {},
+  };
+  const noTwoStepServer = createServer(
+    createApp(redis, {
+      settings: noTwoStepSettings,
+      senders: { emailSender: noTwoStepSender, smsSender: noTwoStepSender },
+    }),
+  );
+  const address = await listen(noTwoStepServer);
+  const origin = `http://127.0.0.1:${address.port}`;
+  const challengeCountBefore = await AuthChallenge.countDocuments();
+
+  try {
+    const account = identity('no2step');
+    const client = new ApiClient(origin);
+    const anonymous = await client.bootstrap();
+    const anonymousCookie = client.cookie;
+    const registered = await client.request('/api/v1/auth/register', {
+      method: 'POST',
+      body: account,
+    });
+    assert.equal(registered.response.status, 201, JSON.stringify(registered.payload));
+    assert.equal(registered.payload.data.status, 'AUTHENTICATED');
+    assert.equal(registered.payload.data.user.username, account.username);
+    assert.equal(registered.payload.data.preauth, null);
+    assert.notEqual(client.cookie, anonymousCookie);
+    assert.notEqual(client.csrfToken, anonymous.payload.data.csrfToken);
+
+    const stored = await User.findOne({ usernameNormalized: account.username });
+    assert.equal(stored.status, 'active');
+    assert.ok(stored.emailVerifiedAt);
+    assert.ok(stored.phoneVerifiedAt);
+
+    const obsoleteSecondStep = await client.request('/api/v1/auth/second-step/request', {
+      method: 'POST',
+      body: { channel: 'email' },
+    });
+    assert.equal(obsoleteSecondStep.response.status, 401);
+    assert.equal(obsoleteSecondStep.payload.error.code, 'AUTH_PREAUTH_INVALID');
+
+    const invalidPassword = new ApiClient(origin);
+    const denied = await loginPrimary(invalidPassword, {
+      ...account,
+      password: `${account.password} نامعتبر`,
+    });
+    assert.equal(denied.response.status, 401);
+    assert.equal(denied.payload.error.code, 'AUTH_INVALID_CREDENTIALS');
+
+    const loggedOut = await client.request('/api/v1/auth/logout', {
+      method: 'POST',
+      body: {},
+    });
+    assert.equal(loggedOut.response.status, 200, JSON.stringify(loggedOut.payload));
+    assert.equal(client.cookie, '');
+
+    const loginClient = new ApiClient(origin);
+    const loggedIn = await loginPrimary(loginClient, account);
+    assert.equal(loggedIn.response.status, 200, JSON.stringify(loggedIn.payload));
+    assert.equal(loggedIn.payload.data.status, 'AUTHENTICATED');
+    assert.equal(loggedIn.payload.data.preauth, null);
+
+    const unknownRecovery = new ApiClient(origin);
+    await unknownRecovery.bootstrap();
+    const unknownStarted = await unknownRecovery.request('/api/v1/auth/password/forgot', {
+      method: 'POST',
+      body: { identifier: identity('missing-no2step').email },
+    });
+    assert.equal(unknownStarted.payload.data.status, 'READY_FOR_PASSWORD_RESET');
+    assert.deepEqual(unknownStarted.payload.data.preauth.completedChannels, ['email', 'sms']);
+    const unknownPassword = 'عبارت امن ناشناس با فاصله کافی';
+    const unknownReset = await unknownRecovery.request('/api/v1/auth/password/reset', {
+      method: 'POST',
+      body: { password: unknownPassword, passwordConfirmation: unknownPassword },
+    });
+    assert.deepEqual(unknownReset.payload.data, { success: true });
+
+    const recovery = new ApiClient(origin);
+    await recovery.bootstrap();
+    const recoveryStarted = await recovery.request('/api/v1/auth/password/forgot', {
+      method: 'POST',
+      body: { identifier: account.email },
+    });
+    assert.equal(recoveryStarted.response.status, 200, JSON.stringify(recoveryStarted.payload));
+    assert.equal(recoveryStarted.payload.data.status, unknownStarted.payload.data.status);
+    assert.deepEqual(
+      recoveryStarted.payload.data.preauth.destinations,
+      unknownStarted.payload.data.preauth.destinations,
+    );
+    const recoveredPassword = `${account.password} بازیابی`;
+    const recovered = await recovery.request('/api/v1/auth/password/reset', {
+      method: 'POST',
+      body: { password: recoveredPassword, passwordConfirmation: recoveredPassword },
+    });
+    assert.deepEqual(recovered.payload.data, { success: true });
+    assert.equal((await loginClient.request('/api/v1/auth/me')).payload.data.user, null);
+
+    const current = new ApiClient(origin);
+    const recoveredLogin = await loginPrimary(current, {
+      ...account,
+      password: recoveredPassword,
+    });
+    assert.equal(recoveredLogin.payload.data.status, 'AUTHENTICATED');
+
+    const wrongReauthentication = await current.request('/api/v1/auth/reauth', {
+      method: 'POST',
+      body: {
+        purpose: 'change_password',
+        currentPassword: `${recoveredPassword} نامعتبر`,
+      },
+    });
+    assert.equal(wrongReauthentication.response.status, 401);
+    assert.equal(wrongReauthentication.payload.error.code, 'AUTH_INVALID_CREDENTIALS');
+
+    const reauthenticated = await current.request('/api/v1/auth/reauth', {
+      method: 'POST',
+      body: { purpose: 'change_password', currentPassword: recoveredPassword },
+    });
+    assert.equal(reauthenticated.payload.data.status, 'REAUTHENTICATED');
+    assert.equal(reauthenticated.payload.data.purpose, 'change_password');
+    assert.equal(reauthenticated.payload.data.preauth, null);
+
+    const wrongPurpose = await current.request('/api/v1/auth/email/change/request', {
+      method: 'POST',
+      body: { email: identity('wrong-purpose-no2step').email },
+    });
+    assert.equal(wrongPurpose.payload.error.code, 'AUTH_REAUTH_REQUIRED');
+
+    const changedPassword = `${recoveredPassword} تازه`;
+    const passwordChanged = await current.request('/api/v1/auth/password/change', {
+      method: 'POST',
+      body: { password: changedPassword, passwordConfirmation: changedPassword },
+    });
+    assert.equal(passwordChanged.payload.data.status, 'PASSWORD_CHANGED');
+
+    const emailGrant = await current.request('/api/v1/auth/reauth', {
+      method: 'POST',
+      body: { purpose: 'change_email', currentPassword: changedPassword },
+    });
+    assert.equal(emailGrant.payload.data.status, 'REAUTHENTICATED');
+    const newEmail = identity('new-no2step-email').email;
+    const csrfBeforeEmailChange = current.csrfToken;
+    const emailChanged = await current.request('/api/v1/auth/email/change/request', {
+      method: 'POST',
+      body: { email: newEmail },
+    });
+    assert.equal(emailChanged.response.status, 200, JSON.stringify(emailChanged.payload));
+    assert.equal(emailChanged.payload.data.status, 'EMAIL_CHANGED');
+    assert.equal(emailChanged.payload.data.user.email, newEmail);
+    assert.notEqual(current.csrfToken, csrfBeforeEmailChange);
+    account.email = newEmail;
+
+    const phoneGrant = await current.request('/api/v1/auth/reauth', {
+      method: 'POST',
+      body: { purpose: 'change_phone', currentPassword: changedPassword },
+    });
+    assert.equal(phoneGrant.payload.data.status, 'REAUTHENTICATED');
+    const newPhone = identity('new-no2step-phone').phone;
+    const phoneChanged = await current.request('/api/v1/auth/phone/change/request', {
+      method: 'POST',
+      body: { phone: newPhone },
+    });
+    assert.equal(phoneChanged.response.status, 200, JSON.stringify(phoneChanged.payload));
+    assert.equal(phoneChanged.payload.data.status, 'PHONE_CHANGED');
+    assert.equal(phoneChanged.payload.data.user.phone, newPhone);
+    account.phone = newPhone;
+
+    await User.updateOne(
+      { usernameNormalized: account.username },
+      { $set: { adminRoles: ['SUPER_ADMIN'] }, $inc: { sessionVersion: 1 } },
+    );
+    const adminClient = new ApiClient(origin);
+    await adminClient.adminBootstrap();
+    const anonymousAdminCookie = adminClient.adminCookie;
+    const adminLogin = await adminClient.request('/api/v1/admin/auth/login', {
+      method: 'POST',
+      body: { identifier: account.username, password: changedPassword },
+    });
+    assert.equal(adminLogin.response.status, 200, JSON.stringify(adminLogin.payload));
+    assert.equal(adminLogin.payload.data.status, 'AUTHENTICATED');
+    assert.equal(adminLogin.payload.data.preauth, null);
+    assert.deepEqual(adminLogin.payload.data.user.adminRoles, ['SUPER_ADMIN']);
+    assert.notEqual(adminClient.adminCookie, anonymousAdminCookie);
+    assert.equal(adminClient.cookie, '');
+    assert.equal(
+      (await adminClient.request('/api/v1/admin/roles', { origin: adminOrigin })).response.status,
+      200,
+    );
+
+    await User.updateOne(
+      { usernameNormalized: account.username },
+      { $set: { adminRoles: [] }, $inc: { sessionVersion: 1 } },
+    );
+    const revoked = await adminClient.request('/api/v1/admin/roles', { origin: adminOrigin });
+    assert.equal(revoked.response.status, 401);
+    assert.equal(revoked.payload.error.code, 'AUTH_SESSION_EXPIRED');
+
+    const ordinary = identity('ordinary-no2step');
+    const ordinaryClient = new ApiClient(origin);
+    const ordinaryRegistration = await ordinaryClient.bootstrap().then(() =>
+      ordinaryClient.request('/api/v1/auth/register', {
+        method: 'POST',
+        body: ordinary,
+      }),
+    );
+    assert.equal(ordinaryRegistration.payload.data.status, 'AUTHENTICATED');
+    const rejectedAdmin = new ApiClient(origin);
+    await rejectedAdmin.adminBootstrap();
+    const rejected = await rejectedAdmin.request('/api/v1/admin/auth/login', {
+      method: 'POST',
+      body: { identifier: ordinary.username, password: ordinary.password },
+    });
+    assert.equal(rejected.response.status, 401);
+    assert.equal(rejected.payload.error.code, 'AUTH_INVALID_CREDENTIALS');
+    assert.equal(
+      (await rejectedAdmin.request('/api/v1/admin/roles', { origin: adminOrigin })).response.status,
+      401,
+    );
+
+    assert.deepEqual(authenticationDeliveries, []);
+    assert.equal(await AuthChallenge.countDocuments(), challengeCountBefore);
+  } finally {
+    await close(noTwoStepServer);
+  }
+});
+
+test('disabling dev-no2step revokes bypass sessions and grants before normal MFA resumes', async () => {
+  const modePrefix = `waandapp:test:${suffix}:mode-transition:`;
+  const bypassSettings = {
+    ...testSettings,
+    nodeEnvironment: 'development',
+    authDeliveryMode: 'dev-no2step',
+    authRateLimitPrefix: `${modePrefix}bypass:auth:`,
+    adminAuthRateLimitPrefix: `${modePrefix}bypass:admin:`,
+    globalRateLimitPrefix: `${modePrefix}bypass:global:`,
+  };
+  const normalSettings = {
+    ...bypassSettings,
+    authDeliveryMode: 'development',
+    authRateLimitPrefix: `${modePrefix}normal:auth:`,
+    adminAuthRateLimitPrefix: `${modePrefix}normal:admin:`,
+    globalRateLimitPrefix: `${modePrefix}normal:global:`,
+  };
+  const quietSender = {
+    async sendAuthenticationCode() {},
+    async sendSecurityNotification() {},
+  };
+  const bypassServer = createServer(
+    createApp(redis, {
+      settings: bypassSettings,
+      senders: { emailSender: quietSender, smsSender: quietSender },
+    }),
+  );
+  const normalServer = createServer(
+    createApp(redis, {
+      settings: normalSettings,
+      senders: { emailSender: quietSender, smsSender: quietSender },
+    }),
+  );
+  const bypassAddress = await listen(bypassServer);
+  const normalAddress = await listen(normalServer);
+  const bypassOrigin = `http://127.0.0.1:${bypassAddress.port}`;
+  const normalOrigin = `http://127.0.0.1:${normalAddress.port}`;
+
+  try {
+    const account = identity('mode-switch-consumer');
+    const consumer = new ApiClient(bypassOrigin);
+    await consumer.bootstrap();
+    const registered = await consumer.request('/api/v1/auth/register', {
+      method: 'POST',
+      body: account,
+    });
+    assert.equal(registered.payload.data.status, 'AUTHENTICATED');
+
+    const adminAccount = identity('mode-switch-admin');
+    const adminOwner = new ApiClient(bypassOrigin);
+    await adminOwner.bootstrap();
+    await adminOwner.request('/api/v1/auth/register', {
+      method: 'POST',
+      body: adminAccount,
+    });
+    await User.updateOne(
+      { usernameNormalized: adminAccount.username },
+      { $set: { adminRoles: ['SUPER_ADMIN'] }, $inc: { sessionVersion: 1 } },
+    );
+    const admin = new ApiClient(bypassOrigin);
+    await admin.adminBootstrap();
+    const bypassAdminLogin = await admin.request('/api/v1/admin/auth/login', {
+      method: 'POST',
+      body: { identifier: adminAccount.username, password: adminAccount.password },
+    });
+    assert.equal(bypassAdminLogin.payload.data.status, 'AUTHENTICATED');
+
+    const recovery = new ApiClient(bypassOrigin);
+    await recovery.bootstrap();
+    const recoveryStarted = await recovery.request('/api/v1/auth/password/forgot', {
+      method: 'POST',
+      body: { identifier: account.email },
+    });
+    assert.equal(recoveryStarted.payload.data.status, 'READY_FOR_PASSWORD_RESET');
+
+    const verified = new ApiClient();
+    const { account: verifiedAccount } = await registerActive(
+      verified,
+      identity('mode-switch-step-up'),
+    );
+    verified.origin = bypassOrigin;
+    const bypassStepUp = await verified.request('/api/v1/auth/reauth', {
+      method: 'POST',
+      body: { purpose: 'change_password', currentPassword: verifiedAccount.password },
+    });
+    assert.equal(bypassStepUp.payload.data.status, 'REAUTHENTICATED');
+
+    consumer.origin = normalOrigin;
+    const consumerAfterSwitch = await consumer.request('/api/v1/auth/me');
+    assert.equal(consumerAfterSwitch.payload.data.user, null);
+
+    admin.origin = normalOrigin;
+    const adminAfterSwitch = await admin.adminBootstrap();
+    assert.equal(adminAfterSwitch.payload.data.user, null);
+
+    recovery.origin = normalOrigin;
+    const blockedReset = await recovery.request('/api/v1/auth/password/reset', {
+      method: 'POST',
+      body: {
+        password: `${account.password} تازه`,
+        passwordConfirmation: `${account.password} تازه`,
+      },
+    });
+    assert.equal(blockedReset.response.status, 401);
+    assert.equal(blockedReset.payload.error.code, 'AUTH_PREAUTH_INVALID');
+
+    verified.origin = normalOrigin;
+    const blockedStepUp = await verified.request('/api/v1/auth/password/change', {
+      method: 'POST',
+      body: {
+        password: `${verifiedAccount.password} تازه`,
+        passwordConfirmation: `${verifiedAccount.password} تازه`,
+      },
+    });
+    assert.equal(blockedStepUp.response.status, 403);
+    assert.equal(blockedStepUp.payload.error.code, 'AUTH_REAUTH_REQUIRED');
+
+    const normalConsumer = new ApiClient(normalOrigin);
+    const normalConsumerLogin = await loginPrimary(normalConsumer, account);
+    assert.equal(normalConsumerLogin.payload.data.status, 'SECOND_STEP_REQUIRED');
+
+    const normalAdmin = new ApiClient(normalOrigin);
+    const normalAdminLogin = await adminLoginPrimary(normalAdmin, adminAccount);
+    assert.equal(normalAdminLogin.payload.data.status, 'SECOND_STEP_REQUIRED');
+  } finally {
+    await Promise.all([close(bypassServer), close(normalServer)]);
   }
 });
 
