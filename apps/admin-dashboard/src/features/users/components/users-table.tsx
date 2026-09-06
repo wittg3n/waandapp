@@ -178,7 +178,7 @@ export function UsersTable({
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
+                        <div className="h-1.5 w-20 overflow-hidden rounded-none bg-muted">
                           <div
                             className="h-full bg-foreground"
                             style={{ width: `${user.profileCompletion}%` }}

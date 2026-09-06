@@ -39,6 +39,12 @@ export function NavMain({
     if (url.startsWith('/data/') && url !== '/data/quality') {
       return pathname === url || pathname.startsWith(`${url}/`);
     }
+    if (url === '/content/posts') {
+      return pathname === url || pathname.startsWith(`${url}/`);
+    }
+    if (url === '/administration/admins' || url === '/administration/roles' || url === '/system/jobs') {
+      return pathname === url || pathname.startsWith(`${url}/`);
+    }
     return pathname === url;
   }
 

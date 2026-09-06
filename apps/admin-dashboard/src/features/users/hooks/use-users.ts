@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { getAdminSession, usersApi } from '@/features/users/services/users-api';
+import {
+  adminSessionRepository,
+  usersRepository,
+} from '@/features/users/services/users-repository';
 import type {
   AdminSession,
   UserAuditResult,
@@ -36,13 +39,13 @@ function useRequest<T>(load: (signal: AbortSignal) => Promise<T>, enabled = true
 }
 
 export function useAdminSession() {
-  const load = useCallback((signal: AbortSignal) => getAdminSession(signal), []);
+  const load = useCallback((signal: AbortSignal) => adminSessionRepository.get(signal), []);
   return useRequest<AdminSession>(load);
 }
 
 export function useUsers(query: string, enabled: boolean) {
   const load = useCallback(
-    (signal: AbortSignal) => usersApi.list(new URLSearchParams(query), signal),
+    (signal: AbortSignal) => usersRepository.list(new URLSearchParams(query), signal),
     [query],
   );
   return useRequest<UsersResult>(load, enabled);
@@ -50,7 +53,7 @@ export function useUsers(query: string, enabled: boolean) {
 
 export function useUserDetail(userId: string | undefined, enabled: boolean) {
   const load = useCallback(
-    (signal: AbortSignal) => usersApi.get(userId as string, signal),
+    (signal: AbortSignal) => usersRepository.get(userId as string, signal),
     [userId],
   );
   return useRequest<UserDetail>(load, enabled && Boolean(userId));
@@ -58,7 +61,7 @@ export function useUserDetail(userId: string | undefined, enabled: boolean) {
 
 export function useUserAudit(userId: string | undefined, enabled: boolean) {
   const load = useCallback(
-    (signal: AbortSignal) => usersApi.audit(userId as string, signal),
+    (signal: AbortSignal) => usersRepository.audit(userId as string, signal),
     [userId],
   );
   return useRequest<UserAuditResult>(load, enabled && Boolean(userId));

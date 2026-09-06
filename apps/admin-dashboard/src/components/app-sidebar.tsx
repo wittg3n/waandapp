@@ -35,7 +35,7 @@ const data = {
   navMain: [
     {
       title: 'کاربران',
-      url: '#',
+      url: '/users',
       icon: <UsersIcon />,
       items: [
         {
@@ -89,86 +89,78 @@ const data = {
     },
     {
       title: 'محتوا',
-      url: '#',
+      url: '/content',
       icon: <NewspaperIcon />,
       items: [
         {
-          title: 'نوشته ها',
-          url: '#',
+          title: 'نوشته‌ها',
+          url: '/content/posts',
         },
         {
-          title: 'دشته بندی ها',
-          url: '#',
+          title: 'دسته‌بندی‌ها',
+          url: '/content/categories',
         },
         {
-          title: 'برچسب ها',
-          url: '#',
+          title: 'برچسب‌ها',
+          url: '/content/tags',
         },
         {
           title: 'رسانه',
-          url: '#',
+          url: '/content/media',
         },
         {
           title: 'نظرات',
-          url: '#',
-        },
-        {
-          title: 'تحلیل ها',
-          url: '#',
-        },
-        {
-          title: 'اعلان ها',
-          url: '#',
+          url: '/content/comments',
         },
       ],
     },
     {
       title: 'مدیریت',
-      url: '#',
+      url: '/administration/admins',
       icon: <BoxingGloveIcon />,
       items: [
         {
-          title: 'ادمین',
-          url: '#',
+          title: 'ادمین‌ها',
+          url: '/administration/admins',
         },
         {
-          title: 'نقش ها',
-          url: '#',
+          title: 'نقش‌ها',
+          url: '/administration/roles',
         },
         {
-          title: 'دسترسی',
-          url: '#',
+          title: 'دسترسی‌ها',
+          url: '/administration/permissions',
         },
         {
           title: 'لاگ ممیزی',
-          url: '#',
+          url: '/administration/audit',
         },
       ],
     },
     {
       title: 'سیستم',
-      url: '#',
+      url: '/system/health',
       icon: <GearSixIcon />,
       items: [
         {
           title: 'سلامت سرویس',
-          url: '#',
+          url: '/system/health',
         },
         {
-          title: 'چاپ ها',
-          url: '#',
+          title: 'جاب‌ها',
+          url: '/system/jobs',
         },
         {
           title: 'امنیت',
-          url: '#',
+          url: '/system/security',
         },
         {
-          title: 'فلگ های ویژگی ',
-          url: '#',
+          title: 'فلگ‌های ویژگی',
+          url: '/system/feature-flags',
         },
         {
-          title: ' تنظیمات ',
-          url: '#',
+          title: 'تنظیمات',
+          url: '/system/settings',
         },
       ],
     },

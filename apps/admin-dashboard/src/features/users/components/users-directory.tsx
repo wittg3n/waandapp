@@ -8,7 +8,7 @@ import { OperationToast } from '@/features/users/components/operation-toast';
 import { UsersTable } from '@/features/users/components/users-table';
 import { UsersToolbar } from '@/features/users/components/users-toolbar';
 import { useAdminSession, useUsers } from '@/features/users/hooks/use-users';
-import { usersApi } from '@/features/users/services/users-api';
+import { usersRepository } from '@/features/users/services/users-repository';
 import {
   USER_PERMISSIONS,
   type ManagedUser,
@@ -28,9 +28,7 @@ export function UsersDirectory({ title, description, presetStatus }: UsersDirect
   const session = useAdminSession();
   const canRead = Boolean(session.data?.user?.permissions.includes(USER_PERMISSIONS.read));
   const canSuspend = Boolean(session.data?.user?.permissions.includes(USER_PERMISSIONS.suspend));
-  const canBan = Boolean(
-    usersApi.supportsBan && session.data?.user?.permissions.includes(USER_PERMISSIONS.ban),
-  );
+  const canBan = Boolean(session.data?.user?.permissions.includes(USER_PERMISSIONS.ban));
   const query = useMemo(() => {
     const value = new URLSearchParams(params);
     value.set('page', value.get('page') ?? '1');
@@ -71,7 +69,7 @@ export function UsersDirectory({ title, description, presetStatus }: UsersDirect
     setMutating(true);
     setMutationError(null);
     try {
-      await usersApi.changeStatus(statusAction.user.id, statusAction.status, reason);
+      await usersRepository.changeStatus(statusAction.user.id, statusAction.status, reason);
       setToast(
         statusAction.status === 'active'
           ? 'کاربر دوباره فعال شد.'
@@ -106,7 +104,7 @@ export function UsersDirectory({ title, description, presetStatus }: UsersDirect
           </div>
         ) : session.error || !session.data?.user ? (
           <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-6">
-            <p className="font-medium">نشست مدیریت در دسترس نیست</p>
+            <p className="font-medium">اطلاعات دسترسی مدیریت بارگذاری نشد</p>
             <p className="mt-1 text-sm text-muted-foreground">
               {session.error ?? 'برای مشاهده کاربران وارد حساب مدیریت شوید.'}
             </p>
@@ -126,7 +124,6 @@ export function UsersDirectory({ title, description, presetStatus }: UsersDirect
               params={effectiveParams}
               total={users.data?.pagination.total ?? 0}
               statusLocked={Boolean(presetStatus)}
-              supportsBan={usersApi.supportsBan}
               onChange={changeParam}
               onClear={() => setParams({})}
             />

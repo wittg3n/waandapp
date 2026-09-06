@@ -8,8 +8,10 @@ import type {
   SystemAlert,
   UserGrowthPoint,
 } from '@/features/dashboard/types/dashboard.types';
+import type { DashboardRepository } from '@/features/dashboard/services/dashboard-repository';
+import { systemRepository } from '@/features/system/repository/system-repository';
 
-export const dashboardMetrics: DashboardMetrics = {
+const dashboardMetrics: DashboardMetrics = {
   items: [
     {
       id: 'total-users',
@@ -42,7 +44,7 @@ export const dashboardMetrics: DashboardMetrics = {
   ],
 };
 
-export const userGrowthByPeriod: Record<DashboardPeriod, UserGrowthPoint[]> = {
+const userGrowthByPeriod: Record<DashboardPeriod, UserGrowthPoint[]> = {
   today: [
     { label: '۰۸:۰۰', newUsers: 6, activeUsers: 4080 },
     { label: '۱۰:۰۰', newUsers: 12, activeUsers: 4260 },
@@ -74,21 +76,13 @@ export const userGrowthByPeriod: Record<DashboardPeriod, UserGrowthPoint[]> = {
   ],
 };
 
-export const serviceHealth: ServiceHealth[] = [
-  { id: 'api', name: 'API', state: 'healthy', latency: 42 },
-  { id: 'mongodb', name: 'MongoDB', state: 'healthy', latency: 18 },
-  { id: 'redis', name: 'Redis', state: 'healthy', latency: 4 },
-  { id: 'email', name: 'Email', state: 'healthy' },
-  { id: 'sms', name: 'SMS', state: 'degraded' },
-];
-
-export const contentStatus = [
+const contentStatus = [
   { id: 'published', label: 'منتشرشده', value: 64 },
   { id: 'draft', label: 'پیش‌نویس', value: 8 },
   { id: 'review', label: 'در انتظار بررسی', value: 3 },
 ];
 
-export const dataQualityIssues: DataQualityIssue[] = [
+const dataQualityIssues: DataQualityIssue[] = [
   { id: 'unmapped-field', title: 'رشته بدون نگاشت', count: 103, severity: 'high' },
   { id: 'incomplete-location', title: 'موقعیت دانشگاه ناقص', count: 43, severity: 'medium' },
   { id: 'invalid-admission-code', title: 'کد پذیرش نامعتبر', count: 17, severity: 'high' },
@@ -96,7 +90,7 @@ export const dataQualityIssues: DataQualityIssue[] = [
   { id: 'unknown-degree', title: 'نوع مدرک نامشخص', count: 8, severity: 'low' },
 ];
 
-export const recentAdminActivity: AdminActivity[] = [
+const recentAdminActivity: AdminActivity[] = [
   {
     id: 'activity-1',
     actor: 'خشایار مافی',
@@ -133,7 +127,7 @@ export const recentAdminActivity: AdminActivity[] = [
   },
 ];
 
-export const systemAlerts: SystemAlert[] = [
+const systemAlerts: SystemAlert[] = [
   { id: 'sms-degraded', title: 'سرویس SMS با اختلال جزئی مواجه است', severity: 'warning' },
   {
     id: 'invalid-admission-records',
@@ -142,7 +136,7 @@ export const systemAlerts: SystemAlert[] = [
   },
 ];
 
-export const openTasks: OpenTask[] = [
+const openTasks: OpenTask[] = [
   {
     id: 'review-import',
     title: 'بررسی Import سنجش ۱۴۰۴',
@@ -164,3 +158,26 @@ export const openTasks: OpenTask[] = [
     state: 'in-progress',
   },
 ];
+
+export const mockDashboardRepository: DashboardRepository = {
+  async get(signal) {
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+    const systemHealth = await systemRepository.getHealth(signal);
+    const serviceHealth: ServiceHealth[] = systemHealth.map((service) => ({
+      id: service.id,
+      name: service.name,
+      state: service.status === 'HEALTHY' ? 'healthy' : service.status === 'DEGRADED' ? 'degraded' : 'down',
+      latency: service.latencyMs,
+    }));
+    return structuredClone({
+      metrics: dashboardMetrics,
+      growthByPeriod: userGrowthByPeriod,
+      serviceHealth,
+      contentStatus,
+      dataQualityIssues,
+      recentAdminActivity,
+      systemAlerts,
+      openTasks,
+    });
+  },
+};

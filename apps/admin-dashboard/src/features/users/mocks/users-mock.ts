@@ -1,6 +1,6 @@
-import type { UsersRepository } from '../services/users-api.ts';
+import type { AdminSessionRepository, UsersRepository } from '../services/users-repository.ts';
+import { PERMISSION_KEYS } from '@/features/administration/types/administration.types';
 import {
-  USER_PERMISSIONS,
   type AdminSession,
   type ApplicantProfile,
   type UserAuditEntry,
@@ -45,65 +45,7 @@ const people = [
 const statuses: UserStatus[] = ['active', 'active', 'pending_verification', 'suspended', 'banned'];
 const completionValues = [100, 80, 55, 25, 0];
 
-const allPermissions = [
-  ...Object.values(USER_PERMISSIONS),
-  'users.roles.read',
-  'users.roles.assign',
-  'applications.read',
-  'applications.update',
-  'applications.assign',
-  'documents.read',
-  'documents.review',
-  'documents.delete',
-  'education.countries.read',
-  'education.countries.create',
-  'education.countries.update',
-  'education.countries.archive',
-  'education.universities.read',
-  'education.universities.create',
-  'education.universities.update',
-  'education.universities.publish',
-  'education.programs.read',
-  'education.programs.create',
-  'education.programs.update',
-  'education.programs.publish',
-  'blog.posts.read',
-  'blog.posts.create',
-  'blog.posts.update',
-  'blog.posts.publish',
-  'blog.posts.schedule',
-  'blog.posts.archive',
-  'blog.posts.delete',
-  'blog.categories.read',
-  'blog.categories.create',
-  'blog.categories.update',
-  'blog.categories.delete',
-  'blog.tags.read',
-  'blog.tags.create',
-  'blog.tags.update',
-  'blog.tags.delete',
-  'blog.authors.read',
-  'blog.authors.create',
-  'blog.authors.update',
-  'blog.media.read',
-  'blog.media.upload',
-  'blog.media.update',
-  'blog.media.delete',
-  'blog.comments.read',
-  'blog.comments.moderate',
-  'blog.seo.update',
-  'blog.analytics.read',
-  'billing.read',
-  'billing.refund',
-  'agents.read',
-  'agents.retry',
-  'jobs.read',
-  'jobs.retry',
-  'roles.read',
-  'roles.assign',
-  'system.settings.read',
-  'system.settings.update',
-];
+const allPermissions = [...PERMISSION_KEYS];
 
 function profileFor(index: number): ApplicantProfile {
   const timestamp = new Date(Date.UTC(2025, index % 12, (index % 24) + 1)).toISOString();
@@ -345,19 +287,21 @@ export const mockUsersRepository: UsersRepository = {
   },
 };
 
-export async function getMockAdminSession(signal?: AbortSignal): Promise<AdminSession> {
-  await delay(signal, 180);
-  return {
-    user: {
-      id: 'mock-super-admin',
-      firstName: 'مدیر',
-      lastName: 'آزمایشی',
-      username: 'mock.superadmin',
-      email: 'admin.mock@example.ir',
-      role: 'admin',
-      adminRoles: ['SUPER_ADMIN'],
-      permissions: allPermissions,
-      status: 'active',
-    },
-  };
-}
+export const localAdminSessionRepository: AdminSessionRepository = {
+  async get(signal?: AbortSignal): Promise<AdminSession> {
+    await delay(signal, 180);
+    return {
+      user: {
+        id: 'adm_001',
+        firstName: 'خشایار',
+        lastName: 'مافی',
+        username: 'owner',
+        email: 'owner@waand.com',
+        role: 'admin',
+        adminRoles: ['SUPER_ADMIN'],
+        permissions: allPermissions,
+        status: 'active',
+      },
+    };
+  },
+};

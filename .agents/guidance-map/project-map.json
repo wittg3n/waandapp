@@ -2,26 +2,27 @@
   "schema_version": 1,
   "generator": "code-project-guidance-map",
   "generator_version": "0.4.0",
-  "generated_at": "2026-09-04T13:55:47Z",
+  "generated_at": "2026-09-06T10:25:10Z",
   "repo_root": "F:\\waandapp",
   "git_available": true,
-  "current_head": "4c7681e",
-  "file_count": 407,
-  "scanned_file_count": 407,
+  "current_head": "1e249e5",
+  "file_count": 500,
+  "scanned_file_count": 500,
   "truncated": false,
   "language_file_counts": {
-    "typescript": 225,
-    "javascript": 76,
+    "typescript": 316,
+    "javascript": 77,
     "python": 3,
     "yaml": 3
   },
   "language_loc": {
-    "typescript": 23703,
-    "javascript": 12559,
-    "yaml": 10701,
+    "typescript": 40294,
+    "javascript": 12808,
+    "yaml": 11178,
     "python": 1159
   },
   "manifests": [
+    "apps/admin-dashboard/package.json",
     "apps/api/package.json",
     "apps/blog/package.json",
     "apps/user-dashboard/package.json",
@@ -30,17 +31,16 @@
     "packages/eslint-config/package.json",
     "packages/shared/package.json",
     "packages/typescript-config/package.json",
-    "pnpm-workspace.yaml",
-    "apps/admin-dashboard/package.json"
+    "pnpm-workspace.yaml"
   ],
   "top_level": [
     {
       "path": "apps",
-      "file_count": 365,
-      "source_file_count": 296,
+      "file_count": 458,
+      "source_file_count": 388,
       "languages": {
-        "javascript": 73,
-        "typescript": 223
+        "javascript": 74,
+        "typescript": 314
       }
     },
     {
@@ -83,6 +83,16 @@
   ],
   "module_candidates": [
     {
+      "path": "apps/admin-dashboard",
+      "file_count": 127,
+      "source_file_count": 127,
+      "languages": {
+        "javascript": 1,
+        "typescript": 126
+      },
+      "manifests": []
+    },
+    {
       "path": "apps/user-dashboard",
       "file_count": 100,
       "source_file_count": 100,
@@ -94,10 +104,10 @@
     },
     {
       "path": "apps/api",
-      "file_count": 71,
-      "source_file_count": 71,
+      "file_count": 72,
+      "source_file_count": 72,
       "languages": {
-        "javascript": 71
+        "javascript": 72
       },
       "manifests": []
     },
@@ -107,16 +117,6 @@
       "source_file_count": 54,
       "languages": {
         "typescript": 54
-      },
-      "manifests": []
-    },
-    {
-      "path": "apps/admin-dashboard",
-      "file_count": 36,
-      "source_file_count": 36,
-      "languages": {
-        "javascript": 1,
-        "typescript": 35
       },
       "manifests": []
     },
@@ -188,10 +188,721 @@
   ],
   "imports": [
     {
+      "file": "apps/admin-dashboard/eslint.config.js",
+      "language": "javascript",
+      "imports": [
+        "@eslint/js",
+        "globals",
+        "eslint-plugin-react-hooks",
+        "eslint-plugin-react-refresh",
+        "typescript-eslint",
+        "eslint/config"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/App.tsx",
+      "language": "typescript",
+      "imports": [
+        "react-router-dom",
+        "framer-motion",
+        "@/components/app-sidebar",
+        "@/components/ui/separator",
+        "@/components/ui/sidebar",
+        "@/features/dashboard/dashboard-page",
+        "@/features/content/categories/categories-page",
+        "@/features/content/comments/comments-page",
+        "@/features/content/media/media-page",
+        "@/features/content/overview/content-overview-page",
+        "@/features/content/posts/pages/post-editor-page",
+        "@/features/content/posts/pages/posts-page"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/app-sidebar.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/assets/logo.svg",
+        "@/components/nav-dash",
+        "@/components/nav-main",
+        "@/components/nav-user",
+        "@/components/ui/sidebar",
+        "@/features/users/hooks/use-users",
+        "@phosphor-icons/react"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/nav-dash.tsx",
+      "language": "typescript",
+      "imports": [
+        "react-router-dom",
+        "@/components/ui/sidebar"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/nav-main.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/ui/collapsible",
+        "@/components/ui/sidebar",
+        "@phosphor-icons/react",
+        "react-router-dom"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/nav-user.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/ui/avatar",
+        "@/components/ui/sidebar"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/ui/avatar.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@base-ui/react/avatar",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/ui/breadcrumb.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "@/lib/utils",
+        "@phosphor-icons/react"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/ui/button.tsx",
+      "language": "typescript",
+      "imports": [
+        "@base-ui/react/button",
+        "class-variance-authority",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/ui/card.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/ui/collapsible.tsx",
+      "language": "typescript",
+      "imports": [
+        "@base-ui/react/collapsible"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/ui/direction.tsx",
+      "language": "typescript",
+      "imports": [
+        "@base-ui/react/direction-provider"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/ui/dropdown-menu.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@base-ui/react/menu",
+        "@/lib/utils",
+        "@phosphor-icons/react"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/ui/input.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@base-ui/react/input",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/ui/separator.tsx",
+      "language": "typescript",
+      "imports": [
+        "@base-ui/react/separator",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/ui/sheet.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@base-ui/react/dialog",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "@phosphor-icons/react"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/ui/sidebar.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "class-variance-authority",
+        "@/hooks/use-mobile",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/components/ui/separator",
+        "@/components/ui/sheet",
+        "@/components/ui/skeleton",
+        "@/components/ui/tooltip"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/ui/skeleton.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/ui/tabs.tsx",
+      "language": "typescript",
+      "imports": [
+        "@base-ui/react/tabs",
+        "class-variance-authority",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/components/ui/tooltip.tsx",
+      "language": "typescript",
+      "imports": [
+        "@base-ui/react/tooltip",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/dashboard/components/alerts-card.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "@/components/ui/card",
+        "@/features/dashboard/types/dashboard.types",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/dashboard/components/content-status-card.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "@/components/ui/button",
+        "@/components/ui/card"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/dashboard/components/dashboard-header.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "@/components/ui/button",
+        "@/components/ui/tabs",
+        "@/features/dashboard/types/dashboard.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/dashboard/components/data-quality-card.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/features/dashboard/types/dashboard.types",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/dashboard/components/kpi-card.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "@/components/ui/card",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/dashboard/components/open-tasks-card.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "@/components/ui/card",
+        "@/features/dashboard/types/dashboard.types",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/dashboard/components/recent-activity.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "@/components/ui/card",
+        "@/features/dashboard/types/dashboard.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/dashboard/components/service-health-card.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/ui/card",
+        "@/features/dashboard/types/dashboard.types",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/dashboard/components/user-growth-chart.tsx",
+      "language": "typescript",
+      "imports": [
+        "recharts",
+        "@/components/ui/card",
+        "@/features/dashboard/types/dashboard.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/dashboard/dashboard-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "@/components/ui/button",
+        "@/features/dashboard/components/alerts-card",
+        "@/features/dashboard/components/content-status-card",
+        "@/features/dashboard/components/dashboard-header",
+        "@/features/dashboard/components/data-quality-card",
+        "@/features/dashboard/components/kpi-card",
+        "@/features/dashboard/components/open-tasks-card",
+        "@/features/dashboard/components/recent-activity",
+        "@/features/dashboard/components/service-health-card",
+        "@/features/dashboard/components/user-growth-chart"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/dashboard/mocks/dashboard.mock.ts",
+      "language": "typescript",
+      "imports": [
+        "@/features/dashboard/types/dashboard.types",
+        "@/features/dashboard/services/dashboard-repository",
+        "@/features/system/repository/system-repository"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/components/confirmation-dialog.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/components/ui/button"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/components/operation-toast.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "@/components/ui/button"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/components/user-account-tab.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/components/ui/input",
+        "@/features/users/components/user-status-badge",
+        "@/features/users/components/verification-status",
+        "@/features/users/types/users.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/components/user-actions-menu.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/dropdown-menu",
+        "@/features/users/types/users.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/components/user-activity-tab.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/ui/card",
+        "@/features/users/types/users.types",
+        "@/features/users/users-utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/components/user-data-tab.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/ui/card",
+        "@/features/users/types/users.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/components/user-header.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/features/users/components/user-actions-menu",
+        "@/features/users/components/user-status-badge",
+        "@/features/users/types/users.types",
+        "@/features/users/users-utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/components/user-overview.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/ui/card",
+        "@/features/users/components/user-status-badge",
+        "@/features/users/components/verification-status",
+        "@/features/users/types/users.types",
+        "@/features/users/users-utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/components/user-sessions-tab.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "@/components/ui/button",
+        "@/components/ui/card"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/components/user-status-badge.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/lib/utils",
+        "@/features/users/types/users.types",
+        "@/features/users/users-utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/components/users-directory.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/features/users/components/confirmation-dialog",
+        "@/features/users/components/operation-toast",
+        "@/features/users/components/users-table",
+        "@/features/users/components/users-toolbar",
+        "@/features/users/hooks/use-users",
+        "@/features/users/services/users-repository",
+        "@/features/users/types/users.types",
+        "@/features/users/users-utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/components/users-table.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/components/ui/skeleton",
+        "@/features/users/components/user-actions-menu",
+        "@/features/users/components/user-status-badge",
+        "@/features/users/components/verification-status",
+        "@/features/users/types/users.types",
+        "@/features/users/users-utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/components/users-toolbar.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "@/components/ui/button",
+        "@/components/ui/input"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/components/verification-status.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/hooks/use-users.ts",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/features/users/services/users-repository",
+        "@/features/users/types/users.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/mocks/users-mock.ts",
+      "language": "typescript",
+      "imports": [
+        "../services/users-repository.ts",
+        "@/features/administration/types/administration.types",
+        "../types/users.types.ts"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/pages/suspended-users-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/features/users/components/users-directory"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/pages/user-detail-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/tabs",
+        "@/features/users/components/confirmation-dialog",
+        "@/features/users/components/operation-toast",
+        "@/features/users/components/user-account-tab",
+        "@/features/users/components/user-activity-tab",
+        "@/features/users/components/user-data-tab",
+        "@/features/users/components/user-header",
+        "@/features/users/components/user-overview"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/pages/user-reports-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "@/components/ui/card"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/pages/users-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/features/users/components/users-directory"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/users-utils.ts",
+      "language": "typescript",
+      "imports": [
+        "@/features/users/types/users.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/hooks/use-mobile.ts",
+      "language": "typescript",
+      "imports": [
+        "react"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/lib/utils.ts",
+      "language": "typescript",
+      "imports": [
+        "clsx",
+        "tailwind-merge"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/main.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "react-dom/client",
+        "framer-motion",
+        "react-router-dom",
+        "@/components/ui/direction",
+        "./App",
+        "@/styles/globals.css"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/vite.config.ts",
+      "language": "typescript",
+      "imports": [
+        "node:url",
+        "@tailwindcss/vite",
+        "@vitejs/plugin-react",
+        "vite"
+      ]
+    },
+    {
       "file": "apps/api/eslint.config.js",
       "language": "javascript",
       "imports": [
         "@waandapp/eslint-config/node"
+      ]
+    },
+    {
+      "file": "apps/api/src/admin/audit.js",
+      "language": "javascript",
+      "imports": [
+        "./models/audit-log.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/admin/auth-authorization.js",
+      "language": "javascript",
+      "imports": [
+        "../auth/models/user.js",
+        "../middleware/errors.js",
+        "../middleware/session.js",
+        "./permissions.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/admin/auth-router.js",
+      "language": "javascript",
+      "imports": [
+        "express",
+        "../auth/audit.js",
+        "../auth/rate-limit.js",
+        "../auth/schemas.js",
+        "../middleware/errors.js",
+        "../middleware/session.js",
+        "./auth-authorization.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/admin/auth-service.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "@waandapp/shared",
+        "../auth/audit.js",
+        "../auth/challenge-service.js",
+        "../auth/delivery.js",
+        "../auth/models/auth-transaction.js",
+        "../auth/models/user.js",
+        "../auth/normalization.js",
+        "../middleware/errors.js",
+        "../middleware/session.js",
+        "./permissions.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/admin/authorization.js",
+      "language": "javascript",
+      "imports": [
+        "../middleware/errors.js",
+        "./permissions.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/admin/indexes.js",
+      "language": "javascript",
+      "imports": [
+        "./models/audit-log.js",
+        "../auth/models/user.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/admin/models/audit-log.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose"
+      ]
+    },
+    {
+      "file": "apps/api/src/admin/permissions.js",
+      "language": "javascript",
+      "imports": [
+        "@waandapp/shared"
+      ]
+    },
+    {
+      "file": "apps/api/src/admin/permissions.test.js",
+      "language": "javascript",
+      "imports": [
+        "node:assert/strict",
+        "node:test",
+        "./permissions.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/admin/routes.js",
+      "language": "javascript",
+      "imports": [
+        "express",
+        "./authorization.js",
+        "./auth-authorization.js",
+        "../middleware/errors.js",
+        "./permissions.js",
+        "./service.js",
+        "./validation.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/admin/seed.js",
+      "language": "javascript",
+      "imports": [
+        "../auth/models/user.js",
+        "../auth/password.js",
+        "../auth/schemas.js",
+        "./audit.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/admin/service.js",
+      "language": "javascript",
+      "imports": [
+        "@waandapp/shared",
+        "../auth/models/user.js",
+        "../auth/models/applicant-profile.js",
+        "../middleware/errors.js",
+        "./audit.js",
+        "./models/audit-log.js",
+        "./permissions.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/admin/users.test.js",
+      "language": "javascript",
+      "imports": [
+        "node:assert/strict",
+        "node:test",
+        "./validation.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/admin/validation.js",
+      "language": "javascript",
+      "imports": [
+        "@waandapp/shared",
+        "mongoose",
+        "zod"
       ]
     },
     {
@@ -500,6 +1211,103 @@
       ]
     },
     {
+      "file": "apps/api/src/cms/admin-routes.js",
+      "language": "javascript",
+      "imports": [
+        "express",
+        "../admin/authorization.js",
+        "../admin/permissions.js",
+        "../middleware/errors.js",
+        "./library-service.js",
+        "./media.js",
+        "./post-service.js",
+        "./validation.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/cms/content.js",
+      "language": "javascript",
+      "imports": [
+        "sanitize-html"
+      ]
+    },
+    {
+      "file": "apps/api/src/cms/indexes.js",
+      "language": "javascript",
+      "imports": [
+        "./models.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/cms/library-service.js",
+      "language": "javascript",
+      "imports": [
+        "../admin/audit.js",
+        "../auth/models/user.js",
+        "../middleware/errors.js",
+        "./media.js",
+        "./models.js",
+        "./serializers.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/cms/media.js",
+      "language": "javascript",
+      "imports": [
+        "node:crypto",
+        "node:fs/promises",
+        "node:path",
+        "../middleware/errors.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/cms/models.js",
+      "language": "javascript",
+      "imports": [
+        "../infrastructure/mongodb.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/cms/post-service.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "../admin/audit.js",
+        "../middleware/errors.js",
+        "./content.js",
+        "./models.js",
+        "./serializers.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/cms/public-service.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "../middleware/errors.js",
+        "./models.js",
+        "./serializers.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/cms/scheduler.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "../admin/audit.js",
+        "./models.js",
+        "./post-service.js"
+      ]
+    },
+    {
+      "file": "apps/api/src/cms/validation.js",
+      "language": "javascript",
+      "imports": [
+        "mongoose",
+        "zod"
+      ]
+    },
+    {
       "file": "apps/api/src/config/environment.test.js",
       "language": "javascript",
       "imports": [
@@ -607,8 +1415,8 @@
       "file": "apps/blog/next-env.d.ts",
       "language": "typescript",
       "imports": [
-        "./.next/dev/types/routes.d.ts",
-        "./.next/dev/types/root-params.d.ts"
+        "./.next/types/routes.d.ts",
+        "./.next/types/root-params.d.ts"
       ]
     },
     {
@@ -1854,6 +2662,16 @@
       ]
     },
     {
+      "file": "apps/user-dashboard/src/pages/settings-page.test.tsx",
+      "language": "typescript",
+      "imports": [
+        "@testing-library/react",
+        "vitest",
+        "@/components/ui/tooltip",
+        "@/pages/settings-page"
+      ]
+    },
+    {
       "file": "apps/user-dashboard/src/pages/settings-page.tsx",
       "language": "typescript",
       "imports": [
@@ -1928,6 +2746,87 @@
       ]
     },
     {
+      "file": "apps/web/src/app/blog/[slug]/page.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "next",
+        "next/image",
+        "next/link",
+        "next/navigation",
+        "@/components/posts/article-grid",
+        "@/components/posts/post-meta",
+        "@/lib/article-content",
+        "@/lib/blog-api",
+        "@/lib/format",
+        "@/lib/site"
+      ]
+    },
+    {
+      "file": "apps/web/src/app/blog/category/[slug]/page.tsx",
+      "language": "typescript",
+      "imports": [
+        "next",
+        "next/link",
+        "next/navigation",
+        "@/components/posts/article-grid",
+        "@/components/posts/pagination",
+        "@/components/status/empty-state",
+        "@/lib/blog-api",
+        "@/lib/route-params",
+        "@/lib/site"
+      ]
+    },
+    {
+      "file": "apps/web/src/app/blog/error.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/status/route-error"
+      ]
+    },
+    {
+      "file": "apps/web/src/app/blog/loading.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/status/route-loading"
+      ]
+    },
+    {
+      "file": "apps/web/src/app/blog/not-found.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/status/empty-state"
+      ]
+    },
+    {
+      "file": "apps/web/src/app/blog/page.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "next",
+        "next/link",
+        "@/components/posts/article-grid",
+        "@/components/posts/featured-article",
+        "@/components/search/search-form",
+        "@/components/status/empty-state",
+        "@/lib/blog-api",
+        "@/lib/site"
+      ]
+    },
+    {
+      "file": "apps/web/src/app/blog/search/page.tsx",
+      "language": "typescript",
+      "imports": [
+        "next",
+        "@/components/posts/article-grid",
+        "@/components/posts/pagination",
+        "@/components/search/search-form",
+        "@/components/status/empty-state",
+        "@/lib/blog-api",
+        "@/lib/route-params"
+      ]
+    },
+    {
       "file": "apps/web/src/app/contact/page.tsx",
       "language": "typescript",
       "imports": [
@@ -1991,6 +2890,102 @@
       "imports": [
         "next",
         "@/lib/site"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/blog/archive-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "next/link",
+        "@/components/blog/posts/article-grid",
+        "@/components/blog/posts/pagination",
+        "@/components/blog/status/empty-state",
+        "@/lib/blog-api"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/blog/posts/article-card.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "next/link",
+        "@/components/blog/posts/post-image",
+        "@/components/blog/posts/post-meta",
+        "@/lib/blog-api"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/blog/posts/article-grid.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/blog/posts/article-card",
+        "@/lib/blog-api"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/blog/posts/featured-article.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "next/link",
+        "@/components/blog/posts/post-image",
+        "@/components/blog/posts/post-meta",
+        "@/lib/blog-api"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/blog/posts/pagination.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "next/link",
+        "@/lib/blog-api"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/blog/posts/post-image.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "next/image",
+        "@/lib/blog-api",
+        "@/lib/blog-format",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/blog/posts/post-meta.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "@/lib/blog-api",
+        "@/lib/blog-format",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/blog/search/search-form.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "@/components/ui/button",
+        "@/lib/utils"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/blog/status/empty-state.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "next/link"
+      ]
+    },
+    {
+      "file": "apps/web/src/components/blog/status/route-error.tsx",
+      "language": "typescript",
+      "imports": [
+        "lucide-react",
+        "react"
       ]
     },
     {
@@ -2157,6 +3152,27 @@
       ]
     },
     {
+      "file": "apps/web/src/lib/blog-api.ts",
+      "language": "typescript",
+      "imports": [
+        "server-only"
+      ]
+    },
+    {
+      "file": "apps/web/src/lib/blog-format.ts",
+      "language": "typescript",
+      "imports": [
+        "@/lib/blog-api"
+      ]
+    },
+    {
+      "file": "apps/web/src/lib/blog-site.ts",
+      "language": "typescript",
+      "imports": [
+        "@/lib/site"
+      ]
+    },
+    {
       "file": "apps/web/src/lib/utils.ts",
       "language": "typescript",
       "imports": [
@@ -2198,786 +3214,6 @@
       ]
     },
     {
-      "file": "apps/admin-dashboard/eslint.config.js",
-      "language": "javascript",
-      "imports": [
-        "@eslint/js",
-        "globals",
-        "eslint-plugin-react-hooks",
-        "eslint-plugin-react-refresh",
-        "typescript-eslint",
-        "eslint/config"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/App.tsx",
-      "language": "typescript",
-      "imports": [
-        "react-router-dom",
-        "@/components/app-sidebar",
-        "@/components/ui/separator",
-        "@/components/ui/sidebar",
-        "@/features/dashboard/dashboard-page"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/app-sidebar.tsx",
-      "language": "typescript",
-      "imports": [
-        "react",
-        "@/assets/logo.svg",
-        "@/components/nav-dash",
-        "@/components/nav-main",
-        "@/components/nav-user",
-        "@/components/ui/sidebar",
-        "@phosphor-icons/react"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/nav-dash.tsx",
-      "language": "typescript",
-      "imports": [
-        "react-router-dom",
-        "@/components/ui/sidebar"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/nav-main.tsx",
-      "language": "typescript",
-      "imports": [
-        "@/components/ui/collapsible",
-        "@/components/ui/sidebar",
-        "@phosphor-icons/react"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/nav-user.tsx",
-      "language": "typescript",
-      "imports": [
-        "@/components/ui/avatar",
-        "@/components/ui/dropdown-menu",
-        "@/components/ui/sidebar",
-        "@phosphor-icons/react"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/ui/avatar.tsx",
-      "language": "typescript",
-      "imports": [
-        "react",
-        "@base-ui/react/avatar",
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/ui/breadcrumb.tsx",
-      "language": "typescript",
-      "imports": [
-        "react",
-        "@base-ui/react/merge-props",
-        "@base-ui/react/use-render",
-        "@/lib/utils",
-        "@phosphor-icons/react"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/ui/button.tsx",
-      "language": "typescript",
-      "imports": [
-        "@base-ui/react/button",
-        "class-variance-authority",
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/ui/card.tsx",
-      "language": "typescript",
-      "imports": [
-        "react",
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/ui/collapsible.tsx",
-      "language": "typescript",
-      "imports": [
-        "@base-ui/react/collapsible"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/ui/direction.tsx",
-      "language": "typescript",
-      "imports": [
-        "@base-ui/react/direction-provider"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/ui/dropdown-menu.tsx",
-      "language": "typescript",
-      "imports": [
-        "react",
-        "@base-ui/react/menu",
-        "@/lib/utils",
-        "@phosphor-icons/react"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/ui/input.tsx",
-      "language": "typescript",
-      "imports": [
-        "react",
-        "@base-ui/react/input",
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/ui/separator.tsx",
-      "language": "typescript",
-      "imports": [
-        "@base-ui/react/separator",
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/ui/sheet.tsx",
-      "language": "typescript",
-      "imports": [
-        "react",
-        "@base-ui/react/dialog",
-        "@/lib/utils",
-        "@/components/ui/button",
-        "@phosphor-icons/react"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/ui/sidebar.tsx",
-      "language": "typescript",
-      "imports": [
-        "react",
-        "@base-ui/react/merge-props",
-        "@base-ui/react/use-render",
-        "class-variance-authority",
-        "@/hooks/use-mobile",
-        "@/lib/utils",
-        "@/components/ui/button",
-        "@/components/ui/input",
-        "@/components/ui/separator",
-        "@/components/ui/sheet",
-        "@/components/ui/skeleton",
-        "@/components/ui/tooltip"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/ui/skeleton.tsx",
-      "language": "typescript",
-      "imports": [
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/ui/tabs.tsx",
-      "language": "typescript",
-      "imports": [
-        "@base-ui/react/tabs",
-        "class-variance-authority",
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/components/ui/tooltip.tsx",
-      "language": "typescript",
-      "imports": [
-        "@base-ui/react/tooltip",
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/features/dashboard/components/alerts-card.tsx",
-      "language": "typescript",
-      "imports": [
-        "@phosphor-icons/react",
-        "react",
-        "@/components/ui/card",
-        "@/features/dashboard/types/dashboard.types",
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/features/dashboard/components/content-status-card.tsx",
-      "language": "typescript",
-      "imports": [
-        "@phosphor-icons/react",
-        "@/components/ui/button",
-        "@/components/ui/card"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/features/dashboard/components/dashboard-header.tsx",
-      "language": "typescript",
-      "imports": [
-        "@phosphor-icons/react",
-        "@/components/ui/button",
-        "@/components/ui/tabs",
-        "@/features/dashboard/types/dashboard.types"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/features/dashboard/components/data-quality-card.tsx",
-      "language": "typescript",
-      "imports": [
-        "@phosphor-icons/react",
-        "@/components/ui/button",
-        "@/components/ui/card",
-        "@/features/dashboard/types/dashboard.types",
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/features/dashboard/components/kpi-card.tsx",
-      "language": "typescript",
-      "imports": [
-        "@phosphor-icons/react",
-        "react",
-        "@/components/ui/card",
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/features/dashboard/components/open-tasks-card.tsx",
-      "language": "typescript",
-      "imports": [
-        "@phosphor-icons/react",
-        "@/components/ui/card",
-        "@/features/dashboard/types/dashboard.types",
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/features/dashboard/components/recent-activity.tsx",
-      "language": "typescript",
-      "imports": [
-        "@phosphor-icons/react",
-        "react",
-        "@/components/ui/card",
-        "@/features/dashboard/types/dashboard.types"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/features/dashboard/components/service-health-card.tsx",
-      "language": "typescript",
-      "imports": [
-        "@/components/ui/card",
-        "@/features/dashboard/types/dashboard.types",
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/features/dashboard/components/user-growth-chart.tsx",
-      "language": "typescript",
-      "imports": [
-        "recharts",
-        "@/components/ui/card",
-        "@/features/dashboard/types/dashboard.types"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/features/dashboard/dashboard-page.tsx",
-      "language": "typescript",
-      "imports": [
-        "@phosphor-icons/react",
-        "react",
-        "@/features/dashboard/components/alerts-card",
-        "@/features/dashboard/components/content-status-card",
-        "@/features/dashboard/components/dashboard-header",
-        "@/features/dashboard/components/data-quality-card",
-        "@/features/dashboard/components/kpi-card",
-        "@/features/dashboard/components/open-tasks-card",
-        "@/features/dashboard/components/recent-activity",
-        "@/features/dashboard/components/service-health-card",
-        "@/features/dashboard/components/user-growth-chart",
-        "@/features/dashboard/mocks/dashboard.mock"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/features/dashboard/mocks/dashboard.mock.ts",
-      "language": "typescript",
-      "imports": [
-        "@/features/dashboard/types/dashboard.types"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/hooks/use-mobile.ts",
-      "language": "typescript",
-      "imports": [
-        "react"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/lib/utils.ts",
-      "language": "typescript",
-      "imports": [
-        "clsx",
-        "tailwind-merge"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/src/main.tsx",
-      "language": "typescript",
-      "imports": [
-        "react",
-        "react-dom/client",
-        "react-router-dom",
-        "@/components/ui/direction",
-        "./App",
-        "@/styles/globals.css"
-      ]
-    },
-    {
-      "file": "apps/admin-dashboard/vite.config.ts",
-      "language": "typescript",
-      "imports": [
-        "node:url",
-        "@tailwindcss/vite",
-        "@vitejs/plugin-react",
-        "vite"
-      ]
-    },
-    {
-      "file": "apps/api/src/admin/audit.js",
-      "language": "javascript",
-      "imports": [
-        "./models/audit-log.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/admin/auth-authorization.js",
-      "language": "javascript",
-      "imports": [
-        "../auth/models/user.js",
-        "../middleware/errors.js",
-        "../middleware/session.js",
-        "./permissions.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/admin/auth-router.js",
-      "language": "javascript",
-      "imports": [
-        "express",
-        "../auth/audit.js",
-        "../auth/rate-limit.js",
-        "../auth/schemas.js",
-        "../middleware/errors.js",
-        "../middleware/session.js",
-        "./auth-authorization.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/admin/auth-service.js",
-      "language": "javascript",
-      "imports": [
-        "mongoose",
-        "@waandapp/shared",
-        "../auth/audit.js",
-        "../auth/challenge-service.js",
-        "../auth/delivery.js",
-        "../auth/models/auth-transaction.js",
-        "../auth/models/user.js",
-        "../auth/normalization.js",
-        "../middleware/errors.js",
-        "../middleware/session.js",
-        "./permissions.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/admin/authorization.js",
-      "language": "javascript",
-      "imports": [
-        "../middleware/errors.js",
-        "./permissions.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/admin/indexes.js",
-      "language": "javascript",
-      "imports": [
-        "./models/audit-log.js",
-        "../auth/models/user.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/admin/models/audit-log.js",
-      "language": "javascript",
-      "imports": [
-        "mongoose"
-      ]
-    },
-    {
-      "file": "apps/api/src/admin/permissions.js",
-      "language": "javascript",
-      "imports": [
-        "@waandapp/shared"
-      ]
-    },
-    {
-      "file": "apps/api/src/admin/permissions.test.js",
-      "language": "javascript",
-      "imports": [
-        "node:assert/strict",
-        "node:test",
-        "./permissions.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/admin/routes.js",
-      "language": "javascript",
-      "imports": [
-        "express",
-        "./authorization.js",
-        "./auth-authorization.js",
-        "../middleware/errors.js",
-        "./permissions.js",
-        "./service.js",
-        "./validation.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/admin/seed.js",
-      "language": "javascript",
-      "imports": [
-        "../auth/models/user.js",
-        "../auth/password.js",
-        "../auth/schemas.js",
-        "./audit.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/admin/service.js",
-      "language": "javascript",
-      "imports": [
-        "@waandapp/shared",
-        "../auth/models/user.js",
-        "../middleware/errors.js",
-        "./audit.js",
-        "./models/audit-log.js",
-        "./permissions.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/admin/validation.js",
-      "language": "javascript",
-      "imports": [
-        "@waandapp/shared",
-        "mongoose",
-        "zod"
-      ]
-    },
-    {
-      "file": "apps/api/src/cms/admin-routes.js",
-      "language": "javascript",
-      "imports": [
-        "express",
-        "../admin/authorization.js",
-        "../admin/permissions.js",
-        "../middleware/errors.js",
-        "./library-service.js",
-        "./media.js",
-        "./post-service.js",
-        "./validation.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/cms/content.js",
-      "language": "javascript",
-      "imports": [
-        "sanitize-html"
-      ]
-    },
-    {
-      "file": "apps/api/src/cms/indexes.js",
-      "language": "javascript",
-      "imports": [
-        "./models.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/cms/library-service.js",
-      "language": "javascript",
-      "imports": [
-        "../admin/audit.js",
-        "../auth/models/user.js",
-        "../middleware/errors.js",
-        "./media.js",
-        "./models.js",
-        "./serializers.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/cms/media.js",
-      "language": "javascript",
-      "imports": [
-        "node:crypto",
-        "node:fs/promises",
-        "node:path",
-        "../middleware/errors.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/cms/models.js",
-      "language": "javascript",
-      "imports": [
-        "../infrastructure/mongodb.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/cms/post-service.js",
-      "language": "javascript",
-      "imports": [
-        "mongoose",
-        "../admin/audit.js",
-        "../middleware/errors.js",
-        "./content.js",
-        "./models.js",
-        "./serializers.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/cms/public-service.js",
-      "language": "javascript",
-      "imports": [
-        "mongoose",
-        "../middleware/errors.js",
-        "./models.js",
-        "./serializers.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/cms/scheduler.js",
-      "language": "javascript",
-      "imports": [
-        "mongoose",
-        "../admin/audit.js",
-        "./models.js",
-        "./post-service.js"
-      ]
-    },
-    {
-      "file": "apps/api/src/cms/validation.js",
-      "language": "javascript",
-      "imports": [
-        "mongoose",
-        "zod"
-      ]
-    },
-    {
-      "file": "apps/user-dashboard/src/pages/settings-page.test.tsx",
-      "language": "typescript",
-      "imports": [
-        "@testing-library/react",
-        "vitest",
-        "@/components/ui/tooltip",
-        "@/pages/settings-page"
-      ]
-    },
-    {
-      "file": "apps/web/src/app/blog/[slug]/page.tsx",
-      "language": "typescript",
-      "imports": [
-        "lucide-react",
-        "next",
-        "next/image",
-        "next/link",
-        "next/navigation",
-        "@/components/posts/article-grid",
-        "@/components/posts/post-meta",
-        "@/lib/article-content",
-        "@/lib/blog-api",
-        "@/lib/format",
-        "@/lib/site"
-      ]
-    },
-    {
-      "file": "apps/web/src/app/blog/category/[slug]/page.tsx",
-      "language": "typescript",
-      "imports": [
-        "next",
-        "next/link",
-        "next/navigation",
-        "@/components/posts/article-grid",
-        "@/components/posts/pagination",
-        "@/components/status/empty-state",
-        "@/lib/blog-api",
-        "@/lib/route-params",
-        "@/lib/site"
-      ]
-    },
-    {
-      "file": "apps/web/src/app/blog/error.tsx",
-      "language": "typescript",
-      "imports": [
-        "@/components/status/route-error"
-      ]
-    },
-    {
-      "file": "apps/web/src/app/blog/loading.tsx",
-      "language": "typescript",
-      "imports": [
-        "@/components/status/route-loading"
-      ]
-    },
-    {
-      "file": "apps/web/src/app/blog/not-found.tsx",
-      "language": "typescript",
-      "imports": [
-        "@/components/status/empty-state"
-      ]
-    },
-    {
-      "file": "apps/web/src/app/blog/page.tsx",
-      "language": "typescript",
-      "imports": [
-        "lucide-react",
-        "next",
-        "next/link",
-        "@/components/posts/article-grid",
-        "@/components/posts/featured-article",
-        "@/components/search/search-form",
-        "@/components/status/empty-state",
-        "@/lib/blog-api",
-        "@/lib/site"
-      ]
-    },
-    {
-      "file": "apps/web/src/app/blog/search/page.tsx",
-      "language": "typescript",
-      "imports": [
-        "next",
-        "@/components/posts/article-grid",
-        "@/components/posts/pagination",
-        "@/components/search/search-form",
-        "@/components/status/empty-state",
-        "@/lib/blog-api",
-        "@/lib/route-params"
-      ]
-    },
-    {
-      "file": "apps/web/src/components/blog/archive-page.tsx",
-      "language": "typescript",
-      "imports": [
-        "next/link",
-        "@/components/blog/posts/article-grid",
-        "@/components/blog/posts/pagination",
-        "@/components/blog/status/empty-state",
-        "@/lib/blog-api"
-      ]
-    },
-    {
-      "file": "apps/web/src/components/blog/posts/article-card.tsx",
-      "language": "typescript",
-      "imports": [
-        "lucide-react",
-        "next/link",
-        "@/components/blog/posts/post-image",
-        "@/components/blog/posts/post-meta",
-        "@/lib/blog-api"
-      ]
-    },
-    {
-      "file": "apps/web/src/components/blog/posts/article-grid.tsx",
-      "language": "typescript",
-      "imports": [
-        "@/components/blog/posts/article-card",
-        "@/lib/blog-api"
-      ]
-    },
-    {
-      "file": "apps/web/src/components/blog/posts/featured-article.tsx",
-      "language": "typescript",
-      "imports": [
-        "lucide-react",
-        "next/link",
-        "@/components/blog/posts/post-image",
-        "@/components/blog/posts/post-meta",
-        "@/lib/blog-api"
-      ]
-    },
-    {
-      "file": "apps/web/src/components/blog/posts/pagination.tsx",
-      "language": "typescript",
-      "imports": [
-        "lucide-react",
-        "next/link",
-        "@/lib/blog-api"
-      ]
-    },
-    {
-      "file": "apps/web/src/components/blog/posts/post-image.tsx",
-      "language": "typescript",
-      "imports": [
-        "lucide-react",
-        "next/image",
-        "@/lib/blog-api",
-        "@/lib/blog-format",
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/web/src/components/blog/posts/post-meta.tsx",
-      "language": "typescript",
-      "imports": [
-        "lucide-react",
-        "@/lib/blog-api",
-        "@/lib/blog-format",
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/web/src/components/blog/search/search-form.tsx",
-      "language": "typescript",
-      "imports": [
-        "lucide-react",
-        "@/components/ui/button",
-        "@/lib/utils"
-      ]
-    },
-    {
-      "file": "apps/web/src/components/blog/status/empty-state.tsx",
-      "language": "typescript",
-      "imports": [
-        "lucide-react",
-        "next/link"
-      ]
-    },
-    {
-      "file": "apps/web/src/components/blog/status/route-error.tsx",
-      "language": "typescript",
-      "imports": [
-        "lucide-react",
-        "react"
-      ]
-    },
-    {
-      "file": "apps/web/src/lib/blog-api.ts",
-      "language": "typescript",
-      "imports": [
-        "server-only"
-      ]
-    },
-    {
-      "file": "apps/web/src/lib/blog-format.ts",
-      "language": "typescript",
-      "imports": [
-        "@/lib/blog-api"
-      ]
-    },
-    {
-      "file": "apps/web/src/lib/blog-site.ts",
-      "language": "typescript",
-      "imports": [
-        "@/lib/site"
-      ]
-    },
-    {
       "file": "tools/importers/sanjesh/extract.py",
       "language": "python",
       "imports": [
@@ -3003,32 +3239,1045 @@
         "pathlib",
         "typing"
       ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/administration/admins/pages/admin-detail-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/components/ui/input",
+        "@/components/ui/tabs",
+        "@/features/content/shared/content-utils",
+        "@/features/content/shared/content-ui",
+        "@/features/content/shared/use-content-query",
+        "@/features/users/hooks/use-users",
+        "@/features/system/repository/system-repository"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/administration/admins/pages/admins-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/features/users/hooks/use-users",
+        "@/features/content/shared/content-utils",
+        "@/features/content/shared/content-ui",
+        "@/features/content/shared/use-content-query",
+        "../../repository/administration-repository",
+        "../../types/administration.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/administration/audit/pages/audit-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "react-router-dom",
+        "@/components/ui/sheet",
+        "@/features/content/shared/content-ui",
+        "@/features/content/shared/content-utils",
+        "@/features/content/shared/use-content-query",
+        "@/features/users/hooks/use-users",
+        "../../repository/administration-repository",
+        "../../shared/administration-utils",
+        "../../types/administration.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/administration/data/administration.seed.ts",
+      "language": "typescript",
+      "imports": [
+        "../types/administration.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/administration/permissions/pages/permissions-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/components/ui/input",
+        "@/features/content/shared/content-ui",
+        "@/features/content/shared/use-content-query",
+        "@/features/users/hooks/use-users",
+        "../../repository/administration-repository",
+        "../../types/administration.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/administration/repository/administration-repository.ts",
+      "language": "typescript",
+      "imports": [
+        "./local-administration-repository",
+        "../types/administration.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/administration/repository/audit-store.ts",
+      "language": "typescript",
+      "imports": [
+        "../types/administration.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/administration/repository/local-administration-repository.ts",
+      "language": "typescript",
+      "imports": [
+        "../data/administration.seed",
+        "../types/administration.types",
+        "./audit-store",
+        "./administration-repository"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/administration/roles/pages/role-detail-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/components/ui/input",
+        "@/features/content/shared/content-ui",
+        "@/features/content/shared/use-content-query",
+        "@/features/users/hooks/use-users",
+        "../../repository/administration-repository",
+        "../../types/administration.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/administration/roles/pages/roles-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/features/content/shared/content-ui",
+        "@/features/content/shared/content-utils",
+        "@/features/content/shared/use-content-query",
+        "@/features/users/hooks/use-users",
+        "../../repository/administration-repository",
+        "../../types/administration.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/administration/shared/administration-utils.ts",
+      "language": "typescript",
+      "imports": [
+        "../types/administration.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/categories/categories-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/features/users/hooks/use-users",
+        "../repository/content-repository",
+        "../shared/content-utils",
+        "../shared/content.types",
+        "../shared/content-ui",
+        "../shared/use-content-query"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/comments/comments-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/features/users/hooks/use-users",
+        "../repository/content-repository",
+        "../shared/content-utils",
+        "../shared/content.types",
+        "../shared/content-ui",
+        "../shared/use-content-query"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/data/content.seed.ts",
+      "language": "typescript",
+      "imports": [
+        "../shared/content.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/media/media-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/components/ui/sheet",
+        "@/features/users/hooks/use-users",
+        "../repository/content-repository",
+        "../shared/content-utils",
+        "../shared/content.types",
+        "../shared/content-ui"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/media/media-picker.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "../shared/content.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/overview/content-overview-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/card",
+        "@/features/users/hooks/use-users",
+        "../repository/content-repository",
+        "../shared/content-utils",
+        "../shared/content.types",
+        "../shared/content-ui",
+        "../shared/use-content-query"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/posts/components/post-preview.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "@/components/ui/button",
+        "@/lib/utils",
+        "../../shared/content-utils",
+        "../../shared/content.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/posts/components/post-seo-panel.tsx",
+      "language": "typescript",
+      "imports": [
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "../../media/media-picker",
+        "../../shared/content.types",
+        "react"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/posts/components/revision-history.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "@/components/ui/button",
+        "../../shared/content-utils",
+        "../../shared/content.types",
+        "./post-preview"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/posts/editor/media-image-extension.tsx",
+      "language": "typescript",
+      "imports": [
+        "@tiptap/core",
+        "@tiptap/react",
+        "../../shared/content.types",
+        "./media-image-view"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/posts/editor/media-image-view.tsx",
+      "language": "typescript",
+      "imports": [
+        "@tiptap/react",
+        "./media-image-extension"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/posts/editor/post-editor.tsx",
+      "language": "typescript",
+      "imports": [
+        "@tiptap/extension-link",
+        "@tiptap/react",
+        "@tiptap/starter-kit",
+        "@phosphor-icons/react",
+        "react",
+        "@/components/ui/button",
+        "@/lib/utils",
+        "../../media/media-picker",
+        "../../shared/content-utils",
+        "../../shared/content.types",
+        "./media-image-extension"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/posts/pages/post-editor-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/components/ui/input",
+        "@/features/users/hooks/use-users",
+        "../../media/media-picker",
+        "../../repository/content-repository",
+        "../../shared/content-utils",
+        "../../shared/content.types",
+        "../../shared/content-ui"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/posts/pages/posts-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/features/users/hooks/use-users",
+        "../../repository/content-repository",
+        "../../shared/content-utils",
+        "../../shared/content.types",
+        "../../shared/content-ui",
+        "../../shared/use-content-query",
+        "../components/post-preview"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/repository/content-repository.ts",
+      "language": "typescript",
+      "imports": [
+        "./local-content-repository",
+        "../shared/content.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/repository/local-content-repository.ts",
+      "language": "typescript",
+      "imports": [
+        "../data/content.seed.ts",
+        "../shared/content-utils.ts",
+        "../shared/content.types.ts",
+        "./content-repository.ts"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/shared/content-ui.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/components/ui/input",
+        "@/components/ui/skeleton",
+        "@/lib/utils",
+        "./content-utils",
+        "./content.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/shared/content-utils.ts",
+      "language": "typescript",
+      "imports": [
+        "./content.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/shared/use-content-query.ts",
+      "language": "typescript",
+      "imports": [
+        "react"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/content/tags/tags-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/features/users/hooks/use-users",
+        "../repository/content-repository",
+        "../shared/content-utils",
+        "../shared/content.types",
+        "../shared/content-ui",
+        "../shared/use-content-query"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/dashboard/hooks/use-dashboard.ts",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/features/dashboard/services/dashboard-repository"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/dashboard/services/dashboard-repository.ts",
+      "language": "typescript",
+      "imports": [
+        "@/features/dashboard/mocks/dashboard.mock",
+        "@/features/dashboard/types/dashboard.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/admissions/pages/admission-detail-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "../../hooks/use-data",
+        "../../services/data-repository",
+        "../../shared/data-ui",
+        "../../shared/entity-forms",
+        "../../shared/data-utils",
+        "../../universities/pages/university-detail-page",
+        "../../types/data.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/admissions/pages/admissions-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "../../hooks/use-data",
+        "../../services/data-repository",
+        "../../shared/data-ui",
+        "../../shared/entity-forms",
+        "../../shared/data-utils",
+        "../../shared/use-list-page",
+        "../../programs/pages/programs-page",
+        "../../universities/pages/universities-page"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/hooks/use-data.ts",
+      "language": "typescript",
+      "imports": [
+        "react"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/imports/pages/import-detail-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "framer-motion",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "../../hooks/use-data",
+        "../../services/data-repository",
+        "../../universities/pages/university-detail-page",
+        "../../shared/data-ui",
+        "../../shared/data-utils",
+        "../../types/data.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/imports/pages/imports-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "react-router-dom",
+        "../../hooks/use-data",
+        "../../services/data-repository",
+        "../../shared/data-ui",
+        "../../shared/data-utils",
+        "../../shared/use-list-page",
+        "../../programs/pages/programs-page",
+        "../../types/data.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/majors/pages/major-detail-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/tabs",
+        "../../hooks/use-data",
+        "../../services/data-repository",
+        "../../shared/data-ui",
+        "../../shared/entity-forms",
+        "../../shared/data-utils",
+        "../../universities/pages/university-detail-page",
+        "../../types/data.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/majors/pages/majors-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "../../hooks/use-data",
+        "../../services/data-repository",
+        "../../shared/data-ui",
+        "../../shared/entity-forms",
+        "../../shared/use-list-page",
+        "../../universities/pages/universities-page",
+        "../../types/data.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/mock/data-mock-store.ts",
+      "language": "typescript",
+      "imports": [
+        "./data.mock.ts",
+        "../types/data.types.ts"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/mock/data.mock.ts",
+      "language": "typescript",
+      "imports": [
+        "../types/data.types.ts"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/programs/pages/program-detail-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "../../hooks/use-data",
+        "../../services/data-repository",
+        "../../shared/data-ui",
+        "../../shared/entity-forms",
+        "../../shared/data-utils",
+        "../../universities/pages/university-detail-page",
+        "../../types/data.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/programs/pages/programs-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "../../hooks/use-data",
+        "../../services/data-repository",
+        "../../shared/data-ui",
+        "../../shared/entity-forms",
+        "../../shared/data-utils",
+        "../../shared/use-list-page",
+        "../../universities/pages/universities-page",
+        "../../types/data.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/quality/pages/data-quality-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "framer-motion",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/components/ui/input",
+        "../../hooks/use-data",
+        "../../services/data-repository",
+        "../../shared/data-ui",
+        "../../shared/entity-forms",
+        "../../shared/data-utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/services/data-repository.ts",
+      "language": "typescript",
+      "imports": [
+        "../types/data.types",
+        "../mock/data-mock-store"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/shared/data-ui.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "framer-motion",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/components/ui/input",
+        "@/components/ui/skeleton",
+        "@/lib/utils",
+        "../types/data.types",
+        "./data-utils"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/shared/data-utils.ts",
+      "language": "typescript",
+      "imports": [
+        "../types/data.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/shared/entity-forms.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "framer-motion",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "../services/data-repository",
+        "../types/data.types",
+        "./data-utils",
+        "./data-ui"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/shared/use-list-page.ts",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "react-router-dom"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/sources/pages/source-detail-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "../../hooks/use-data",
+        "../../services/data-repository",
+        "../../shared/data-ui",
+        "../../shared/entity-forms",
+        "../../shared/data-utils",
+        "../../universities/pages/university-detail-page"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/sources/pages/sources-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "../../hooks/use-data",
+        "../../services/data-repository",
+        "../../shared/data-ui",
+        "../../shared/entity-forms",
+        "../../shared/data-utils",
+        "../../shared/use-list-page",
+        "../../programs/pages/programs-page",
+        "../../types/data.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/universities/pages/universities-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "../../hooks/use-data",
+        "../../services/data-repository",
+        "../../shared/data-ui",
+        "../../shared/entity-forms",
+        "../../shared/data-utils",
+        "../../shared/use-list-page",
+        "../../types/data.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/data/universities/pages/university-detail-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/tabs",
+        "../../hooks/use-data",
+        "../../services/data-repository",
+        "../../shared/data-ui",
+        "../../shared/entity-forms",
+        "../../shared/data-utils",
+        "../../types/data.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/system/data/system.seed.ts",
+      "language": "typescript",
+      "imports": [
+        "../types/system.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/system/feature-flags/pages/feature-flags-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/components/ui/input",
+        "@/features/content/shared/content-ui",
+        "@/features/content/shared/content-utils",
+        "@/features/content/shared/use-content-query",
+        "@/features/administration/repository/administration-repository",
+        "@/features/users/hooks/use-users",
+        "../../repository/system-repository",
+        "../../types/system.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/system/health/pages/health-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/components/ui/card",
+        "@/features/content/shared/content-ui",
+        "@/features/content/shared/content-utils",
+        "@/features/content/shared/use-content-query",
+        "@/features/users/hooks/use-users",
+        "../../repository/system-repository",
+        "../../types/system.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/system/jobs/pages/job-detail-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/features/content/shared/content-ui",
+        "@/features/content/shared/content-utils",
+        "@/features/content/shared/use-content-query",
+        "@/features/users/hooks/use-users",
+        "../../repository/system-repository",
+        "../../types/system.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/system/jobs/pages/jobs-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/features/content/shared/content-ui",
+        "@/features/content/shared/content-utils",
+        "@/features/content/shared/use-content-query",
+        "@/features/users/hooks/use-users",
+        "../../repository/system-repository",
+        "../../types/system.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/system/repository/local-system-repository.ts",
+      "language": "typescript",
+      "imports": [
+        "@/features/administration/repository/administration-repository",
+        "@/features/administration/types/administration.types",
+        "@/features/administration/repository/audit-store",
+        "@/features/administration/data/administration.seed",
+        "../data/system.seed",
+        "../types/system.types",
+        "./system-repository"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/system/repository/system-repository.ts",
+      "language": "typescript",
+      "imports": [
+        "./local-system-repository",
+        "../types/system.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/system/security/pages/security-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "@phosphor-icons/react",
+        "react",
+        "react-router-dom",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/components/ui/input",
+        "@/components/ui/tabs",
+        "@/features/content/shared/content-ui",
+        "@/features/content/shared/content-utils",
+        "@/features/content/shared/use-content-query",
+        "@/features/users/hooks/use-users",
+        "@/features/administration/repository/administration-repository"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/system/settings/pages/settings-page.tsx",
+      "language": "typescript",
+      "imports": [
+        "react",
+        "@/components/ui/button",
+        "@/components/ui/card",
+        "@/components/ui/input",
+        "@/components/ui/tabs",
+        "@/features/content/shared/content-ui",
+        "@/features/content/shared/use-content-query",
+        "@/features/users/hooks/use-users",
+        "../../repository/system-repository",
+        "../../types/system.types"
+      ]
+    },
+    {
+      "file": "apps/admin-dashboard/src/features/users/services/users-repository.ts",
+      "language": "typescript",
+      "imports": [
+        "@/features/users/mocks/users-mock",
+        "@/features/users/types/users.types"
+      ]
     }
   ],
   "changed_files": [
     ".agents/guidance-map/project-map.json",
     ".env.example",
+    ".gitignore",
+    "AUTHENTICATION.md",
+    "PROJECT_MAP.json",
+    "PROJECT_MAP.md",
     "README.md",
-    "apps/admin-dashboard",
+    "apps/admin-dashboard/.gitignore",
+    "apps/admin-dashboard/README.md",
+    "apps/admin-dashboard/component.json",
+    "apps/admin-dashboard/components.json",
+    "apps/admin-dashboard/eslint.config.js",
+    "apps/admin-dashboard/index.html",
+    "apps/admin-dashboard/package.json",
+    "apps/admin-dashboard/public/favicon.ico",
+    "apps/admin-dashboard/public/fonts/peyda-regular.woff2",
+    "apps/admin-dashboard/public/fonts/peyda-semibold.woff2",
+    "apps/admin-dashboard/public/icons.svg",
+    "apps/admin-dashboard/src/App.css",
+    "apps/admin-dashboard/src/App.tsx",
+    "apps/admin-dashboard/src/assets/hero.png",
+    "apps/admin-dashboard/src/assets/logo.svg",
+    "apps/admin-dashboard/src/assets/react.svg",
+    "apps/admin-dashboard/src/assets/vite.svg",
+    "apps/admin-dashboard/src/components/app-sidebar.tsx",
+    "apps/admin-dashboard/src/components/nav-dash.tsx",
+    "apps/admin-dashboard/src/components/nav-main.tsx",
+    "apps/admin-dashboard/src/components/nav-user.tsx",
+    "apps/admin-dashboard/src/components/ui/avatar.tsx",
+    "apps/admin-dashboard/src/components/ui/breadcrumb.tsx",
+    "apps/admin-dashboard/src/components/ui/button.tsx",
+    "apps/admin-dashboard/src/components/ui/card.tsx",
+    "apps/admin-dashboard/src/components/ui/collapsible.tsx",
+    "apps/admin-dashboard/src/components/ui/direction.tsx",
+    "apps/admin-dashboard/src/components/ui/dropdown-menu.tsx",
+    "apps/admin-dashboard/src/components/ui/input.tsx",
+    "apps/admin-dashboard/src/components/ui/separator.tsx",
+    "apps/admin-dashboard/src/components/ui/sheet.tsx",
+    "apps/admin-dashboard/src/components/ui/sidebar.tsx",
+    "apps/admin-dashboard/src/components/ui/skeleton.tsx",
+    "apps/admin-dashboard/src/components/ui/tabs.tsx",
+    "apps/admin-dashboard/src/components/ui/tooltip.tsx",
+    "apps/admin-dashboard/src/features/dashboard/components/alerts-card.tsx",
+    "apps/admin-dashboard/src/features/dashboard/components/content-status-card.tsx",
+    "apps/admin-dashboard/src/features/dashboard/components/dashboard-header.tsx",
+    "apps/admin-dashboard/src/features/dashboard/components/data-quality-card.tsx",
+    "apps/admin-dashboard/src/features/dashboard/components/kpi-card.tsx",
+    "apps/admin-dashboard/src/features/dashboard/components/open-tasks-card.tsx",
+    "apps/admin-dashboard/src/features/dashboard/components/recent-activity.tsx",
+    "apps/admin-dashboard/src/features/dashboard/components/service-health-card.tsx",
+    "apps/admin-dashboard/src/features/dashboard/components/user-growth-chart.tsx",
+    "apps/admin-dashboard/src/features/dashboard/dashboard-page.tsx",
+    "apps/admin-dashboard/src/features/dashboard/mocks/dashboard.mock.ts",
+    "apps/admin-dashboard/src/features/dashboard/types/dashboard.types.ts",
+    "apps/admin-dashboard/src/features/users/components/confirmation-dialog.tsx",
+    "apps/admin-dashboard/src/features/users/components/operation-toast.tsx",
+    "apps/admin-dashboard/src/features/users/components/user-account-tab.tsx",
+    "apps/admin-dashboard/src/features/users/components/user-actions-menu.tsx",
+    "apps/admin-dashboard/src/features/users/components/user-activity-tab.tsx",
+    "apps/admin-dashboard/src/features/users/components/user-data-tab.tsx",
+    "apps/admin-dashboard/src/features/users/components/user-header.tsx",
+    "apps/admin-dashboard/src/features/users/components/user-overview.tsx",
+    "apps/admin-dashboard/src/features/users/components/user-sessions-tab.tsx",
+    "apps/admin-dashboard/src/features/users/components/user-status-badge.tsx",
+    "apps/admin-dashboard/src/features/users/components/users-directory.tsx",
+    "apps/admin-dashboard/src/features/users/components/users-table.tsx",
+    "apps/admin-dashboard/src/features/users/components/users-toolbar.tsx",
+    "apps/admin-dashboard/src/features/users/components/verification-status.tsx",
+    "apps/admin-dashboard/src/features/users/hooks/use-users.ts",
+    "apps/admin-dashboard/src/features/users/mocks/users-mock.test.mjs",
+    "apps/admin-dashboard/src/features/users/mocks/users-mock.ts",
+    "apps/admin-dashboard/src/features/users/pages/suspended-users-page.tsx",
+    "apps/admin-dashboard/src/features/users/pages/user-detail-page.tsx",
+    "apps/admin-dashboard/src/features/users/pages/user-reports-page.tsx",
+    "apps/admin-dashboard/src/features/users/pages/users-page.tsx",
+    "apps/admin-dashboard/src/features/users/services/users-api.ts",
+    "apps/admin-dashboard/src/features/users/types/users.types.ts",
+    "apps/admin-dashboard/src/features/users/users-utils.ts",
+    "apps/admin-dashboard/src/hooks/use-mobile.ts",
+    "apps/admin-dashboard/src/lib/utils.ts",
+    "apps/admin-dashboard/src/main.tsx",
+    "apps/admin-dashboard/src/styles/globals.css",
+    "apps/admin-dashboard/tsconfig.app.json",
+    "apps/admin-dashboard/tsconfig.json",
+    "apps/admin-dashboard/tsconfig.node.json",
+    "apps/admin-dashboard/vite.config.ts",
     "apps/api/package.json",
+    "apps/api/scripts/bootstrap-super-admin.mjs",
+    "apps/api/scripts/build.mjs",
+    "apps/api/scripts/seed-admin.mjs",
     "apps/api/scripts/seed-blog.mjs",
     "apps/api/scripts/sync-auth-indexes.mjs",
+    "apps/api/src/admin/audit.js",
+    "apps/api/src/admin/auth-authorization.js",
+    "apps/api/src/admin/auth-router.js",
+    "apps/api/src/admin/auth-service.js",
+    "apps/api/src/admin/authorization.js",
+    "apps/api/src/admin/indexes.js",
+    "apps/api/src/admin/models/audit-log.js",
+    "apps/api/src/admin/permissions.js",
+    "apps/api/src/admin/permissions.test.js",
+    "apps/api/src/admin/routes.js",
+    "apps/api/src/admin/seed.js",
+    "apps/api/src/admin/service.js",
+    "apps/api/src/admin/users.test.js",
+    "apps/api/src/admin/validation.js",
     "apps/api/src/app.js",
+    "apps/api/src/auth/auth.integration.js",
+    "apps/api/src/auth/auth.test.js",
+    "apps/api/src/auth/challenge-service.js",
+    "apps/api/src/auth/delivery.js",
+    "apps/api/src/auth/index-names.js",
+    "apps/api/src/auth/indexes.js",
+    "apps/api/src/auth/models/auth-challenge.js",
+    "apps/api/src/auth/models/auth-transaction.js",
+    "apps/api/src/auth/models/user.js",
+    "apps/api/src/auth/router.js",
+    "apps/api/src/auth/serialization.js",
+    "apps/api/src/auth/service.js",
     "apps/api/src/blog/blog.test.js",
     "apps/api/src/blog/controllers.js",
+    "apps/api/src/blog/routes.js",
+    "apps/api/src/blog/seed.js",
+    "apps/api/src/blog/service.js",
+    "apps/api/src/blog/validation.js",
+    "apps/api/src/cms/admin-routes.js",
+    "apps/api/src/cms/content.js",
+    "apps/api/src/cms/indexes.js",
+    "apps/api/src/cms/library-service.js",
+    "apps/api/src/cms/media.js",
+    "apps/api/src/cms/models.js",
+    "apps/api/src/cms/post-service.js",
+    "apps/api/src/cms/public-service.js",
+    "apps/api/src/cms/scheduler.js",
+    "apps/api/src/cms/serializers.js",
+    "apps/api/src/cms/validation.js",
+    "apps/api/src/config/environment.js",
+    "apps/api/src/config/environment.test.js",
+    "apps/api/src/config/session.js",
+    "apps/api/src/health/router.js",
+    "apps/api/src/infrastructure/mongodb.js",
+    "apps/api/src/middleware/security.test.js",
+    "apps/api/src/middleware/session.js",
+    "apps/api/src/server.js",
+    "apps/blog/next-env.d.ts",
+    "apps/user-dashboard/src/components/auth/verification-panel.test.tsx",
+    "apps/user-dashboard/src/components/auth/verification-panel.tsx",
+    "apps/user-dashboard/src/features/auth/auth-api.test.ts",
+    "apps/user-dashboard/src/features/auth/auth-api.ts",
+    "apps/user-dashboard/src/pages/auth/login-page.tsx",
+    "apps/user-dashboard/src/pages/settings-page.test.tsx",
+    "apps/user-dashboard/src/pages/settings-page.tsx",
+    "apps/web/public/logo/llogo.svg",
+    "apps/web/public/logo/logo.svg",
+    "apps/web/src/app/blog/[slug]/page.tsx",
+    "apps/web/src/app/blog/category/[slug]/page.tsx",
+    "apps/web/src/app/blog/error.tsx",
+    "apps/web/src/app/blog/loading.tsx",
+    "apps/web/src/app/blog/not-found.tsx",
+    "apps/web/src/app/blog/page.tsx",
+    "apps/web/src/app/blog/search/page.tsx",
+    "apps/web/src/components/blog/archive-page.tsx",
+    "apps/web/src/components/blog/posts/article-card.tsx",
+    "apps/web/src/components/blog/posts/article-grid.tsx",
+    "apps/web/src/components/blog/posts/featured-article.tsx",
+    "apps/web/src/components/blog/posts/pagination.tsx",
+    "apps/web/src/components/blog/posts/post-image.tsx",
+    "apps/web/src/components/blog/posts/post-meta.tsx",
+    "apps/web/src/components/blog/search/search-form.tsx",
+    "apps/web/src/components/blog/status/empty-state.tsx",
+    "apps/web/src/components/blog/status/route-error.tsx",
+    "apps/web/src/components/blog/status/route-loading.tsx",
+    "apps/web/src/components/landing/landing-navbar.tsx",
+    "apps/web/src/components/marketing/public-navbar.tsx",
+    "apps/web/src/lib/blog-api.ts",
+    "apps/web/src/lib/blog-format.ts",
+    "apps/web/src/lib/blog-route-params.ts",
+    "apps/web/src/lib/blog-site.ts",
+    "apps/web/src/lib/public-routes.ts",
+    "docker-compose.yml",
+    "package.json",
+    "packages/shared/src/admin-permissions.ts",
+    "packages/shared/src/index.ts",
+    "pnpm-lock.yaml",
+    "tools/importers/sanjesh/README.md",
+    "tools/importers/sanjesh/extract.py",
+    "tools/importers/sanjesh/requirements.txt",
+    "tools/importers/sanjesh/sources.py",
+    "tools/project-map/main.py",
+    "turbo.json",
+    "apps/admin-dashboard",
     "apps/api/src/blog/errors.js",
     "apps/api/src/blog/index-names.js",
     "apps/api/src/blog/indexes.js",
     "apps/api/src/blog/models/post.js",
     "apps/api/src/blog/repository.js",
-    "apps/api/src/blog/routes.js",
-    "apps/api/src/blog/seed.js",
-    "apps/api/src/blog/service.js",
-    "apps/api/src/blog/validation.js",
-    "apps/api/src/server.js",
     "apps/blog/components.json",
     "apps/blog/eslint.config.mjs",
-    "apps/blog/next-env.d.ts",
     "apps/blog/next.config.ts",
     "apps/blog/package.json",
     "apps/blog/postcss.config.mjs",
@@ -3086,7 +4335,6 @@
     "apps/web/src/app/how-it-works/page.tsx",
     "apps/web/src/app/layout.tsx",
     "apps/web/src/app/sitemap.ts",
-    "apps/web/src/components/landing/landing-navbar.tsx",
     "apps/web/src/components/landing/landing-page.tsx",
     "apps/web/src/components/landing/motion.tsx",
     "apps/web/src/components/marketing/contact-form.tsx",
@@ -3094,23 +4342,17 @@
     "apps/web/src/components/marketing/how-it-works-journey.tsx",
     "apps/web/src/components/marketing/how-it-works-section.tsx",
     "apps/web/src/components/marketing/public-footer.tsx",
-    "apps/web/src/components/marketing/public-navbar.tsx",
     "apps/web/src/components/marketing/section-heading.tsx",
     "apps/web/src/components/ui/resizable-navbar.tsx",
     "apps/web/src/hooks/use-hydrated-reduced-motion.ts",
     "apps/web/src/lib/faq.ts",
     "apps/web/src/lib/pricing.ts",
-    "apps/web/src/lib/public-routes.ts",
     "apps/web/src/lib/site.ts",
     "apps/web/src/styles/globals.css",
-    "docker-compose.yml",
     "infrastructure/docker/blog.Dockerfile",
     "infrastructure/docker/web.Dockerfile",
     "package-lock.json",
-    "package.json",
-    "pnpm-lock.yaml",
     "pnpm-workspace.yaml",
-    "turbo.json",
     "apps/user-dashboard/src/app/favicon.ico",
     "apps/user-dashboard/src/components/auth/auth-illustration.tsx",
     "apps/web/src/app/favicon.ico",
@@ -3122,149 +4364,74 @@
     ".agents/guidance-map/guides/workspace/tooling.md",
     ".agents/guidance-map/manifest.json",
     "AGENTS.md",
-    ".gitignore",
-    "apps/api/scripts/build.mjs",
-    "apps/api/src/auth/auth.integration.js",
-    "apps/api/src/auth/auth.test.js",
-    "apps/api/src/auth/challenge-service.js",
-    "apps/api/src/auth/delivery.js",
-    "apps/api/src/auth/index-names.js",
-    "apps/api/src/auth/indexes.js",
-    "apps/api/src/auth/models/auth-challenge.js",
-    "apps/api/src/auth/models/auth-transaction.js",
-    "apps/api/src/auth/models/user.js",
-    "apps/api/src/auth/router.js",
-    "apps/api/src/auth/serialization.js",
-    "apps/api/src/auth/service.js",
-    "apps/api/src/config/environment.js",
-    "apps/api/src/config/environment.test.js",
-    "apps/api/src/config/session.js",
-    "apps/api/src/health/router.js",
-    "apps/api/src/infrastructure/mongodb.js",
-    "apps/api/src/middleware/security.test.js",
-    "apps/api/src/middleware/session.js",
-    "apps/user-dashboard/src/components/auth/verification-panel.test.tsx",
-    "apps/user-dashboard/src/components/auth/verification-panel.tsx",
-    "apps/user-dashboard/src/features/auth/auth-api.test.ts",
-    "apps/user-dashboard/src/features/auth/auth-api.ts",
-    "apps/user-dashboard/src/pages/auth/login-page.tsx",
-    "apps/user-dashboard/src/pages/settings-page.tsx",
-    "apps/web/public/logo/logo.svg",
-    "packages/shared/src/index.ts",
-    "AUTHENTICATION.md",
-    "PROJECT_MAP.json",
-    "PROJECT_MAP.md",
-    "apps/admin-dashboard/.gitignore",
-    "apps/admin-dashboard/README.md",
-    "apps/admin-dashboard/component.json",
-    "apps/admin-dashboard/components.json",
-    "apps/admin-dashboard/eslint.config.js",
-    "apps/admin-dashboard/index.html",
-    "apps/admin-dashboard/package.json",
-    "apps/admin-dashboard/public/favicon.ico",
-    "apps/admin-dashboard/public/fonts/peyda-regular.woff2",
-    "apps/admin-dashboard/public/fonts/peyda-semibold.woff2",
-    "apps/admin-dashboard/public/icons.svg",
-    "apps/admin-dashboard/src/App.css",
-    "apps/admin-dashboard/src/App.tsx",
-    "apps/admin-dashboard/src/assets/hero.png",
-    "apps/admin-dashboard/src/assets/logo.svg",
-    "apps/admin-dashboard/src/assets/react.svg",
-    "apps/admin-dashboard/src/assets/vite.svg",
-    "apps/admin-dashboard/src/components/app-sidebar.tsx",
-    "apps/admin-dashboard/src/components/nav-dash.tsx",
-    "apps/admin-dashboard/src/components/nav-main.tsx",
-    "apps/admin-dashboard/src/components/nav-user.tsx",
-    "apps/admin-dashboard/src/components/ui/avatar.tsx",
-    "apps/admin-dashboard/src/components/ui/breadcrumb.tsx",
-    "apps/admin-dashboard/src/components/ui/button.tsx",
-    "apps/admin-dashboard/src/components/ui/card.tsx",
-    "apps/admin-dashboard/src/components/ui/collapsible.tsx",
-    "apps/admin-dashboard/src/components/ui/direction.tsx",
-    "apps/admin-dashboard/src/components/ui/dropdown-menu.tsx",
-    "apps/admin-dashboard/src/components/ui/input.tsx",
-    "apps/admin-dashboard/src/components/ui/separator.tsx",
-    "apps/admin-dashboard/src/components/ui/sheet.tsx",
-    "apps/admin-dashboard/src/components/ui/sidebar.tsx",
-    "apps/admin-dashboard/src/components/ui/skeleton.tsx",
-    "apps/admin-dashboard/src/components/ui/tabs.tsx",
-    "apps/admin-dashboard/src/components/ui/tooltip.tsx",
-    "apps/admin-dashboard/src/features/dashboard/components/alerts-card.tsx",
-    "apps/admin-dashboard/src/features/dashboard/components/content-status-card.tsx",
-    "apps/admin-dashboard/src/features/dashboard/components/dashboard-header.tsx",
-    "apps/admin-dashboard/src/features/dashboard/components/data-quality-card.tsx",
-    "apps/admin-dashboard/src/features/dashboard/components/kpi-card.tsx",
-    "apps/admin-dashboard/src/features/dashboard/components/open-tasks-card.tsx",
-    "apps/admin-dashboard/src/features/dashboard/components/recent-activity.tsx",
-    "apps/admin-dashboard/src/features/dashboard/components/service-health-card.tsx",
-    "apps/admin-dashboard/src/features/dashboard/components/user-growth-chart.tsx",
-    "apps/admin-dashboard/src/features/dashboard/dashboard-page.tsx",
-    "apps/admin-dashboard/src/features/dashboard/mocks/dashboard.mock.ts",
-    "apps/admin-dashboard/src/features/dashboard/types/dashboard.types.ts",
-    "apps/admin-dashboard/src/hooks/use-mobile.ts",
-    "apps/admin-dashboard/src/lib/utils.ts",
-    "apps/admin-dashboard/src/main.tsx",
-    "apps/admin-dashboard/src/styles/globals.css",
-    "apps/admin-dashboard/tsconfig.app.json",
-    "apps/admin-dashboard/tsconfig.json",
-    "apps/admin-dashboard/tsconfig.node.json",
-    "apps/admin-dashboard/vite.config.ts",
-    "apps/api/scripts/bootstrap-super-admin.mjs",
-    "apps/api/scripts/seed-admin.mjs",
-    "apps/api/src/admin/audit.js",
-    "apps/api/src/admin/auth-authorization.js",
-    "apps/api/src/admin/auth-router.js",
-    "apps/api/src/admin/auth-service.js",
-    "apps/api/src/admin/authorization.js",
-    "apps/api/src/admin/indexes.js",
-    "apps/api/src/admin/models/audit-log.js",
-    "apps/api/src/admin/permissions.js",
-    "apps/api/src/admin/permissions.test.js",
-    "apps/api/src/admin/routes.js",
-    "apps/api/src/admin/seed.js",
-    "apps/api/src/admin/service.js",
-    "apps/api/src/admin/validation.js",
-    "apps/api/src/cms/admin-routes.js",
-    "apps/api/src/cms/content.js",
-    "apps/api/src/cms/indexes.js",
-    "apps/api/src/cms/library-service.js",
-    "apps/api/src/cms/media.js",
-    "apps/api/src/cms/models.js",
-    "apps/api/src/cms/post-service.js",
-    "apps/api/src/cms/public-service.js",
-    "apps/api/src/cms/scheduler.js",
-    "apps/api/src/cms/serializers.js",
-    "apps/api/src/cms/validation.js",
-    "apps/user-dashboard/src/pages/settings-page.test.tsx",
-    "apps/web/public/logo/llogo.svg",
-    "apps/web/src/app/blog/[slug]/page.tsx",
-    "apps/web/src/app/blog/category/[slug]/page.tsx",
-    "apps/web/src/app/blog/error.tsx",
-    "apps/web/src/app/blog/loading.tsx",
-    "apps/web/src/app/blog/not-found.tsx",
-    "apps/web/src/app/blog/page.tsx",
-    "apps/web/src/app/blog/search/page.tsx",
-    "apps/web/src/components/blog/archive-page.tsx",
-    "apps/web/src/components/blog/posts/article-card.tsx",
-    "apps/web/src/components/blog/posts/article-grid.tsx",
-    "apps/web/src/components/blog/posts/featured-article.tsx",
-    "apps/web/src/components/blog/posts/pagination.tsx",
-    "apps/web/src/components/blog/posts/post-image.tsx",
-    "apps/web/src/components/blog/posts/post-meta.tsx",
-    "apps/web/src/components/blog/search/search-form.tsx",
-    "apps/web/src/components/blog/status/empty-state.tsx",
-    "apps/web/src/components/blog/status/route-error.tsx",
-    "apps/web/src/components/blog/status/route-loading.tsx",
-    "apps/web/src/lib/blog-api.ts",
-    "apps/web/src/lib/blog-format.ts",
-    "apps/web/src/lib/blog-route-params.ts",
-    "apps/web/src/lib/blog-site.ts",
-    "packages/shared/src/admin-permissions.ts",
-    "tools/importers/sanjesh/README.md",
-    "tools/importers/sanjesh/extract.py",
-    "tools/importers/sanjesh/requirements.txt",
-    "tools/importers/sanjesh/sources.py",
-    "tools/project-map/main.py"
+    "apps/admin-dashboard/src/features/administration/admins/pages/admin-detail-page.tsx",
+    "apps/admin-dashboard/src/features/administration/admins/pages/admins-page.tsx",
+    "apps/admin-dashboard/src/features/administration/audit/pages/audit-page.tsx",
+    "apps/admin-dashboard/src/features/administration/data/administration.seed.ts",
+    "apps/admin-dashboard/src/features/administration/permissions/pages/permissions-page.tsx",
+    "apps/admin-dashboard/src/features/administration/repository/administration-repository.ts",
+    "apps/admin-dashboard/src/features/administration/repository/audit-store.ts",
+    "apps/admin-dashboard/src/features/administration/repository/local-administration-repository.ts",
+    "apps/admin-dashboard/src/features/administration/roles/pages/role-detail-page.tsx",
+    "apps/admin-dashboard/src/features/administration/roles/pages/roles-page.tsx",
+    "apps/admin-dashboard/src/features/administration/shared/administration-utils.ts",
+    "apps/admin-dashboard/src/features/administration/types/administration.types.ts",
+    "apps/admin-dashboard/src/features/content/categories/categories-page.tsx",
+    "apps/admin-dashboard/src/features/content/comments/comments-page.tsx",
+    "apps/admin-dashboard/src/features/content/data/content.seed.ts",
+    "apps/admin-dashboard/src/features/content/media/media-page.tsx",
+    "apps/admin-dashboard/src/features/content/media/media-picker.tsx",
+    "apps/admin-dashboard/src/features/content/overview/content-overview-page.tsx",
+    "apps/admin-dashboard/src/features/content/posts/components/post-preview.tsx",
+    "apps/admin-dashboard/src/features/content/posts/components/post-seo-panel.tsx",
+    "apps/admin-dashboard/src/features/content/posts/components/revision-history.tsx",
+    "apps/admin-dashboard/src/features/content/posts/editor/media-image-extension.tsx",
+    "apps/admin-dashboard/src/features/content/posts/editor/media-image-view.tsx",
+    "apps/admin-dashboard/src/features/content/posts/editor/post-editor.tsx",
+    "apps/admin-dashboard/src/features/content/posts/pages/post-editor-page.tsx",
+    "apps/admin-dashboard/src/features/content/posts/pages/posts-page.tsx",
+    "apps/admin-dashboard/src/features/content/repository/content-repository.ts",
+    "apps/admin-dashboard/src/features/content/repository/local-content-repository.ts",
+    "apps/admin-dashboard/src/features/content/shared/content-ui.tsx",
+    "apps/admin-dashboard/src/features/content/shared/content-utils.ts",
+    "apps/admin-dashboard/src/features/content/shared/content.types.ts",
+    "apps/admin-dashboard/src/features/content/shared/use-content-query.ts",
+    "apps/admin-dashboard/src/features/content/tags/tags-page.tsx",
+    "apps/admin-dashboard/src/features/dashboard/hooks/use-dashboard.ts",
+    "apps/admin-dashboard/src/features/dashboard/services/dashboard-repository.ts",
+    "apps/admin-dashboard/src/features/data/admissions/pages/admission-detail-page.tsx",
+    "apps/admin-dashboard/src/features/data/admissions/pages/admissions-page.tsx",
+    "apps/admin-dashboard/src/features/data/hooks/use-data.ts",
+    "apps/admin-dashboard/src/features/data/imports/pages/import-detail-page.tsx",
+    "apps/admin-dashboard/src/features/data/imports/pages/imports-page.tsx",
+    "apps/admin-dashboard/src/features/data/majors/pages/major-detail-page.tsx",
+    "apps/admin-dashboard/src/features/data/majors/pages/majors-page.tsx",
+    "apps/admin-dashboard/src/features/data/mock/data-mock-store.ts",
+    "apps/admin-dashboard/src/features/data/mock/data.mock.ts",
+    "apps/admin-dashboard/src/features/data/programs/pages/program-detail-page.tsx",
+    "apps/admin-dashboard/src/features/data/programs/pages/programs-page.tsx",
+    "apps/admin-dashboard/src/features/data/quality/pages/data-quality-page.tsx",
+    "apps/admin-dashboard/src/features/data/services/data-repository.ts",
+    "apps/admin-dashboard/src/features/data/shared/data-ui.tsx",
+    "apps/admin-dashboard/src/features/data/shared/data-utils.ts",
+    "apps/admin-dashboard/src/features/data/shared/entity-forms.tsx",
+    "apps/admin-dashboard/src/features/data/shared/use-list-page.ts",
+    "apps/admin-dashboard/src/features/data/sources/pages/source-detail-page.tsx",
+    "apps/admin-dashboard/src/features/data/sources/pages/sources-page.tsx",
+    "apps/admin-dashboard/src/features/data/types/data.types.ts",
+    "apps/admin-dashboard/src/features/data/universities/pages/universities-page.tsx",
+    "apps/admin-dashboard/src/features/data/universities/pages/university-detail-page.tsx",
+    "apps/admin-dashboard/src/features/system/data/system.seed.ts",
+    "apps/admin-dashboard/src/features/system/feature-flags/pages/feature-flags-page.tsx",
+    "apps/admin-dashboard/src/features/system/health/pages/health-page.tsx",
+    "apps/admin-dashboard/src/features/system/jobs/pages/job-detail-page.tsx",
+    "apps/admin-dashboard/src/features/system/jobs/pages/jobs-page.tsx",
+    "apps/admin-dashboard/src/features/system/repository/local-system-repository.ts",
+    "apps/admin-dashboard/src/features/system/repository/system-repository.ts",
+    "apps/admin-dashboard/src/features/system/security/pages/security-page.tsx",
+    "apps/admin-dashboard/src/features/system/settings/pages/settings-page.tsx",
+    "apps/admin-dashboard/src/features/system/types/system.types.ts",
+    "apps/admin-dashboard/src/features/users/services/users-repository.ts"
   ],
   "affected_module_guides": [
     ".agents/guidance-map/guides/api/service.md",

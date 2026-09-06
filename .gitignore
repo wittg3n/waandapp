@@ -77,6 +77,14 @@ Thumbs.db
 # Docker local data / volumes
 docker-data/
 data/
+!apps/admin-dashboard/src/features/data/
+!apps/admin-dashboard/src/features/data/**
+!apps/admin-dashboard/src/features/administration/data/
+!apps/admin-dashboard/src/features/administration/data/**
+!apps/admin-dashboard/src/features/content/data/
+!apps/admin-dashboard/src/features/content/data/**
+!apps/admin-dashboard/src/features/system/data/
+!apps/admin-dashboard/src/features/system/data/**
 volumes/
 
 # Temporary files

@@ -8,7 +8,6 @@ interface UsersToolbarProps {
   params: URLSearchParams;
   total: number;
   statusLocked?: boolean;
-  supportsBan?: boolean;
   onChange: (name: string, value: string) => void;
   onClear: () => void;
 }
@@ -20,7 +19,6 @@ export function UsersToolbar({
   params,
   total,
   statusLocked,
-  supportsBan,
   onChange,
   onClear,
 }: UsersToolbarProps) {
@@ -68,7 +66,7 @@ export function UsersToolbar({
             <option value="active">فعال</option>
             <option value="pending_verification">در انتظار</option>
             <option value="suspended">تعلیق‌شده</option>
-            {supportsBan && <option value="banned">مسدود</option>}
+            <option value="banned">مسدود</option>
             <option value="deleted">حذف‌شده</option>
           </select>
         )}

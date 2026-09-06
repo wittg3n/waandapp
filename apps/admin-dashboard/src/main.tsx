@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { MotionConfig } from 'framer-motion';
 import { BrowserRouter } from 'react-router-dom';
 
 import { DirectionProvider } from '@/components/ui/direction';
@@ -9,10 +10,12 @@ import '@/styles/globals.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <DirectionProvider direction="rtl">
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </DirectionProvider>
+    <MotionConfig reducedMotion="user">
+      <DirectionProvider direction="rtl">
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </DirectionProvider>
+    </MotionConfig>
   </StrictMode>,
 );

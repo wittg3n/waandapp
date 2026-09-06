@@ -6,6 +6,7 @@ import {
 } from '@phosphor-icons/react';
 import { useState, type ReactNode } from 'react';
 
+import { Button } from '@/components/ui/button';
 import { AlertsCard } from '@/features/dashboard/components/alerts-card';
 import { ContentStatusCard } from '@/features/dashboard/components/content-status-card';
 import { DashboardHeader } from '@/features/dashboard/components/dashboard-header';
@@ -15,16 +16,7 @@ import { OpenTasksCard } from '@/features/dashboard/components/open-tasks-card';
 import { RecentActivity } from '@/features/dashboard/components/recent-activity';
 import { ServiceHealthCard } from '@/features/dashboard/components/service-health-card';
 import { UserGrowthChart } from '@/features/dashboard/components/user-growth-chart';
-import {
-  contentStatus,
-  dashboardMetrics,
-  dataQualityIssues,
-  openTasks,
-  recentAdminActivity,
-  serviceHealth,
-  systemAlerts,
-  userGrowthByPeriod,
-} from '@/features/dashboard/mocks/dashboard.mock';
+import { useDashboard } from '@/features/dashboard/hooks/use-dashboard';
 import type {
   DashboardMetricIcon,
   DashboardPeriod,
@@ -40,6 +32,38 @@ const metricIcons: Record<DashboardMetricIcon, ReactNode> = {
 export function DashboardPage() {
   const [period, setPeriod] = useState<DashboardPeriod>('7d');
   const [lastUpdated, setLastUpdated] = useState(() => new Date());
+  const dashboard = useDashboard();
+
+  if (!dashboard.data) {
+    return (
+      <div className="min-w-0 flex-1 bg-muted/20 p-4 sm:p-6 lg:p-8">
+        <div className="mx-auto max-w-[1600px] rounded-xl border bg-card p-8 text-sm text-muted-foreground">
+          {dashboard.loading ? (
+            'در حال دریافت اطلاعات داشبورد…'
+          ) : (
+            <>
+              <p className="font-medium text-foreground">اطلاعات داشبورد دریافت نشد</p>
+              <p className="mt-1">{dashboard.error}</p>
+              <Button variant="outline" className="mt-4" onClick={dashboard.refetch}>
+                تلاش دوباره
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  const {
+    metrics,
+    growthByPeriod,
+    serviceHealth,
+    contentStatus,
+    dataQualityIssues,
+    recentAdminActivity,
+    systemAlerts,
+    openTasks,
+  } = dashboard.data;
 
   return (
     <div className="min-w-0 flex-1 bg-muted/20">
@@ -48,11 +72,14 @@ export function DashboardPage() {
           period={period}
           lastUpdated={lastUpdated}
           onPeriodChange={setPeriod}
-          onRefresh={() => setLastUpdated(new Date())}
+          onRefresh={() => {
+            dashboard.refetch();
+            setLastUpdated(new Date());
+          }}
         />
 
         <section aria-label="شاخص‌های کلیدی" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {dashboardMetrics.items.map((metric) => (
+          {metrics.items.map((metric) => (
             <KpiCard
               key={metric.id}
               title={metric.title}
@@ -68,7 +95,7 @@ export function DashboardPage() {
           aria-label="تحلیل و سلامت سامانه"
           className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(19rem,1fr)]"
         >
-          <UserGrowthChart data={userGrowthByPeriod[period]} />
+          <UserGrowthChart data={growthByPeriod[period]} />
           <ServiceHealthCard services={serviceHealth} />
         </section>
 

@@ -13,7 +13,7 @@ import { UserHeader } from '@/features/users/components/user-header';
 import { UserOverview } from '@/features/users/components/user-overview';
 import { UserSessionsTab } from '@/features/users/components/user-sessions-tab';
 import { useAdminSession, useUserAudit, useUserDetail } from '@/features/users/hooks/use-users';
-import { usersApi } from '@/features/users/services/users-api';
+import { usersRepository } from '@/features/users/services/users-repository';
 import { USER_PERMISSIONS, type UserStatusAction } from '@/features/users/types/users.types';
 import { fullName } from '@/features/users/users-utils';
 
@@ -36,7 +36,7 @@ export function UserDetailPage() {
   const canRead = permissions.includes(USER_PERMISSIONS.read);
   const canUpdate = permissions.includes(USER_PERMISSIONS.update);
   const canSuspend = permissions.includes(USER_PERMISSIONS.suspend);
-  const canBan = usersApi.supportsBan && permissions.includes(USER_PERMISSIONS.ban);
+  const canBan = permissions.includes(USER_PERMISSIONS.ban);
   const canRevokeSessions = permissions.includes(USER_PERMISSIONS.sessionsRevoke);
   const canReadAudit = permissions.includes(USER_PERMISSIONS.auditRead);
   const detail = useUserDetail(userId, canRead);
@@ -49,7 +49,7 @@ export function UserDetailPage() {
 
   async function updateUser(input: { firstName?: string; lastName?: string; reason: string }) {
     if (!userId) return;
-    await usersApi.update(userId, input);
+    await usersRepository.update(userId, input);
     setToast('اطلاعات کاربر ذخیره شد.');
     detail.refetch();
     audit.refetch();
@@ -61,7 +61,7 @@ export function UserDetailPage() {
     setOperationError(null);
     try {
       if (operation.type === 'status') {
-        await usersApi.changeStatus(userId, operation.status, reason);
+        await usersRepository.changeStatus(userId, operation.status, reason);
         setToast(
           operation.status === 'active'
             ? 'کاربر دوباره فعال شد.'
@@ -70,12 +70,12 @@ export function UserDetailPage() {
               : 'کاربر تعلیق شد.',
         );
       } else if (operation.type === 'verification') {
-        await usersApi.resetVerification(userId, operation.channel, reason);
+        await usersRepository.resetVerification(userId, operation.channel, reason);
         setToast(
           operation.channel === 'email' ? 'تأیید ایمیل بازنشانی شد.' : 'تأیید موبایل بازنشانی شد.',
         );
       } else {
-        await usersApi.revokeAllSessions(userId, reason);
+        await usersRepository.revokeAllSessions(userId, reason);
         setToast('همه نشست‌های کاربر باطل شد.');
       }
       setOperation(null);
@@ -121,7 +121,7 @@ export function UserDetailPage() {
           </div>
         ) : session.error || !session.data?.user ? (
           <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-6">
-            <p className="font-medium">نشست مدیریت در دسترس نیست</p>
+            <p className="font-medium">اطلاعات دسترسی مدیریت بارگذاری نشد</p>
             <p className="mt-1 text-sm text-muted-foreground">
               {session.error ?? 'برای مشاهده کاربر وارد حساب مدیریت شوید.'}
             </p>
