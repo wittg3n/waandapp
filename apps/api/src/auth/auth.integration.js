@@ -23,7 +23,7 @@ Object.assign(process.env, {
   CORS_ORIGINS: `${allowedOrigin},${adminOrigin},http://localhost:3000`,
   AUTH_MUTATION_ORIGINS: allowedOrigin,
   ADMIN_DASHBOARD_ORIGIN: adminOrigin,
-  LOG_LEVEL: 'silent',
+  LOG_LEVEL: process.env.API_TEST_DEBUG ? 'error' : 'silent',
   RATE_LIMIT_WINDOW_MS: '60000',
   RATE_LIMIT_MAX: '10000',
   TRUST_PROXY_HOPS: '0',
@@ -120,6 +120,7 @@ const sender = {
 const testSettings = {
   ...config,
   authResendCooldownMs: 25,
+  authRedisPrefix: `waandapp:test:${suffix}:identity:`,
   authRateLimitPrefix: `waandapp:test:${suffix}:auth:`,
   globalRateLimitPrefix: `waandapp:test:${suffix}:global:`,
 };
@@ -270,7 +271,7 @@ async function requestAndVerify(client, prefix, channel, destination) {
   assert.equal(requested.response.status, 200, JSON.stringify(requested.payload));
   assert.equal(requested.payload.data.status, 'CODE_SENT');
   const code = codes.get(destination);
-  assert.match(code, /^\d{6}$/);
+  assert.match(code, /^(?:\d{6}|[a-f0-9]{64})$/);
   return client.request(`${prefix}/${channel}/verify`, {
     method: 'POST',
     body: { code },
@@ -361,6 +362,7 @@ before(async () => {
   const quietLogger = { error() {}, info() {} };
   await connectMongoDb(mongoUri, quietLogger);
   await createAuthIndexes();
+  await (await import('../authorization/roles.js')).seedRoles();
   redis = await connectRedis(redisUrl, quietLogger);
   server = createServer(
     createApp(redis, {
@@ -394,16 +396,6 @@ test('indexes, anonymous state, exact CORS, Fetch Metadata, CSRF, payload, and m
   assert.ok(
     (await AuthChallenge.collection.indexes()).some(
       ({ name }) => name === AUTH_INDEX_NAMES.challengeTtl,
-    ),
-  );
-  assert.ok(
-    (await mongoose.connection.db.collection('sessions').indexes()).some(
-      ({ name }) => name === AUTH_INDEX_NAMES.sessionTtl,
-    ),
-  );
-  assert.ok(
-    (await mongoose.connection.db.collection('admin_sessions').indexes()).some(
-      ({ name }) => name === AUTH_INDEX_NAMES.adminSessionTtl,
     ),
   );
   await AuthEvent.collection.dropIndex(AUTH_INDEX_NAMES.eventType);
@@ -742,12 +734,13 @@ test('admin authentication has isolated credentials, MFA, cookies, CSRF, origin,
 
   const consumerSessionId = signedSessionId(client.cookie);
   const adminSessionId = signedSessionId(client.adminCookie);
-  const consumerSessions = mongoose.connection.db.collection('sessions');
-  const adminSessions = mongoose.connection.db.collection('admin_sessions');
-  assert.ok(await consumerSessions.findOne({ _id: consumerSessionId }));
-  assert.equal(await consumerSessions.findOne({ _id: adminSessionId }), null);
-  assert.ok(await adminSessions.findOne({ _id: adminSessionId }));
-  assert.equal(await adminSessions.findOne({ _id: consumerSessionId }), null);
+  const userPrefix = testSettings.authRedisPrefix + 'sessions:user:';
+  const adminPrefix = testSettings.authRedisPrefix + 'sessions:admin:';
+  assert.ok(await redis.get(userPrefix + consumerSessionId));
+  assert.equal(await redis.get(userPrefix + adminSessionId), null);
+  assert.ok(await redis.get(adminPrefix + adminSessionId));
+  assert.equal(await redis.get(adminPrefix + consumerSessionId), null);
+  assert.ok((await redis.ttl(userPrefix + consumerSessionId)) > 0);
 
   const renamedAdminCookie = new ApiClient();
   renamedAdminCookie.cookies.set(
@@ -926,7 +919,7 @@ test('registration reports delivery failure and succeeds only after a later deli
   let attempts = deliveryAttempts.filter(({ destination }) => destination === account.email);
   assert.equal(attempts.length, 1);
   assert.equal(attempts[0].destination, account.email);
-  assert.match(attempts[0].code, /^\d{6}$/);
+  assert.match(attempts[0].code, /^[a-f0-9]{64}$/);
   assert.equal(attempts[0].expiresInSeconds, Math.ceil(testSettings.authCodeTtlMs / 1_000));
   assert.equal(
     await AuthChallenge.countDocuments({
@@ -948,7 +941,7 @@ test('registration reports delivery failure and succeeds only after a later deli
   attempts = deliveryAttempts.filter(({ destination }) => destination === account.email);
   assert.equal(attempts.length, 2);
   assert.equal(attempts[1].destination, account.email);
-  assert.match(attempts[1].code, /^\d{6}$/);
+  assert.match(attempts[1].code, /^[a-f0-9]{64}$/);
   assert.equal(attempts[1].expiresInSeconds, Math.ceil(testSettings.authCodeTtlMs / 1_000));
   assert.equal(
     await AuthChallenge.countDocuments({
@@ -1382,7 +1375,8 @@ test('disabling dev-no2step revokes bypass sessions and grants before normal MFA
       },
     });
     assert.equal(blockedStepUp.response.status, 403);
-    assert.equal(blockedStepUp.payload.error.code, 'AUTH_REAUTH_REQUIRED');
+    assert.equal(blockedStepUp.payload.error.code, 'AUTH_CSRF_INVALID');
+    assert.equal((await verified.bootstrap()).payload.data.user, null);
 
     const normalConsumer = new ApiClient(normalOrigin);
     const normalConsumerLogin = await loginPrimary(normalConsumer, account);
@@ -1970,11 +1964,25 @@ test('step-up requires current password plus an existing factor, binds purpose, 
     method: 'POST',
     body: { channel: 'email' },
   });
+  const beforeElevation = current.cookie;
+  const beforeState = JSON.parse(
+    await redis.get(
+      testSettings.authRedisPrefix + 'sessions:user:' + signedSessionId(beforeElevation),
+    ),
+  );
   const factor = await current.request('/api/v1/auth/second-step/verify', {
     method: 'POST',
     body: { channel: 'email', code: codes.get(account.email) },
   });
   assert.equal(factor.payload.data.status, 'REAUTHENTICATED');
+  assert.notEqual(current.cookie, beforeElevation);
+  const afterState = JSON.parse(
+    await redis.get(
+      testSettings.authRedisPrefix + 'sessions:user:' + signedSessionId(current.cookie),
+    ),
+  );
+  assert.equal(afterState.createdAt, beforeState.createdAt);
+  assert.equal(afterState.authTime, beforeState.authTime);
   const continuity = await current.request('/api/v1/auth/me');
   assert.equal(continuity.payload.data.preauth.stage, 'reauthenticated');
   assert.equal(continuity.payload.data.preauth.purpose, 'change_password');
@@ -2123,4 +2131,213 @@ test('logout-all and legacy passwordless active records cannot retain protected 
   assert.equal(denied.response.status, 401);
   assert.equal(denied.payload.error.code, 'AUTH_INVALID_CREDENTIALS');
   assert.equal((await User.findById(legacy.insertedId)).status, 'active');
+});
+
+test('database role edits immediately change cached abilities and reject invented permissions and delegated escalation', async () => {
+  const administrator = new ApiClient();
+  const { account: rootAccount } = await registerActive(administrator, identity('roleroot'));
+  await User.updateOne(
+    { usernameNormalized: rootAccount.username },
+    { $set: { adminRoles: ['SUPER_ADMIN'] } },
+  );
+  await adminLoginFully(administrator, rootAccount);
+  const key = `CUSTOM_${suffix.toUpperCase()}`;
+  const created = await administrator.request('/api/v1/admin/roles', {
+    method: 'POST',
+    body: {
+      key,
+      name: 'Bounded support',
+      permissions: ['users.read', 'roles.update'],
+      reason: 'Integration test',
+    },
+  });
+  assert.equal(created.response.status, 201, JSON.stringify(created.payload));
+  const member = new ApiClient();
+  const { account: memberAccount, result } = await registerActive(member, identity('rolemember'));
+  const userId = result.payload.data.user.id;
+  const assigned = await administrator.request(`/api/v1/admin/users/${userId}/roles`, {
+    method: 'PATCH',
+    body: { roles: [key], reason: 'Integration test' },
+  });
+  assert.equal(assigned.response.status, 200, JSON.stringify(assigned.payload));
+  await adminLoginFully(member, memberAccount);
+  assert.equal((await member.request('/api/v1/admin/users')).response.status, 200);
+  const escalation = await member.request(`/api/v1/admin/roles/${key}`, {
+    method: 'PATCH',
+    body: {
+      name: 'Escalate',
+      permissions: ['users.read', 'users.roles.assign'],
+      reason: 'Integration test',
+    },
+  });
+  assert.equal(escalation.response.status, 403);
+  const invented = await administrator.request(`/api/v1/admin/roles/${key}`, {
+    method: 'PATCH',
+    body: { name: 'Invalid', permissions: ['invented.root'], reason: 'Integration test' },
+  });
+  assert.equal(invented.response.status, 400);
+  const edited = await administrator.request(`/api/v1/admin/roles/${key}`, {
+    method: 'PATCH',
+    body: { name: 'No user access', permissions: [], reason: 'Integration test' },
+  });
+  assert.equal(edited.response.status, 200, JSON.stringify(edited.payload));
+  assert.equal((await member.request('/api/v1/admin/users')).response.status, 403);
+  assert.deepEqual((await member.adminBootstrap()).payload.data.user.permissions, []);
+  assert.ok((await User.findById(userId)).permissionsVersion >= 2);
+  const protectedRole = await administrator.request('/api/v1/admin/roles/SUPPORT', {
+    method: 'DELETE',
+    body: { reason: 'Integration test' },
+  });
+  assert.equal(protectedRole.response.status, 409);
+  const deleted = await administrator.request(`/api/v1/admin/roles/${key}`, {
+    method: 'DELETE',
+    body: { reason: 'Integration test' },
+  });
+  assert.equal(deleted.response.status, 204);
+  const deletedAssignment = await administrator.request(`/api/v1/admin/users/${userId}/roles`, {
+    method: 'PATCH',
+    body: { roles: [key], reason: 'Integration test' },
+  });
+  assert.equal(deletedAssignment.response.status, 403);
+  const consumer = new ApiClient();
+  await loginFully(consumer, rootAccount);
+  const logout = await administrator.request('/api/v1/admin/auth/logout-all', {
+    method: 'POST',
+    body: {},
+  });
+  assert.equal(logout.response.status, 200);
+  assert.equal((await consumer.bootstrap()).payload.data.user, null);
+  assert.equal((await administrator.adminBootstrap()).payload.data.user, null);
+});
+
+test('session tracking hides credentials, enforces ownership, and blocks resurrection after single-session revocation', async () => {
+  const owner = new ApiClient();
+  const { account } = await registerActive(owner, identity('sessions'));
+  const second = new ApiClient();
+  await loginFully(second, account);
+  const sid = signedSessionId(second.cookie);
+  const key = testSettings.authRedisPrefix + 'sessions:user:' + sid;
+  const oldSession = JSON.parse(await redis.get(key));
+  const { createHash } = await import('node:crypto');
+  const id = createHash('sha256').update(key).digest('hex');
+  const list = await owner.request('/api/v1/auth/sessions');
+  assert.equal(list.response.status, 200);
+  assert.equal(list.payload.data.sessions.length, 2);
+  assert.equal(JSON.stringify(list.payload).includes(sid), false);
+  const outsider = new ApiClient();
+  await registerActive(outsider, identity('outsider'));
+  assert.equal(
+    (await outsider.request(`/api/v1/auth/sessions/${id}`, { method: 'DELETE' })).response.status,
+    404,
+  );
+  assert.equal(
+    (await owner.request(`/api/v1/auth/sessions/${id}`, { method: 'DELETE' })).response.status,
+    204,
+  );
+  const { TrackedRedisStore } = await import('./session-store.js');
+  const store = new TrackedRedisStore({
+    redis,
+    settings: testSettings,
+    scope: 'user',
+    idleTtlMs: 60000,
+    absoluteTtlMs: 120000,
+  });
+  await store.set(sid, oldSession);
+  assert.equal(await redis.get(key), null);
+  assert.equal((await second.bootstrap()).payload.data.user, null);
+  assert.ok((await owner.bootstrap()).payload.data.user);
+  const all = await owner.request('/api/v1/auth/logout-all', { method: 'POST', body: {} });
+  assert.equal(all.response.status, 200);
+  assert.equal(
+    await redis.exists(testSettings.authRedisPrefix + 'user-sessions:' + oldSession.userId),
+    0,
+  );
+});
+
+test('Redis TTL bounds idle, absolute, and anonymous session lifetimes', async () => {
+  const { TrackedRedisStore } = await import('./session-store.js');
+  const store = new TrackedRedisStore({
+    redis,
+    settings: { ...testSettings, authTransactionTtlMs: 5000 },
+    scope: 'user',
+    idleTtlMs: 60000,
+    absoluteTtlMs: 120000,
+  });
+  const sid = randomUUID();
+  const key = store.prefix + sid;
+  const value = {
+    userId: new mongoose.Types.ObjectId().toString(),
+    createdAt: Date.now(),
+    cookie: {},
+  };
+  await store.set(sid, value);
+  assert.ok((await redis.ttl(key)) <= 60 && (await redis.ttl(key)) >= 59);
+  await store.touch(sid, { ...value, createdAt: Date.now() - 118000 });
+  assert.ok((await redis.ttl(key)) <= 2);
+  await store.set(sid, { ...value, createdAt: Date.now() - 121000 });
+  assert.equal(await redis.exists(key), 0);
+  const anonymous = randomUUID();
+  await store.set(anonymous, { createdAt: Date.now(), cookie: {} });
+  assert.ok((await redis.ttl(store.prefix + anonymous)) <= 5);
+  await store.destroy(anonymous);
+});
+
+test('account lockout revokes existing sessions and locked attempts cannot extend the lock', async () => {
+  const owner = new ApiClient();
+  const { account, result } = await registerActive(owner, identity('lockout'));
+  const attacker = new ApiClient();
+  await attacker.bootstrap();
+  const attempts = Array.from({ length: testSettings.authLockoutThreshold }, () =>
+    attacker.request('/api/v1/auth/login', {
+      method: 'POST',
+      body: { identifier: account.email, password: account.password + 'incorrect' },
+    }),
+  );
+  for (const attempt of await Promise.all(attempts)) assert.equal(attempt.response.status, 401);
+  const locked = await User.findById(result.payload.data.user.id).select('+sessionVersion');
+  assert.ok(locked.security.lockedUntil > new Date());
+  assert.equal(locked.sessionVersion, 1);
+  assert.equal((await owner.bootstrap()).payload.data.user, null);
+  const correctButLocked = await attacker.request('/api/v1/auth/login', {
+    method: 'POST',
+    body: { identifier: account.email, password: account.password },
+  });
+  assert.equal(correctButLocked.response.status, 401);
+  const unchanged = await User.findById(locked._id);
+  assert.equal(unchanged.security.lockedUntil.getTime(), locked.security.lockedUntil.getTime());
+  await User.updateOne(
+    { _id: locked._id },
+    { $set: { 'security.lockedUntil': new Date(Date.now() - 1) } },
+  );
+  assert.equal((await loginPrimary(attacker, account)).payload.data.status, 'SECOND_STEP_REQUIRED');
+});
+
+test('authorization migration is idempotent and preserves legacy identity and password hashes', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const { fileURLToPath } = await import('node:url');
+  const account = identity('migrate');
+  const passwordHash = await hashPassword(account.password, testSettings);
+  const legacy = await User.create({
+    ...Object.fromEntries(
+      Object.entries(account).filter(([key]) =>
+        ['firstName', 'lastName', 'username', 'email', 'phone'].includes(key),
+      ),
+    ),
+    passwordHash,
+    role: 'staff',
+    status: 'active',
+    emailVerifiedAt: new Date(),
+    phoneVerifiedAt: new Date(),
+  });
+  const script = fileURLToPath(new URL('../../scripts/migrate-authorization.mjs', import.meta.url));
+  execFileSync(process.execPath, [script], { env: process.env, timeout: 30000 });
+  const first = await User.findById(legacy._id).select('+passwordHash +sessionVersion');
+  assert.deepEqual([...first.adminRoles], ['SUPPORT']);
+  assert.equal(first.permissionsVersion, 1);
+  assert.equal(first.sessionVersion, 1);
+  assert.equal(first.passwordHash, passwordHash);
+  execFileSync(process.execPath, [script], { env: process.env, timeout: 30000 });
+  const second = await User.findById(legacy._id).select('+passwordHash +sessionVersion');
+  assert.equal(second.sessionVersion, 1);
+  assert.equal(second.passwordHash, passwordHash);
 });

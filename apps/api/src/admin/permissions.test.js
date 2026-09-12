@@ -28,3 +28,14 @@ test('central RBAC matrix enforces human role boundaries and legacy compatibilit
   ]);
   assert.ok(rolesAssignableBy({ adminRoles: ['SUPER_ADMIN'] }).includes('SUPER_ADMIN'));
 });
+
+test('explicitly revoked legacy roles cannot silently restore administrator authority', () => {
+  assert.deepEqual(
+    administrativeRolesForUser({ role: 'admin', adminRoles: [], permissionsVersion: 1 }),
+    [],
+  );
+  assert.equal(
+    hasPermission({ role: 'admin', adminRoles: [], permissionsVersion: 1 }, PERMISSIONS.usersRead),
+    false,
+  );
+});

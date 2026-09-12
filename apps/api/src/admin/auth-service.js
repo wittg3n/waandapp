@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
-
-import { permissionsForRoles } from '@waandapp/shared';
+import { resolveAuthorization } from '../authorization/cache.js';
 
 import { recordAuthEvent } from '../auth/audit.js';
 import { createChallengeService } from '../auth/challenge-service.js';
 import { isDevNoTwoStep } from '../auth/delivery.js';
 import { AuthTransaction } from '../auth/models/auth-transaction.js';
 import { User } from '../auth/models/user.js';
+import { revokeUserSessions } from '../auth/session-store.js';
 import { maskDestination } from '../auth/normalization.js';
 import { ApiError } from '../middleware/errors.js';
 import {
@@ -66,7 +66,8 @@ function serializeAdminUser(user) {
     phoneVerified: Boolean(user.phoneVerifiedAt),
     role: user.role,
     adminRoles,
-    permissions: permissionsForRoles(adminRoles),
+    permissions: user.authorization?.permissions ?? [],
+    abilities: user.authorization?.ability.rules ?? [],
     status: user.status,
   };
 }
@@ -196,6 +197,7 @@ export function createAdminAuthService({
     );
     if (!isModernActiveAdmin(authenticated)) throw invalidPreauth();
 
+    await resolveAuthorization(authenticated, redis, settings);
     await regenerateAdminSession(request);
     ensureAdminSessionState(request);
     request.adminSession.userId = authenticated._id.toString();
@@ -305,5 +307,18 @@ export function createAdminAuthService({
     await destroyAdminSession(request);
   }
 
-  return { getMe, login, logout, requestSecondStep, verifySecondStep };
+  async function logoutAll({ request, user }) {
+    await User.updateOne({ _id: user._id }, { $inc: { sessionVersion: 1 } });
+    await revokeUserSessions(redis, settings, user._id);
+    await recordAuthEvent({
+      settings,
+      request,
+      type: 'LOGOUT_ALL',
+      userId: user._id,
+      reason: 'admin',
+    });
+    await destroyAdminSession(request);
+  }
+
+  return { getMe, login, logout, logoutAll, requestSecondStep, verifySecondStep };
 }

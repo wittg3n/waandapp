@@ -78,6 +78,7 @@ export async function seedDevelopmentSuperAdmin({ settings, password }) {
       status: 'active',
       passwordChangedAt: now,
       sessionVersion: existing.sessionVersion + 1,
+      permissionsVersion: (existing.permissionsVersion ?? 0) + 1,
       security: {
         failedLoginCount: 0,
         lastFailedLoginAt: null,
@@ -104,6 +105,7 @@ export async function seedDevelopmentSuperAdmin({ settings, password }) {
       status: 'active',
       passwordChangedAt: now,
       sessionVersion: 0,
+      permissionsVersion: 1,
     });
   }
 

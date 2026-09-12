@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import { AUTH_INDEX_DEFINITIONS } from '../index-names.js';
 
 const eventTypes = [
+  'ACCOUNT_LOCKED',
+  'ACCOUNT_UNLOCKED',
   'REGISTER_CREATED',
   'REGISTER_RESUMED',
   'PRIMARY_AUTH_SUCCESS',

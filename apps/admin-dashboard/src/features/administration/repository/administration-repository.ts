@@ -1,4 +1,4 @@
-import { localAdministrationRepository } from './local-administration-repository';
+import { apiAdministrationRepository } from './api-administration-repository';
 import type {
   AdminAccount,
   AdminListQuery,
@@ -37,4 +37,4 @@ export interface AdministrationRepository {
   getAuditEvent(id: string, signal?: AbortSignal): Promise<AuditEvent | null>;
 }
 
-export const administrationRepository: AdministrationRepository = localAdministrationRepository;
+export const administrationRepository: AdministrationRepository = apiAdministrationRepository;

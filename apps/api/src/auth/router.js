@@ -1,13 +1,12 @@
+import { listUserSessions, revokeSingleSession } from './session-management.js';
+import { authorize } from '../authorization/ability.js';
+import { revokeUserSessions } from './session-store.js';
 import { Router } from 'express';
 
 import { ApiError, validateBody } from '../middleware/errors.js';
 import { clearSessionCookie, destroySession, ensureSessionState } from '../middleware/session.js';
 import { recordAuthEvent } from './audit.js';
-import {
-  optionalAuthenticatedUser,
-  requireAuthenticatedUser,
-  requireRole,
-} from './authorization.js';
+import { optionalAuthenticatedUser, requireAuthenticatedUser } from './authorization.js';
 import { User } from './models/user.js';
 import { createAuthIpRateLimiter } from './rate-limit.js';
 import {
@@ -79,7 +78,12 @@ export function createAuthRouter({ redis, settings, service, requireTrustedMutat
     response.json(withCsrf(request, data));
   });
 
-  router.use(requireTrustedMutation);
+  router.get('/csrf', (request, response) => response.json(withCsrf(request, {})));
+  router.use((request, response, next) =>
+    ['GET', 'HEAD', 'OPTIONS'].includes(request.method)
+      ? next()
+      : requireTrustedMutation(request, response, next),
+  );
 
   router.post(
     '/register',
@@ -191,14 +195,19 @@ export function createAuthRouter({ redis, settings, service, requireTrustedMutat
     );
   }
 
-  router.post('/password/reset', validateBody(passwordResetSchema), async (request, response) => {
-    const data = await service.resetPassword({
-      request,
-      password: request.validatedBody.password,
-    });
-    clearSessionCookie(response, settings);
-    response.json({ data });
-  });
+  router.post(
+    '/password/reset',
+    verifyIpLimiter,
+    validateBody(passwordResetSchema),
+    async (request, response) => {
+      const data = await service.resetPassword({
+        request,
+        password: request.validatedBody.password,
+      });
+      clearSessionCookie(response, settings);
+      response.json({ data });
+    },
+  );
 
   router.post(
     '/reauth',
@@ -314,6 +323,7 @@ export function createAuthRouter({ redis, settings, service, requireTrustedMutat
       if (result.matchedCount !== 1) {
         throw new ApiError(401, 'AUTH_SESSION_EXPIRED', 'The session is no longer valid.');
       }
+      await revokeUserSessions(redis, settings, request.auth.user._id);
       await recordAuthEvent({
         settings,
         request,
@@ -329,7 +339,9 @@ export function createAuthRouter({ redis, settings, service, requireTrustedMutat
   router.put(
     '/me/profile',
     requireAuthenticatedUser,
-    requireRole('applicant'),
+    authorize('update', 'ApplicantProfile', (request) => ({
+      userId: String(request.auth.user._id),
+    })),
     validateBody(profileSchema),
     async (request, response) => {
       const data = await service.updateProfile({
@@ -340,5 +352,21 @@ export function createAuthRouter({ redis, settings, service, requireTrustedMutat
     },
   );
 
+  router.get('/sessions', requireAuthenticatedUser, async (request, response) => {
+    response.json({
+      data: { sessions: await listUserSessions(redis, settings, request.auth.user._id) },
+    });
+  });
+  router.delete('/sessions/:id', requireAuthenticatedUser, async (request, response) => {
+    await revokeSingleSession(redis, settings, request.auth.user._id, request.params.id);
+    await recordAuthEvent({
+      settings,
+      request,
+      type: 'SESSION_REVOKED',
+      userId: request.auth.user._id,
+      reason: 'user_requested',
+    });
+    response.status(204).end();
+  });
   return router;
 }

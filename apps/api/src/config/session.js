@@ -1,11 +1,7 @@
 import session from 'express-session';
-import MongoStore from 'connect-mongo';
-import mongoose from 'mongoose';
+import { TrackedRedisStore } from '../auth/session-store.js';
 
 import { config } from './index.js';
-
-export const SESSION_COLLECTION = 'sessions';
-export const ADMIN_SESSION_COLLECTION = 'admin_sessions';
 
 export function sessionCookieOptions(settings = config) {
   return {
@@ -27,24 +23,13 @@ export function adminSessionCookieOptions(settings = config) {
   };
 }
 
-function sessionStore({ client, collectionName, idleTtlMs }) {
-  return MongoStore.create({
-    client,
-    dbName: mongoose.connection.db?.databaseName,
-    collectionName,
-    ttl: Math.ceil(idleTtlMs / 1_000),
-    // Index creation is awaited by the explicit startup/index lifecycle.
-    autoRemove: 'disabled',
-  });
-}
-
-export function createSessionMiddleware(settings = config, mongoClient) {
-  const client = mongoClient ?? mongoose.connection.getClient();
-
-  const store = sessionStore({
-    client,
-    collectionName: SESSION_COLLECTION,
+export function createSessionMiddleware(settings = config, redis) {
+  const store = new TrackedRedisStore({
+    redis,
+    settings,
+    scope: 'user',
     idleTtlMs: settings.sessionIdleTtlMs,
+    absoluteTtlMs: settings.sessionAbsoluteTtlMs,
   });
 
   return session({
@@ -59,14 +44,15 @@ export function createSessionMiddleware(settings = config, mongoClient) {
   });
 }
 
-export function createAdminSessionMiddleware(settings = config, mongoClient) {
-  const client = mongoClient ?? mongoose.connection.getClient();
+export function createAdminSessionMiddleware(settings = config, redis) {
   const middleware = session({
     name: settings.adminSessionCookieName,
     secret: settings.adminSessionSecret,
-    store: sessionStore({
-      client,
-      collectionName: ADMIN_SESSION_COLLECTION,
+    store: new TrackedRedisStore({
+      redis,
+      settings,
+      scope: 'admin',
+      absoluteTtlMs: settings.adminSessionAbsoluteTtlMs,
       idleTtlMs: settings.adminSessionIdleTtlMs,
     }),
     resave: false,

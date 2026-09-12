@@ -9,6 +9,7 @@ import { AuthEvent } from './models/auth-event.js';
 import { AuthTransaction } from './models/auth-transaction.js';
 import { LegalAcceptance } from './models/legal-acceptance.js';
 import { User } from './models/user.js';
+import { Role } from '../authorization/roles.js';
 
 const requiredIndexes = [
   { definitions: AUTH_INDEX_DEFINITIONS.user, model: User },
@@ -17,8 +18,10 @@ const requiredIndexes = [
   { definitions: AUTH_INDEX_DEFINITIONS.profile, model: ApplicantProfile },
   { definitions: AUTH_INDEX_DEFINITIONS.legal, model: LegalAcceptance },
   { definitions: AUTH_INDEX_DEFINITIONS.event, model: AuthEvent },
-  { collectionName: 'sessions', definitions: AUTH_INDEX_DEFINITIONS.session },
-  { collectionName: 'admin_sessions', definitions: AUTH_INDEX_DEFINITIONS.adminSession },
+  {
+    model: Role,
+    definitions: [{ key: { key: 1 }, options: { unique: true, name: 'authorization_role_key' } }],
+  },
 ];
 
 function collectionFor({ collectionName, model }) {

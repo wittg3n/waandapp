@@ -37,6 +37,32 @@ function renderPanel(onRequest: () => Promise<CodeSentResult>, initialReceipt?: 
 afterEach(cleanup);
 
 describe('VerificationPanel', () => {
+  it('submits a complete high-entropy email verification token unchanged', async () => {
+    const onVerify = vi.fn().mockResolvedValue(undefined);
+    render(
+      <VerificationPanel
+        channels={['email']}
+        lockedChannel="email"
+        destinations={{ email: 'n***@example.com' }}
+        onRequest={vi.fn()}
+        onVerify={onVerify}
+        initialReceipt={{
+          status: 'CODE_SENT',
+          channel: 'email',
+          destinationMasked: 'n***@example.com',
+          expiresInSeconds: 300,
+          retryAfterSeconds: 60,
+        }}
+      />,
+    );
+    const token = 'abcdef0123456789'.repeat(4);
+    fireEvent.change(screen.getByLabelText('کد تأیید'), { target: { value: token } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'تأیید کد' }));
+    });
+    expect(onVerify).toHaveBeenCalledWith('email', token, expect.any(AbortSignal));
+  });
+
   it('starts in the sent state when a delivery receipt is provided', () => {
     const onRequest = vi.fn<() => Promise<CodeSentResult>>();
     renderPanel(onRequest, {
@@ -47,7 +73,7 @@ describe('VerificationPanel', () => {
       retryAfterSeconds: 60,
     });
 
-    expect(screen.getByLabelText('کد تأیید شش‌رقمی')).toBeTruthy();
+    expect(screen.getByLabelText('کد تأیید')).toBeTruthy();
     expect(screen.getByText('n***@example.com')).toBeTruthy();
     expect(
       screen.getByRole<HTMLButtonElement>('button', { name: /ارسال دوباره تا/ }).disabled,
@@ -61,7 +87,7 @@ describe('VerificationPanel', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'ارسال کد به ایمیل' }));
 
-    expect(screen.queryByLabelText('کد تأیید شش‌رقمی')).toBeNull();
+    expect(screen.queryByLabelText('کد تأیید')).toBeNull();
     expect(screen.queryByText(/ارسال شد/)).toBeNull();
 
     await act(async () => {
@@ -75,7 +101,7 @@ describe('VerificationPanel', () => {
       await delivery.promise;
     });
 
-    expect(screen.getByLabelText('کد تأیید شش‌رقمی')).toBeTruthy();
+    expect(screen.getByLabelText('کد تأیید')).toBeTruthy();
     expect(screen.getAllByText(/ارسال شد/)).toHaveLength(2);
   });
 
@@ -93,7 +119,7 @@ describe('VerificationPanel', () => {
     expect(
       await screen.findByText('ارسال کد فعلاً ممکن نیست؛ کمی بعد دوباره تلاش کنید.'),
     ).toBeTruthy();
-    expect(screen.queryByLabelText('کد تأیید شش‌رقمی')).toBeNull();
+    expect(screen.queryByLabelText('کد تأیید')).toBeNull();
     expect(screen.queryByText(/ارسال شد/)).toBeNull();
     expect(screen.getByRole('button', { name: 'ارسال کد به ایمیل' })).toBeTruthy();
     expect(screen.queryByText('provider detail must stay hidden')).toBeNull();

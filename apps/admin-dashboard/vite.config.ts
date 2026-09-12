@@ -9,6 +9,9 @@ export default defineConfig({
 
   plugins: [react(), tailwindcss()],
 
+  // The linked shared workspace package emits CommonJS for the API.
+  optimizeDeps: { include: ['@waandapp/shared'] },
+
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

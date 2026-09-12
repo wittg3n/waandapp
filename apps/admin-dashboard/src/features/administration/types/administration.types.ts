@@ -1,4 +1,4 @@
-export const PERMISSION_KEYS = [
+export const PERMISSION_KEYS: readonly string[] = [
   'dashboard.read',
   'users.read',
   'users.update',
@@ -50,7 +50,7 @@ export const PERMISSION_KEYS = [
   'system.settings.manage',
 ] as const;
 
-export type CanonicalPermissionKey = (typeof PERMISSION_KEYS)[number];
+export type CanonicalPermissionKey = string;
 export type PermissionKey = CanonicalPermissionKey | '*';
 export type PermissionGroup =
   | 'DASHBOARD'
@@ -201,13 +201,13 @@ export interface RoleInput {
 }
 
 export const ADMIN_PERMISSIONS = {
-  adminsRead: 'administration.admins.read',
-  adminsCreate: 'administration.admins.create',
-  adminsUpdate: 'administration.admins.update',
-  adminsSuspend: 'administration.admins.suspend',
-  rolesRead: 'administration.roles.read',
-  rolesManage: 'administration.roles.manage',
-  permissionsRead: 'administration.permissions.read',
+  adminsRead: 'users.roles.read',
+  adminsCreate: 'users.roles.assign',
+  adminsUpdate: 'users.roles.assign',
+  adminsSuspend: 'users.suspend',
+  rolesRead: 'users.roles.read',
+  rolesManage: 'roles.update',
+  permissionsRead: 'users.roles.read',
   auditRead: 'audit.read',
 } as const satisfies Record<string, CanonicalPermissionKey>;
 

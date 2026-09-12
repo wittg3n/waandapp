@@ -28,6 +28,7 @@ if (!email) {
     if (!user.adminRoles.includes('SUPER_ADMIN')) {
       const before = { adminRoles: [...user.adminRoles] };
       user.adminRoles = [...new Set([...user.adminRoles, 'SUPER_ADMIN'])];
+      user.permissionsVersion += 1;
       user.sessionVersion += 1;
       await user.save();
       await recordAdminAudit({

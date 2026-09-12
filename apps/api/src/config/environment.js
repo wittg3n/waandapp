@@ -255,8 +255,13 @@ export function validateEnvironment(environment) {
     throw new Error('ADMIN_SESSION_COOKIE_NAME must use the __Secure- prefix in production.');
   }
 
-  const sessionIdleTtlMs = integer(environment, 'SESSION_IDLE_TTL_MS', 300_000, 3_600_000);
-  const sessionAbsoluteTtlMs = integer(environment, 'SESSION_ABSOLUTE_TTL_MS', 300_000, 86_400_000);
+  const sessionIdleTtlMs = integer(environment, 'SESSION_IDLE_TTL_MS', 300_000, 604_800_000);
+  const sessionAbsoluteTtlMs = integer(
+    environment,
+    'SESSION_ABSOLUTE_TTL_MS',
+    300_000,
+    2_592_000_000,
+  );
   if (sessionAbsoluteTtlMs < sessionIdleTtlMs) {
     throw new Error(
       'SESSION_ABSOLUTE_TTL_MS must be greater than or equal to SESSION_IDLE_TTL_MS.',
@@ -324,7 +329,23 @@ export function validateEnvironment(environment) {
     throw new Error('AUTH_TERMS_VERSION must be a short immutable version identifier.');
   }
 
+  const authRedisPrefix = environment.AUTH_REDIS_PREFIX?.trim() || 'waandapp:identity:';
+  if (!/^[A-Za-z0-9:_-]{1,100}$/.test(authRedisPrefix))
+    throw new Error('AUTH_REDIS_PREFIX must be a safe Redis namespace.');
   return Object.freeze({
+    authRedisPrefix,
+    authLockoutThreshold: integer(
+      { AUTH_LOCKOUT_THRESHOLD: '10', ...environment },
+      'AUTH_LOCKOUT_THRESHOLD',
+      5,
+      100,
+    ),
+    authLockoutMs: integer(
+      { AUTH_LOCKOUT_MS: '300000', ...environment },
+      'AUTH_LOCKOUT_MS',
+      60000,
+      900000,
+    ),
     nodeEnvironment,
     port,
     mongodbUri,

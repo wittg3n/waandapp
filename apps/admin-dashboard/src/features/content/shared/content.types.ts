@@ -258,17 +258,17 @@ export interface CommentListQuery {
 }
 
 export const CONTENT_PERMISSIONS = {
-  read: 'content.read',
-  create: 'content.posts.create',
-  update: 'content.posts.update',
-  publish: 'content.posts.publish',
-  archive: 'content.posts.archive',
-  categoriesManage: 'content.categories.manage',
-  tagsManage: 'content.tags.manage',
-  mediaManage: 'content.media.manage',
-  mediaUpload: 'content.media.manage',
-  mediaDelete: 'content.media.manage',
-  commentsModerate: 'content.comments.moderate',
+  read: 'blog.posts.read',
+  create: 'blog.posts.create',
+  update: 'blog.posts.update',
+  publish: 'blog.posts.publish',
+  archive: 'blog.posts.archive',
+  categoriesManage: 'blog.categories.update',
+  tagsManage: 'blog.tags.update',
+  mediaManage: 'blog.media.update',
+  mediaUpload: 'blog.media.upload',
+  mediaDelete: 'blog.media.delete',
+  commentsModerate: 'blog.comments.moderate',
 } as const;
 
 export const EMPTY_DOCUMENT: EditorDocument = {

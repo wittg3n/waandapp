@@ -1,4 +1,4 @@
-import { ADMIN_ROLES } from '@waandapp/shared';
+import { roleKey } from '../authorization/role-service.js';
 import mongoose from 'mongoose';
 import { z } from 'zod';
 
@@ -14,7 +14,7 @@ export const usersQuerySchema = z
     pageSize: z.coerce.number().int().min(1).max(100).default(25),
     search: z.string().trim().max(120).optional(),
     status: z.enum(['pending_verification', 'active', 'suspended', 'deleted']).optional(),
-    adminRole: z.enum(ADMIN_ROLES).optional(),
+    adminRole: roleKey.optional(),
     emailVerified: z
       .enum(['true', 'false'])
       .transform((value) => value === 'true')
@@ -41,6 +41,7 @@ export const usersQuerySchema = z
   );
 
 export const auditQuerySchema = z.object({
+  id: objectIdSchema.optional(),
   page: z.coerce.number().int().min(1).max(100000).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(25),
   action: z.string().trim().max(120).optional(),
@@ -63,7 +64,7 @@ export const verificationChannelSchema = z.enum(['email', 'phone']);
 
 export const rolesBodySchema = z.object({
   roles: z
-    .array(z.enum(ADMIN_ROLES.exclude ? ADMIN_ROLES.exclude(['USER']) : ADMIN_ROLES))
+    .array(roleKey)
     .max(6)
     .transform((roles) => [...new Set(roles.filter((role) => role !== 'USER'))]),
   reason: trimmed(500),

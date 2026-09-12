@@ -48,15 +48,12 @@ const phone = z
 const code = z
   .string()
   .trim()
-  .max(12)
+  .max(64)
   .transform(normalizeCode)
-  .pipe(z.string().regex(/^\d{6}$/, 'Code must contain exactly six digits.'));
+  .pipe(z.string().regex(/^(?:\d{6}|[a-f0-9]{64})$/, 'Invalid verification code or token.'));
 const password = z
   .string()
-  .refine(
-    (value) => Array.from(value).length >= 8,
-    'Password must contain at least 8 characters.',
-  )
+  .refine((value) => Array.from(value).length >= 8, 'Password must contain at least 8 characters.')
   .refine(
     (value) => Array.from(value).length <= 128,
     'Password must contain at most 128 characters.',

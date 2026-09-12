@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import { resolveAuthorization } from '../authorization/cache.js';
+import { revokeUserSessions } from './session-store.js';
 
 import { ApiError } from '../middleware/errors.js';
 import {
@@ -66,10 +68,6 @@ function identityFilter(identifier) {
 
 async function profileForUser(userId) {
   return ApplicantProfile.findOne({ userId });
-}
-
-async function userPayload(user) {
-  return serializeAuthUser(user, await profileForUser(user._id));
 }
 
 async function activateVerifiedPendingUser(userId, sessionVersion, now = new Date()) {
@@ -246,6 +244,10 @@ export function createAuthService({
   codeVerifier,
   codeGenerator,
 }) {
+  async function userPayload(user) {
+    await resolveAuthorization(user, redis, settings);
+    return serializeAuthUser(user, await profileForUser(user._id));
+  }
   const challenges = createChallengeService({
     redis,
     settings,
@@ -354,21 +356,47 @@ export function createAuthService({
     const passwordValid = await verifyPassword(passwordHash, password);
     const locked = user?.security?.lockedUntil && user.security.lockedUntil > new Date();
 
-    if (!user || !passwordValid || locked || ['suspended', 'deleted'].includes(user.status)) {
-      if (user) {
-        const failed = await User.findByIdAndUpdate(
-          user._id,
+    if (
+      !user ||
+      !passwordValid ||
+      locked ||
+      ['locked', 'suspended', 'deleted'].includes(user.status)
+    ) {
+      if (user && !locked) {
+        const unlocked = {
+          $or: [
+            { 'security.lockedUntil': null },
+            { 'security.lockedUntil': mongoose.trusted({ $lte: new Date() }) },
+          ],
+        };
+        const failed = await User.findOneAndUpdate(
+          { _id: user._id, ...unlocked },
           {
             $inc: { 'security.failedLoginCount': 1 },
             $set: { 'security.lastFailedLoginAt': new Date() },
           },
           { returnDocument: 'after' },
         );
-        if (failed?.security?.failedLoginCount >= 10) {
-          await User.updateOne(
-            { _id: user._id },
-            { $set: { 'security.lockedUntil': new Date(Date.now() + 5 * 60_000) } },
+        if (failed?.security?.failedLoginCount >= (settings.authLockoutThreshold ?? 10)) {
+          const lock = await User.updateOne(
+            {
+              _id: user._id,
+              ...unlocked,
+              'security.failedLoginCount': mongoose.trusted({
+                $gte: settings.authLockoutThreshold ?? 10,
+              }),
+            },
+            {
+              $set: {
+                'security.lockedUntil': new Date(Date.now() + (settings.authLockoutMs ?? 300_000)),
+              },
+              $inc: { sessionVersion: 1 },
+            },
           );
+          if (lock.modifiedCount === 1) {
+            await revokeUserSessions(redis, settings, user._id);
+            await recordAuthEvent({ settings, request, type: 'ACCOUNT_LOCKED', userId: user._id });
+          }
         }
       }
       await recordAuthEvent({
@@ -381,8 +409,16 @@ export function createAuthService({
       throw INVALID_CREDENTIALS;
     }
 
-    await User.updateOne(
-      { _id: user._id },
+    const accepted = await User.updateOne(
+      {
+        _id: user._id,
+        status: user.status,
+        sessionVersion: user.sessionVersion,
+        $or: [
+          { 'security.lockedUntil': null },
+          { 'security.lockedUntil': mongoose.trusted({ $lte: new Date() }) },
+        ],
+      },
       {
         $set: {
           'security.failedLoginCount': 0,
@@ -391,6 +427,9 @@ export function createAuthService({
         },
       },
     );
+    if (accepted.matchedCount !== 1) throw INVALID_CREDENTIALS;
+    if (user.security?.lockedUntil)
+      await recordAuthEvent({ settings, request, type: 'ACCOUNT_UNLOCKED', userId: user._id });
     await recordAuthEvent({
       settings,
       request,
@@ -401,6 +440,16 @@ export function createAuthService({
   }
 
   async function register({ request, input }) {
+    for (const destination of [input.email, input.phone, input.username]) {
+      await enforceDestinationLimit({
+        redis,
+        settings,
+        namespace: 'register:identity',
+        destination,
+        windowMs: settings.authRequestDestinationWindowMs,
+        limit: settings.authRequestDestinationLimit,
+      });
+    }
     const duplicateFilter = mongoose.trusted({
       $or: [
         { usernameNormalized: input.username },
@@ -504,6 +553,7 @@ export function createAuthService({
         status: 'pending_verification',
         passwordChangedAt: new Date(),
         sessionVersion: 0,
+        permissionsVersion: 1,
       });
     } catch (error) {
       if (error?.code === 11_000) {
@@ -754,7 +804,13 @@ export function createAuthService({
       ),
     );
     if (!authorized) throw transactionError();
-    delete request.session.preauth;
+    // Elevation changes the bearer credential, while preserving the original
+    // absolute lifetime so repeated step-up cannot extend it indefinitely.
+    const createdAt = request.session.createdAt;
+    const authTime = request.session.authTime;
+    await rotateAuthenticatedSession(request, user, now, noTwoStep);
+    request.session.createdAt = createdAt;
+    request.session.authTime = authTime;
     request.session.stepUp = {
       transactionId: authorized._id.toString(),
       purpose: authorized.context.purpose,
@@ -957,6 +1013,7 @@ export function createAuthService({
       type: 'PASSWORD_RESET',
       userId: transaction.userId,
     });
+    await revokeUserSessions(redis, settings, changed._id);
     await notifySecurityChange(changed, 'password_reset');
     await destroySession(request);
     return { success: true };
@@ -1053,6 +1110,7 @@ export function createAuthService({
       ),
     );
     if (!changed) throw reauthError();
+    await revokeUserSessions(redis, settings, changed._id);
     await refreshCurrentSession(request, changed);
     await recordAuthEvent({ settings, request, type: 'PASSWORD_CHANGED', userId: changed._id });
     await notifySecurityChange(changed, 'password_changed');
@@ -1095,6 +1153,7 @@ export function createAuthService({
       throw error;
     }
     if (!changed) throw reauthError();
+    await revokeUserSessions(redis, settings, changed._id);
     await refreshCurrentSession(request, changed);
     await recordAuthEvent({
       settings,

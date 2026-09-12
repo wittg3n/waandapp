@@ -1,4 +1,4 @@
-import { User } from '../auth/models/user.js';
+import { authenticatedPrincipal } from '../auth/principal.js';
 import { ApiError } from '../middleware/errors.js';
 import { regenerateAdminSession } from '../middleware/session.js';
 import { administrativeRolesForUser } from './permissions.js';
@@ -14,28 +14,14 @@ async function loadAdminUser(request) {
     return null;
   }
 
-  const user = await User.findById(session.userId).select(
-    '+sessionVersion +passwordHash +usernameNormalized +emailNormalized +phoneNormalized',
-  );
-  const valid = Boolean(
-    user &&
-    user.status === 'active' &&
-    user.sessionVersion === session.sessionVersion &&
-    user.passwordHash &&
-    user.usernameNormalized &&
-    user.emailNormalized &&
-    user.phoneNormalized &&
-    user.emailVerifiedAt &&
-    user.phoneVerifiedAt &&
-    administrativeRolesForUser(user).length > 0,
-  );
-
+  const user = await authenticatedPrincipal(request, session, 'adminSessionInvalidReason');
+  const valid = user && administrativeRolesForUser(user).length > 0;
   if (valid) {
     request.adminAuth = { user };
     return user;
   }
 
-  request.adminSessionInvalidReason = user?.status === 'suspended' ? 'suspended' : 'revoked';
+  request.adminSessionInvalidReason ??= 'revoked';
   await regenerateAdminSession(request);
   return null;
 }

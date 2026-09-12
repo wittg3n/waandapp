@@ -1,15 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import {
-  adminSessionRepository,
-  usersRepository,
-} from '@/features/users/services/users-repository';
-import type {
-  AdminSession,
-  UserAuditResult,
-  UserDetail,
-  UsersResult,
-} from '@/features/users/types/users.types';
+import { usersRepository } from '@/features/users/services/users-repository';
+import type { UserAuditResult, UserDetail, UsersResult } from '@/features/users/types/users.types';
 
 interface AsyncState<T> {
   data: T | null;
@@ -38,10 +30,7 @@ function useRequest<T>(load: (signal: AbortSignal) => Promise<T>, enabled = true
   return { ...state, loading: enabled && state.data === null && state.error === null, refetch };
 }
 
-export function useAdminSession() {
-  const load = useCallback((signal: AbortSignal) => adminSessionRepository.get(signal), []);
-  return useRequest<AdminSession>(load);
-}
+export { useAdminSession } from '@/features/authentication/admin-session-context';
 
 export function useUsers(query: string, enabled: boolean) {
   const load = useCallback(

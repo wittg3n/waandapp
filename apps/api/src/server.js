@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { createAdminIndexes, verifyAdminIndexes } from './admin/indexes.js';
 import { createApp } from './app.js';
+import { seedRoles, verifyRoleSeed } from './authorization/roles.js';
 import { createAuthIndexes, verifyAuthIndexes } from './auth/indexes.js';
 import { createCmsIndexes, verifyCmsIndexes } from './cms/indexes.js';
 import { startCmsScheduler } from './cms/scheduler.js';
@@ -85,6 +86,8 @@ export async function start() {
     } else {
       await Promise.all([createAuthIndexes(), createAdminIndexes(), createCmsIndexes()]);
     }
+    if (config.nodeEnvironment !== 'production') await seedRoles();
+    await verifyRoleSeed();
     redis = await connectRedis(config.redisUrl, logger);
     stopCmsScheduler = startCmsScheduler({
       intervalMs: config.cmsSchedulerIntervalMs,

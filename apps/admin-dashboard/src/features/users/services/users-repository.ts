@@ -1,7 +1,4 @@
-import {
-  localAdminSessionRepository,
-  mockUsersRepository,
-} from '@/features/users/mocks/users-mock';
+import { adminRequest, getAdminSnapshot } from '@/features/authentication/admin-api';
 import type {
   AdminSession,
   ManagedUser,
@@ -32,5 +29,48 @@ export interface AdminSessionRepository {
   get(signal?: AbortSignal): Promise<AdminSession>;
 }
 
-export const usersRepository: UsersRepository = mockUsersRepository;
-export const adminSessionRepository: AdminSessionRepository = localAdminSessionRepository;
+export const usersRepository: UsersRepository = {
+  list(params, signal) {
+    params.set('adminRole', 'USER');
+    return adminRequest(`/users?${params}`, { signal });
+  },
+  async get(id, signal) {
+    return (
+      await adminRequest<{ user: UserDetail }>(`/users/${encodeURIComponent(id)}`, { signal })
+    ).user;
+  },
+  async update(id, input) {
+    return (
+      await adminRequest<{ user: ManagedUser }>(`/users/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        body: input,
+      })
+    ).user;
+  },
+  async changeStatus(id, status, reason) {
+    return (
+      await adminRequest<{ user: ManagedUser }>(`/users/${encodeURIComponent(id)}/status`, {
+        method: 'PATCH',
+        body: { status, reason },
+      })
+    ).user;
+  },
+  async resetVerification(id, channel, reason) {
+    return (
+      await adminRequest<{ user: ManagedUser }>(
+        `/users/${encodeURIComponent(id)}/verification/${channel}/reset`,
+        { method: 'POST', body: { reason } },
+      )
+    ).user;
+  },
+  revokeAllSessions(id, reason) {
+    return adminRequest(`/users/${encodeURIComponent(id)}/sessions/revoke`, {
+      method: 'POST',
+      body: { reason },
+    });
+  },
+  audit(id, signal) {
+    return adminRequest(`/audit?resourceId=${encodeURIComponent(id)}`, { signal });
+  },
+};
+export const adminSessionRepository: AdminSessionRepository = { get: () => getAdminSnapshot() };

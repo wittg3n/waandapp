@@ -1,4 +1,4 @@
-'use client';
+import { canAccessRoute } from '@/features/authentication/permissions';
 
 import * as React from 'react';
 import Logo from '@/assets/logo.svg';
@@ -195,7 +195,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavDash items={data.navdash} />
-        <NavMain items={data.navMain} />
+        <NavMain
+          items={data.navMain
+            .map((item) => ({
+              ...item,
+              items: item.items?.filter((child) =>
+                canAccessRoute(child.url, admin?.permissions ?? []),
+              ),
+            }))
+            .filter((item) => item.items?.length)}
+        />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

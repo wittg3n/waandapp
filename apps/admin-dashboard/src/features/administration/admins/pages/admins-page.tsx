@@ -193,7 +193,7 @@ export function AdminsPage() {
         canCreate ? (
           <Button onClick={() => setInvite(true)}>
             <PlusIcon data-icon="inline-start" />
-            دعوت ادمین
+            افزودن مدیر
           </Button>
         ) : undefined
       }
@@ -280,7 +280,7 @@ export function AdminsPage() {
           onClose={() => setInvite(false)}
           onSaved={() => {
             setInvite(false);
-            setNotice('دعوت ادمین ثبت شد.');
+            setNotice('افزودن مدیر ثبت شد.');
             query.refetch();
           }}
         />
@@ -324,7 +324,7 @@ function InviteDialog({
       setErrors(
         error instanceof AdministrationValidationError
           ? error.fields
-          : { form: error instanceof Error ? error.message : 'ثبت دعوت انجام نشد.' },
+          : { form: error instanceof Error ? error.message : 'ثبت دسترسی انجام نشد.' },
       );
     } finally {
       setBusy(false);
@@ -338,9 +338,9 @@ function InviteDialog({
     >
       <form onSubmit={(event) => void submit(event)}>
         <header className="border-b p-4">
-          <h2 className="font-medium">دعوت ادمین</h2>
+          <h2 className="font-medium">افزودن مدیر</h2>
           <p className="text-xs text-muted-foreground">
-            دعوت فقط در مخزن محلی ثبت می‌شود و ایمیلی ارسال نمی‌شود.
+            حساب باید از قبل ثبت‌نام کرده و ایمیل و تلفن آن تأیید شده باشد.
           </p>
         </header>
         <div className="grid gap-4 p-4">
@@ -389,7 +389,7 @@ function InviteDialog({
             انصراف
           </Button>
           <Button type="submit" disabled={busy}>
-            {busy ? 'در حال ثبت' : 'ثبت دعوت'}
+            {busy ? 'در حال ثبت' : 'ثبت دسترسی'}
           </Button>
         </footer>
       </form>

@@ -18,11 +18,12 @@ const legacyRoleMap = Object.freeze({
 
 export function administrativeRolesForUser(user) {
   const explicit = Array.isArray(user?.adminRoles) ? user.adminRoles : [];
-  if (explicit.length > 0) return [...new Set(explicit)];
+  if (explicit.length > 0 || user?.permissionsVersion > 0) return [...new Set(explicit)];
   return legacyRoleMap[user?.role] ?? [];
 }
 
 export function hasPermission(user, permission) {
+  if (user?.authorization) return user.authorization.permissions.includes(permission);
   return sharedHasPermission(administrativeRolesForUser(user), permission);
 }
 

@@ -32,8 +32,8 @@ the other:
 - Consumer sessions use `SESSION_SECRET`, `SESSION_COOKIE_NAME`, and the
   consumer session store.
 - Admin preauthentication and fully authenticated admin state use
-  `ADMIN_SESSION_SECRET`, `ADMIN_SESSION_COOKIE_NAME`, and a separate Mongo
-  collection or Redis namespace. Admin APIs read an explicit admin-session
+  `ADMIN_SESSION_SECRET`, `ADMIN_SESSION_COOKIE_NAME`, and a separate Redis
+  namespace. Admin APIs read an explicit admin-session
   context, never `request.session`.
 - The admin cookie is HttpOnly, host-only (no `Domain` attribute),
   `SameSite=Strict`, and scoped to `Path=/api/v1/admin`. It is Secure in
@@ -198,8 +198,200 @@ Run the API index check/migration command before production traffic:
 
 ```bash
 pnpm --filter @waandapp/api db:indexes
+pnpm --filter @waandapp/api db:migrate:auth
 ```
 
 The existing consumer signup, login, recovery, verification, and step-up
 flows continue to use the consumer endpoints and consumer session. They do not
 authorize admin APIs or alter the dedicated admin cookie/store boundary.
+
+## Redis sessions and security versions
+
+`apps/api/src/auth/session-store.js` extends `connect-redis` with atomic session
+and per-user index writes, reusing the existing Redis client. MongoDB stores
+identity and policy; Redis stores session state, short-lived permission caches,
+and the existing IP/account/destination rate limits. Sessions contain identifiers,
+timestamps, security version and bounded ceremony/grant state, never user documents
+or password hashes. No browser token is persisted in localStorage/sessionStorage.
+
+`AUTH_REDIS_PREFIX` defaults to `waandapp:identity:`. Keys below it are
+`sessions:user:<sid>`, `sessions:admin:<sid>`, `user-sessions:<userId>` (a sorted
+set with expiration scores), and versioned `permissions:<...>` entries. Session
+administration returns SHA-256 references to keys, never the bearer SID. Redis
+TTL is bounded by both idle and remaining absolute lifetime; anonymous state is
+also bounded by `AUTH_TRANSACTION_TTL_MS`. Expired index entries are pruned and
+the index expires after its last member. Single-session deletion leaves a bounded
+tombstone to reject stale in-flight saves. Bulk deletion uses the per-user index,
+never a global key scan, and increments MongoDB `sessionVersion` first so a stale
+in-flight save cannot authenticate again.
+
+`sessionVersion` is the existing equivalent of `authVersion`. Password/contact
+changes, recovery, logout-all, lockout, role assignment and administrative
+revocation invalidate prior versions. Login, MFA completion, security step-up,
+and password/contact changes rotate SID and CSRF. Step-up rotation preserves
+the original absolute lifetime. Recovery deliberately requires a fresh login.
+
+Example consumer policy is seven days idle and thirty days absolute; configure
+`SESSION_IDLE_TTL_MS` and `SESSION_ABSOLUTE_TTL_MS`. Admin defaults remain fifteen
+minutes idle and eight hours absolute, configured by the corresponding
+`ADMIN_SESSION_*` variables. Existing deployment values remain authoritative.
+The store targets the repository's single Redis deployment; its multi-key Lua
+operations are not a Redis Cluster sharding implementation. Redis outages fail
+closed. Use an isolated, authenticated Redis service with persistence/failover
+appropriate to the deployment; loss of session keys requires fresh login.
+
+Consumer endpoints include `GET /api/v1/auth/csrf`, `GET /api/v1/auth/sessions`,
+`DELETE /api/v1/auth/sessions/:reference`, and existing logout/logout-all routes.
+Admin session inventory and individual revocation live under
+`/api/v1/admin/users/:userId/sessions`; both require `users.sessions.revoke`,
+and mutations enforce target protection, origin, CSRF and an audit reason.
+`POST /api/v1/admin/auth/logout-all` revokes both scopes for the current identity.
+
+## Passwords, recovery and request protection
+
+The existing `auth/password.js` remains the single Argon2id service. Existing
+Argon2id hashes remain valid; the library manages salts, verifies hashes, and
+supports the configured memory/time/parallelism settings. Legacy passwordless
+records fail closed. Identity normalization and unique normalized username,
+email and phone indexes remain centralized in the User model.
+
+Outside explicit development delivery, signup email verification and password
+recovery email proofs use 32 random bytes encoded as 64 hex characters. Only a
+purpose/user/transaction/destination-bound HMAC digest is persisted. The delivery
+webhook receives the raw value in the existing `code` field; providers must
+support its length. The existing short-lived, single-use challenge ceremonies
+remain in place, including mandatory phone proof for recovery. Ordinary MFA and
+phone challenges remain six-digit codes with bounded attempts and resend limits.
+Raw production proofs, passwords, cookies and secrets are redacted from logs.
+
+`AUTH_LOCKOUT_THRESHOLD` defaults to 10 failures and `AUTH_LOCKOUT_MS` to five
+minutes. Failures update counters atomically; a threshold crossing locks briefly,
+bumps the security version, revokes sessions, and records an event. Attempts during
+a lock do not perpetually extend it. Redis limits cover both IP and normalized
+account/destination keys; registration also limits all three submitted identities.
+CSRF uses session-bound tokens plus exact mutation origins and Fetch Metadata.
+Credentialed CORS accepts explicit origins only. Production validates HTTPS,
+Secure host-only cookies, separate secrets, encrypted database/cache transport,
+and delivery configuration. Configure `TRUST_PROXY_HOPS` for the actual proxy chain.
+
+## Roles, abilities and ownership
+
+`packages/shared/src/admin-permissions.ts` owns the allowed permission vocabulary
+and initial role bundles. `apps/api/src/authorization/roles.js` persists validated
+bundles with unique `authorization_role_key`, system protection, version and soft
+deletion. Existing roles are retained: USER, SUPPORT, CONTENT_MANAGER, BLOG_EDITOR,
+OPERATIONS_ADMIN, ADMIN and SUPER_ADMIN. Custom role keys can be assigned only
+through validated API operations. No arbitrary permission names or client-supplied
+CASL conditions can be stored.
+
+`authorization/ability.js` is the single CASL builder and permission-to-action/
+resource mapping. `auth/principal.js` loads current server identity/security state
+for both session scopes, checks status/version/verification/lockout, and attaches
+`req.user` and `req.ability`. Ordinary route policy evaluates permissions/CASL,
+not role labels. Own User read and ApplicantProfile read/update are conditional.
+A conditional own-user rule cannot authorize listing all users. Profile writes
+use a server-derived owner ID, strict payload validation and a concrete CASL
+subject; the request cannot select or replace another owner's profile.
+`authorizedFilter` exposes CASL's Mongoose query filtering for future collections.
+Business-state validation stays in the owning service.
+
+Permission caches expire in 60 seconds and include `permissionsVersion` and a
+hash of current role revisions. Role bundles are read each request so changes
+take effect on the next request, even if a subsequent user-version update fails.
+This favors immediate revocation over eliminating the small policy database read.
+Role edits increment role and assigned-user permission versions. Assignments
+increment both user security and permission versions. Concurrent administrative
+security writes use a version predicate and fail with 409 on conflict.
+
+The admin API exposes permissions, role CRUD, existing-account grants, users,
+sessions and audit records. New grants require an already active identity with
+verified email and phone; an invitation form does not create unverified privileged
+credentials. An actor cannot assign a bundle exceeding their authority. Role
+definition mutations additionally require SUPER_ADMIN as an exceptional platform
+policy. USER and SUPER_ADMIN policy bundles are immutable through the API; system
+roles cannot be deleted. Self role/status mutation is forbidden. Removing or
+suspending an active SUPER_ADMIN requires an operator-reviewed database migration;
+the API rejects it to avoid last-root races on standalone MongoDB.
+
+To add a permission, extend the shared vocabulary and its central subject mapping,
+add enforcement to the owning API route/service, cover denial and ownership with
+tests, then update role bundles through the controlled API/migration and use the
+same permission for frontend visibility. To add a role, use role CRUD with only
+existing vocabulary. Never scatter independent role checks across controllers.
+
+## Frontend integration
+
+The admin dashboard now bootstraps the API session, performs password/MFA login,
+restores sessions on reload, logs out through the API, and filters routes/sidebar
+using server permissions. The shared CommonJS permission package is explicitly
+prebundled for Vite development. Its API wrapper uses credentials and in-memory
+CSRF, handles expiry and refresh, and never retries mutations automatically.
+User, session, administrator, role, permission and audit repositories use the API.
+The existing consumer client keeps its single API-backed auth state; verification
+inputs accept full email tokens without truncation. Web/blog remain public clients
+and continue linking to the dashboard's identity flows.
+
+Frontend visibility is UX only. The backend independently checks every protected
+request. Existing non-identity content/data/system dashboard repositories still
+contain product fixtures; this change does not implement absent domain services.
+Their local demo data must not be mistaken for production persistence.
+
+## Rollout and validation
+
+Use Node.js 22.12+ and repository-pinned pnpm 11.21.0. Back up the Core database,
+then run from the repository root with the destination environment configured:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm --filter @waandapp/shared build
+pnpm --filter @waandapp/api db:indexes
+pnpm --filter @waandapp/api db:migrate:auth
+pnpm --filter @waandapp/api admin:bootstrap -- --email admin@example.com
+```
+
+The idempotent migration creates missing indexes/baseline bundles, materializes
+legacy administrative roles and initializes permission versions while preserving
+user IDs, hashes and profiles. It increments legacy users' session versions;
+rollout requires fresh login because old Mongo session collections are no longer
+read. It does not drop old collections or overwrite customized role bundles.
+Production startup verifies required indexes and system-role presence instead of
+silently seeding. Do not mix old Mongo-session and new Redis-session API versions
+behind one deployment during rollout. Runtime environment settings are documented
+in `.env.example` and synchronized in Compose and Turbo; none become build secrets.
+
+```bash
+pnpm --filter @waandapp/api test
+pnpm --filter @waandapp/user-dashboard test
+pnpm lint
+pnpm typecheck
+pnpm build
+```
+
+API integration tests use a unique disposable MongoDB database and Redis db 15
+(override with `API_TEST_REDIS_URL`). Coverage includes cookie/scope isolation,
+CSRF/origins, registration, MFA, expiry/single-use/recovery races, credential and
+destination limits, security version revocation, step-up rotation, ownership,
+role cache freshness/escalation/deletion, hidden session IDs and Redis TTL bounds.
+Do not point test infrastructure at production.
+
+Verified during this implementation: 42 API unit tests, 23 API integration tests
+and 34 consumer UI tests; API/admin/user/shared lint; API/admin/user/shared builds;
+consumer/shared/blog type checks; and the standalone blog build. Browser smoke
+checks covered admin and consumer password/MFA login, reload restoration, admin
+logout, HttpOnly cookies and permission-denied navigation. Tests for migration
+idempotence, lockout concurrency and preserved step-up absolute expiry are included.
+
+The workspace-wide commands also expose pre-existing `apps/web` failures: its
+`src/app/blog/**` routes import missing post/status/search components and helpers,
+and missing blog exports from `src/lib/site.ts`; `src/lib/blog-api.ts` has an empty
+interface lint error. These untouched public-page failures block an all-workspace
+build/typecheck/lint pass. Both dashboards also retain large-bundle warnings.
+Resolve the web build failures before a full-platform deployment; code splitting
+and replacing unrelated product fixture repositories remain separate work.
+
+Security corrections include removing the admin UI's fabricated full-permission
+identity, preventing revoked legacy roles from being implicitly restored, rotating
+the session on step-up, invalidating existing sessions on lockout, and guarding
+concurrent security updates. Central CASL checks distinguish ownership conditions
+from permission to list all users. MongoDB query operators used by internal admin
+filters are explicitly trusted while untrusted request input stays validated.

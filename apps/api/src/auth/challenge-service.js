@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 
 import mongoose from 'mongoose';
 
@@ -166,7 +166,12 @@ export function createChallengeService({
     const reserved = await reserveSend(transaction, channel, settings);
     const resendSequence = channel === 'email' ? reserved.sendCountEmail : reserved.sendCountSms;
     const challengeId = randomUUID();
-    const code = generateCode();
+    const code =
+      channel === 'email' &&
+      ['signup_verify_email', 'password_reset_email'].includes(purpose) &&
+      settings.authDeliveryMode !== 'development'
+        ? randomBytes(32).toString('hex')
+        : generateCode();
     const expiresAt = new Date(Date.now() + settings.authCodeTtlMs);
     const codeDigest = hashAuthenticationCode({
       pepper: settings.authCodePepper,

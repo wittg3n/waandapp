@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { DirectionProvider } from '@/components/ui/direction';
 
 import App from './App';
+import { AdminSessionProvider, AdminGate } from '@/features/authentication/admin-session';
 import '@/styles/globals.css';
 
 createRoot(document.getElementById('root')!).render(
@@ -13,7 +14,11 @@ createRoot(document.getElementById('root')!).render(
     <MotionConfig reducedMotion="user">
       <DirectionProvider direction="rtl">
         <BrowserRouter>
-          <App />
+          <AdminSessionProvider>
+            <AdminGate>
+              <App />
+            </AdminGate>
+          </AdminSessionProvider>
         </BrowserRouter>
       </DirectionProvider>
     </MotionConfig>

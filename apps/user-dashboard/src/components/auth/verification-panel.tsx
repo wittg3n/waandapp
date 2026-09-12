@@ -244,7 +244,7 @@ export function VerificationPanel({
       <p className="text-sm leading-7 text-muted-foreground">
         {codeWasSent ? (
           <>
-            کد شش‌رقمی به <bdi className="font-bold text-foreground">{destination}</bdi> ارسال شد.
+            کد تأیید به <bdi className="font-bold text-foreground">{destination}</bdi> ارسال شد.
           </>
         ) : (
           <>
@@ -257,20 +257,23 @@ export function VerificationPanel({
       {codeWasSent && (
         <AuthField
           autoComplete="one-time-code"
-          className="text-center font-bold tracking-[0.45em]"
+          className={cn(
+            'text-center font-bold',
+            channel === 'sms' ? 'tracking-[0.45em]' : 'font-mono',
+          )}
           dir="ltr"
           disabled={busy}
           error={fieldError}
           icon={KeyRound}
           id="verification-code"
-          inputMode="numeric"
-          label="کد تأیید شش‌رقمی"
-          maxLength={12}
+          inputMode={channel === 'email' ? 'text' : 'numeric'}
+          label="کد تأیید"
+          maxLength={channel === 'email' ? 64 : 12}
           onChange={(event) => {
             setCode(event.currentTarget.value);
             setFieldError(undefined);
           }}
-          pattern="[0-9۰-۹٠-٩]*"
+          pattern={channel === 'email' ? '[a-f0-9۰-۹٠-٩]*' : '[0-9۰-۹٠-٩]*'}
           placeholder="••••••"
           ref={inputRef}
           type="text"
@@ -280,7 +283,7 @@ export function VerificationPanel({
 
       <FormError error={error} />
       <p aria-live="polite" className="sr-only" role="status">
-        {codeWasSent ? 'کد ارسال شد؛ کد شش‌رقمی را وارد کنید.' : 'روش دریافت کد آماده است.'}
+        {codeWasSent ? 'کد ارسال شد؛ کد دریافتی را وارد کنید.' : 'روش دریافت کد آماده است.'}
       </p>
 
       {codeWasSent ? (

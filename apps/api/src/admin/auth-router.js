@@ -108,5 +108,17 @@ export function createAdminAuthRouter({ redis, settings, service, requireAdminTr
     },
   );
 
+  router.post(
+    '/auth/logout-all',
+    requireAdminTrustedMutation,
+    requireAdminAuthenticatedUser,
+    validateBody(emptyBodySchema),
+    async (request, response) => {
+      await service.logoutAll({ request, user: request.adminAuth.user });
+      clearAdminSessionCookie(response, settings);
+      response.json({ data: { success: true } });
+    },
+  );
+
   return router;
 }

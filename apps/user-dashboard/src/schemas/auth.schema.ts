@@ -107,7 +107,7 @@ export const passwordSchema = z
 export const authCodeSchema = z
   .string()
   .transform((code) => normalizeLocalizedDigits(code).replace(/[\s-]/g, ''))
-  .pipe(z.string().regex(/^\d{6}$/, 'کد تأیید باید ۶ رقم باشد.'));
+  .pipe(z.string().regex(/^(?:\d{6}|[a-f0-9]{64})$/, 'کد تأیید معتبر نیست.'));
 
 export const loginSchema = z.object({
   identifier: authIdentifierSchema,

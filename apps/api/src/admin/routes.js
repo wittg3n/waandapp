@@ -1,17 +1,31 @@
+import mongoose from 'mongoose';
+import { z } from 'zod';
+import { User } from '../auth/models/user.js';
+import { normalizeEmail } from '../auth/normalization.js';
+import { ApiError } from '../middleware/errors.js';
+import { PERMISSION_VALUES } from '@waandapp/shared';
+import { listUserSessions, revokeSingleSession } from '../auth/session-management.js';
+import { recordAdminAudit } from './audit.js';
+import {
+  listRoles,
+  assignableRoles,
+  mutateRole,
+  roleBody,
+  roleUpdateBody,
+  roleDeleteBody,
+  roleKey,
+} from '../authorization/role-service.js';
 import { Router } from 'express';
 
 import { requirePermission } from './authorization.js';
 import { requireAdminAuthenticatedUser } from './auth-authorization.js';
 import { validateBody } from '../middleware/errors.js';
-import {
-  PERMISSIONS,
-  ROLE_PERMISSIONS,
-  administrativeRolesForUser,
-  rolesAssignableBy,
-} from './permissions.js';
+import { PERMISSIONS, administrativeRolesForUser } from './permissions.js';
 import {
   assignAdminRoles,
+  assertCanManageTarget,
   getNormalUser,
+  getAdministrativeAccount,
   listAdminAuditLogs,
   listAdminUsers,
   resetNormalUserVerification,
@@ -55,17 +69,163 @@ export function createAdminRouter({ requireAdminTrustedMutation, cmsRouter } = {
   });
   router.use(requireAdminAuthenticatedUser);
 
-  router.get('/roles', requirePermission(PERMISSIONS.usersRolesRead), (request, response) => {
+  router.get('/permissions', requirePermission(PERMISSIONS.usersRolesRead), (_request, response) =>
+    response.json({ data: { permissions: PERMISSION_VALUES } }),
+  );
+  router.post(
+    '/accounts/grant',
+    requireAdminTrustedMutation,
+    requirePermission(PERMISSIONS.usersRolesAssign),
+    validateBody(
+      z.strictObject({
+        email: z.string().email().transform(normalizeEmail),
+        roles: z.array(roleKey).max(6),
+        reason: z.string().trim().min(1).max(500),
+      }),
+    ),
+    async (request, response) => {
+      const target = await User.findOne({
+        emailNormalized: request.validatedBody.email,
+        status: 'active',
+      });
+      if (!target?.emailVerifiedAt || !target?.phoneVerifiedAt)
+        throw new ApiError(
+          409,
+          'ADMIN_VERIFIED_ACCOUNT_REQUIRED',
+          'An existing verified account is required.',
+        );
+      const user = await assignAdminRoles({
+        request,
+        userId: String(target._id),
+        roles: request.validatedBody.roles,
+        reason: request.validatedBody.reason,
+      });
+      response.json({ data: { user } });
+    },
+  );
+  router.get(
+    '/accounts',
+    requirePermission(PERMISSIONS.usersRolesRead),
+    validateQuery(usersQuerySchema),
+    async (request, response) => {
+      response.json({
+        data: await listAdminUsers(request.validatedQuery, {
+          'adminRoles.0': mongoose.trusted({ $exists: true }),
+        }),
+      });
+    },
+  );
+  router.get(
+    '/accounts/:userId',
+    requirePermission(PERMISSIONS.usersRolesRead),
+    async (request, response) => {
+      response.json({ data: { user: await getAdministrativeAccount(validatedUserId(request)) } });
+    },
+  );
+  router.get(
+    '/users/:userId/sessions',
+    requirePermission(PERMISSIONS.usersSessionsRevoke),
+    async (request, response) => {
+      response.json({
+        data: {
+          sessions: await listUserSessions(
+            request.app.locals.redis,
+            request.app.locals.settings,
+            validatedUserId(request),
+          ),
+        },
+      });
+    },
+  );
+  router.delete(
+    '/users/:userId/sessions/:sessionId',
+    requireAdminTrustedMutation,
+    requirePermission(PERMISSIONS.usersSessionsRevoke),
+    validateBody(revokeSessionsBodySchema),
+    async (request, response) => {
+      const target = await User.findById(validatedUserId(request));
+      if (!target) throw new ApiError(404, 'ADMIN_USER_NOT_FOUND', 'User not found.');
+      assertCanManageTarget(request.adminAuth.user, target);
+      await revokeSingleSession(
+        request.app.locals.redis,
+        request.app.locals.settings,
+        target._id,
+        request.params.sessionId,
+      );
+      await recordAdminAudit({
+        request,
+        action: 'USER_SESSION_REVOKED',
+        resourceType: 'USER',
+        resourceId: validatedUserId(request),
+        reason: request.validatedBody.reason,
+      });
+      response.status(204).end();
+    },
+  );
+  router.get('/roles', requirePermission(PERMISSIONS.usersRolesRead), async (request, response) => {
     response.json({
       data: {
         currentRoles: administrativeRolesForUser(request.adminAuth.user),
-        assignableRoles: rolesAssignableBy(request.adminAuth.user),
-        roles: Object.entries(ROLE_PERMISSIONS)
-          .filter(([role]) => role !== 'USER')
-          .map(([role, permissions]) => ({ role, permissions })),
+        assignableRoles: await assignableRoles(request.adminAuth.user),
+        roles: await Promise.all(
+          (await listRoles())
+            .filter((role) => role.key !== 'USER')
+            .map(async (role) => ({
+              ...role,
+              id: String(role._id),
+              role: role.key,
+              adminCount: await User.countDocuments({ adminRoles: role.key }),
+            })),
+        ),
       },
     });
   });
+  router.post(
+    '/roles',
+    requireAdminTrustedMutation,
+    requirePermission(PERMISSIONS.rolesCreate),
+    validateBody(roleBody),
+    async (request, response) => {
+      response.status(201).json({
+        data: {
+          role: await mutateRole(
+            request,
+            'create',
+            request.validatedBody.key,
+            request.validatedBody,
+          ),
+        },
+      });
+    },
+  );
+  router.patch(
+    '/roles/:key',
+    requireAdminTrustedMutation,
+    requirePermission(PERMISSIONS.rolesUpdate),
+    validateBody(roleUpdateBody),
+    async (request, response) => {
+      response.json({
+        data: {
+          role: await mutateRole(
+            request,
+            'update',
+            roleKey.parse(request.params.key),
+            request.validatedBody,
+          ),
+        },
+      });
+    },
+  );
+  router.delete(
+    '/roles/:key',
+    requireAdminTrustedMutation,
+    requirePermission(PERMISSIONS.rolesDelete),
+    validateBody(roleDeleteBody),
+    async (request, response) => {
+      await mutateRole(request, 'delete', roleKey.parse(request.params.key), request.validatedBody);
+      response.status(204).end();
+    },
+  );
 
   router.get(
     '/users',

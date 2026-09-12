@@ -56,9 +56,9 @@ function adminOriginGuard(settings) {
 export function createApp(redis, options = {}) {
   const settings = options.settings ?? config;
   const senders = options.senders ?? createDeliverySenders(settings);
-  const sessionMiddleware = options.sessionMiddleware ?? createSessionMiddleware(settings);
+  const sessionMiddleware = options.sessionMiddleware ?? createSessionMiddleware(settings, redis);
   const adminSessionMiddleware =
-    options.adminSessionMiddleware ?? createAdminSessionMiddleware(settings);
+    options.adminSessionMiddleware ?? createAdminSessionMiddleware(settings, redis);
   const authService =
     options.authService ??
     createAuthService({
@@ -79,6 +79,8 @@ export function createApp(redis, options = {}) {
       verifyPrimaryCredentials: authService.verifyPrimaryCredentials,
     });
   const app = express();
+  app.locals.redis = redis;
+  app.locals.settings = settings;
   const trustedMutation = requireTrustedMutation(settings);
   const adminTrustedMutation = requireAdminTrustedMutation(settings);
 

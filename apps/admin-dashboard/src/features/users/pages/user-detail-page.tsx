@@ -175,6 +175,7 @@ export function UserDetailPage() {
               </TabsContent>
               <TabsContent value="sessions">
                 <UserSessionsTab
+                  userId={detail.data.id}
                   canRevoke={canRevokeSessions}
                   onRevokeAll={() => setOperation({ type: 'sessions' })}
                 />
